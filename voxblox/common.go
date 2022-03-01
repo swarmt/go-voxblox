@@ -9,16 +9,33 @@ const kEpsilon = 1e-6 // Used for coordinates
 
 // IndexType is the type used for indexing blocks and voxels.
 type IndexType = [3]int32
-type VoxelIndex = IndexType
 
 // Point is a matrix of 3x1
 type Point struct {
 	x, y, z float64
 }
 
-// PointFromArray returns a Point from an array of 3 floats.
+// MaxInt32
+func MaxInt32(x, y int32) int32 {
+	if x < y {
+		return y
+	}
+	return x
+}
+
+func MinInt32(x, y int32) int32 {
+	if x > y {
+		return y
+	}
+	return x
+}
+
 func subtractPoints(a, b Point) Point {
 	return Point{a.x - b.x, a.y - b.y, a.z - b.z}
+}
+
+func addPoints(a, b Point) Point {
+	return Point{a.x + b.x, a.y + b.y, a.z + b.z}
 }
 
 // getGridIndexFromScaledPoint returns the grid index of a point given the coordinate
@@ -43,5 +60,13 @@ func getOriginPointFromGridIndex(index IndexType, gridSize float64) Point {
 		float64(index[0]) * gridSize,
 		float64(index[1]) * gridSize,
 		float64(index[2]) * gridSize,
+	}
+}
+
+func getCenterPointFromGridIndex(idx IndexType, gridSize float64) Point {
+	return Point{
+		(float64(idx[0]) + 0.5) * gridSize,
+		(float64(idx[1]) + 0.5) * gridSize,
+		(float64(idx[2]) + 0.5) * gridSize,
 	}
 }

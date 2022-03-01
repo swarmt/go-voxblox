@@ -23,11 +23,11 @@ func (l *Layer) getNumberOfAllocatedBlocks() int {
 	return len(l.Blocks)
 }
 
-// allocateNewBlock allocates a new block in the map
-func (l *Layer) allocateNewBlock(blockIndex IndexType) *Block {
+// getBlock allocates a new block in the map
+func (l *Layer) getBlock(blockIndex IndexType) *Block {
 	// Test if block already exists
-	if _, ok := l.Blocks[blockIndex]; ok {
-		return l.Blocks[blockIndex]
+	if block, ok := l.Blocks[blockIndex]; ok {
+		return block
 	}
 	newBlock := NewBlock(l.VoxelsPerSide, l.VoxelSize, blockIndex, getOriginPointFromGridIndex(blockIndex, l.BlockSize))
 	l.Blocks[blockIndex] = newBlock
@@ -37,7 +37,7 @@ func (l *Layer) allocateNewBlock(blockIndex IndexType) *Block {
 // allocateNewBlockByCoordinates allocates a new block in the map by coordinates
 // TODO: This and getBlockPtrByCoordinates should be merged as they are interchangeable
 func (l *Layer) allocateNewBlockByCoordinates(point Point) *Block {
-	return l.allocateNewBlock(getGridIndexFromPoint(point, l.BlockSizeInv))
+	return l.getBlock(getGridIndexFromPoint(point, l.BlockSizeInv))
 }
 
 // computeBlockIndexFromCoordinates computes the block index from coordinates
@@ -54,7 +54,15 @@ func (l *Layer) getBlockPtrByCoordinates(point Point) *Block {
 func (l *Layer) getBlockPtrByIndex(index IndexType) *Block {
 	block, ok := l.Blocks[index]
 	if !ok {
-		return l.allocateNewBlock(index)
+		return l.getBlock(index)
 	}
 	return block
+}
+
+func (l *Layer) getVoxelPtrByCoordinates(point Point) *TsdfVoxel {
+	block := l.getBlockPtrByIndex(l.computeBlockIndexFromCoordinates(point))
+	if block == nil {
+		return nil
+	}
+	return l.getVoxelPtrByCoordinates(point)
 }
