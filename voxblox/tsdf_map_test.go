@@ -14,7 +14,7 @@ func almostEqual(a, b, e float64) bool {
 
 func init() {
 	var tsdfVoxelSize = 0.1
-	var tsdfVoxelsPerSide int32 = 8
+	var tsdfVoxelsPerSide = 8
 	blockSize = tsdfVoxelSize * float64(tsdfVoxelsPerSide)
 	tsdfMap = NewTsdfMap(tsdfVoxelSize, tsdfVoxelsPerSide)
 }
@@ -283,5 +283,26 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 	}
 	if !almostEqual(pointInNeg110center.z, pointInNeg110.z, tsdfMap.TsdfVoxelSize) {
 		t.Errorf("Expected pointInNeg111center.z to be %f, got %f", pointInNeg110.z, pointInNeg110center.z)
+	}
+}
+
+func TestComputeBlockIndexFromOriginFromBlockIndex(t *testing.T) {
+	const kBlockVolumeDiameter = 100
+	const kBlockSize = 0.32
+	const kBlockSizeInv = 1.0 / kBlockSize
+	const halfIndexRange = kBlockVolumeDiameter / 2
+
+	for x := -halfIndexRange; x <= halfIndexRange; x++ {
+		for y := -halfIndexRange; y <= halfIndexRange; y++ {
+			for z := -halfIndexRange; z <= halfIndexRange; z++ {
+				blockIndex := IndexType{x, y, z}
+				blockOrigin := getOriginPointFromGridIndex(blockIndex, kBlockSize)
+				blockIndexFromOrigin := getGridIndexFromOriginPoint(blockOrigin, kBlockSizeInv)
+
+				if blockIndex != blockIndexFromOrigin {
+					t.Errorf("Expected blockIndex (%v) to be equal to blockIndexFromOrigin (%v)", blockIndex, blockIndexFromOrigin)
+				}
+			}
+		}
 	}
 }

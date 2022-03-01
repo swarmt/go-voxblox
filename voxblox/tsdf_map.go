@@ -2,11 +2,11 @@ package voxblox
 
 type TsdfMap struct {
 	TsdfVoxelSize     float64
-	TsdfVoxelsPerSide int32
+	TsdfVoxelsPerSide int
 	TsdfLayer         *Layer
 }
 
-func NewTsdfMap(tsdfVoxelSize float64, tsdfVoxelsPerSide int32) *TsdfMap {
+func NewTsdfMap(tsdfVoxelSize float64, tsdfVoxelsPerSide int) *TsdfMap {
 	m := new(TsdfMap)
 	m.TsdfVoxelSize = tsdfVoxelSize
 	m.TsdfVoxelsPerSide = tsdfVoxelsPerSide

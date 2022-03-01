@@ -11,19 +11,19 @@ const (
 
 type Block struct {
 	HasData       bool
-	VoxelsPerSide int32
+	VoxelsPerSide int
 	VoxelSize     float64
 	Origin        Point
 	BlockIndex    IndexType
 	Updated       bool
-	NumVoxels     int32
+	NumVoxels     int
 	VoxelSizeInv  float64
 	BlockSize     float64
 	BlockSizeInv  float64
 	Voxels        map[IndexType]*TsdfVoxel
 }
 
-func NewBlock(voxelsPerSide int32, voxelSize float64, index IndexType, origin Point) *Block {
+func NewBlock(voxelsPerSide int, voxelSize float64, index IndexType, origin Point) *Block {
 	b := new(Block)
 	b.HasData = false
 	b.VoxelsPerSide = voxelsPerSide
@@ -58,9 +58,9 @@ func (b *Block) computeTruncatedVoxelIndexFromCoordinates(point Point) IndexType
 	maxValue := b.VoxelsPerSide - 1
 	voxelIndex := getGridIndexFromPoint(subtractPoints(point, b.Origin), b.VoxelSizeInv)
 	index := IndexType{
-		MaxInt32(MinInt32(voxelIndex[0], maxValue), 0.0),
-		MaxInt32(MinInt32(voxelIndex[1], maxValue), 0.0),
-		MaxInt32(MinInt32(voxelIndex[2], maxValue), 0.0),
+		MaxInt(MinInt(voxelIndex[0], maxValue), 0.0),
+		MaxInt(MinInt(voxelIndex[1], maxValue), 0.0),
+		MaxInt(MinInt(voxelIndex[2], maxValue), 0.0),
 	}
 	return b.getVoxel(index).Index
 }

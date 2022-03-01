@@ -2,13 +2,13 @@ package voxblox
 
 type Layer struct {
 	VoxelSize     float64
-	VoxelsPerSide int32
+	VoxelsPerSide int
 	Blocks        map[IndexType]*Block
 	BlockSize     float64
 	BlockSizeInv  float64
 }
 
-func NewLayer(voxelSize float64, voxelsPerSide int32) *Layer {
+func NewLayer(voxelSize float64, voxelsPerSide int) *Layer {
 	l := new(Layer)
 	l.VoxelSize = voxelSize
 	l.VoxelsPerSide = voxelsPerSide

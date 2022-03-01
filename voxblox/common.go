@@ -8,22 +8,21 @@ import (
 const kEpsilon = 1e-6 // Used for coordinates
 
 // IndexType is the type used for indexing blocks and voxels.
-type IndexType = [3]int32
+type IndexType = [3]int
 
 // Point is a matrix of 3x1
 type Point struct {
 	x, y, z float64
 }
 
-// MaxInt32
-func MaxInt32(x, y int32) int32 {
+func MaxInt(x, y int) int {
 	if x < y {
 		return y
 	}
 	return x
 }
 
-func MinInt32(x, y int32) int32 {
+func MinInt(x, y int) int {
 	if x > y {
 		return y
 	}
@@ -41,17 +40,25 @@ func addPoints(a, b Point) Point {
 // getGridIndexFromScaledPoint returns the grid index of a point given the coordinate
 func getGridIndexFromScaledPoint(scaledPoint Point) IndexType {
 	return IndexType{
-		int32(math.Floor(scaledPoint.x + kEpsilon)),
-		int32(math.Floor(scaledPoint.y + kEpsilon)),
-		int32(math.Floor(scaledPoint.z + kEpsilon)),
+		int(math.Floor(scaledPoint.x + kEpsilon)),
+		int(math.Floor(scaledPoint.y + kEpsilon)),
+		int(math.Floor(scaledPoint.z + kEpsilon)),
 	}
 }
 
 func getGridIndexFromPoint(point Point, blockSizeInv float64) IndexType {
 	return IndexType{
-		int32(math.Floor(point.x*blockSizeInv + kEpsilon)),
-		int32(math.Floor(point.y*blockSizeInv + kEpsilon)),
-		int32(math.Floor(point.z*blockSizeInv + kEpsilon)),
+		int(math.Floor(point.x*blockSizeInv + kEpsilon)),
+		int(math.Floor(point.y*blockSizeInv + kEpsilon)),
+		int(math.Floor(point.z*blockSizeInv + kEpsilon)),
+	}
+}
+
+func getGridIndexFromOriginPoint(point Point, blockSizeInv float64) IndexType {
+	return IndexType{
+		int(math.Round(point.x * blockSizeInv)),
+		int(math.Round(point.y * blockSizeInv)),
+		int(math.Round(point.z * blockSizeInv)),
 	}
 }
 
