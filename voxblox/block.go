@@ -1,6 +1,6 @@
 package voxblox
 
-type Status int64
+type Status int
 
 const (
 	kMap Status = iota

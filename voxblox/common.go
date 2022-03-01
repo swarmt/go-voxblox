@@ -1,6 +1,7 @@
 package voxblox
 
 import (
+	"github.com/ungerik/go3d/float64/vec2"
 	"math"
 )
 
@@ -13,6 +14,10 @@ type IndexType = [3]int
 // Point is a matrix of 3x1
 type Point struct {
 	x, y, z float64
+}
+
+func (p Point) asVec2() *vec2.T {
+	return &vec2.T{p.x, p.y}
 }
 
 func MaxInt(x, y int) int {
@@ -35,6 +40,10 @@ func subtractPoints(a, b Point) Point {
 
 func addPoints(a, b Point) Point {
 	return Point{a.x + b.x, a.y + b.y, a.z + b.z}
+}
+
+func almostEqual(a, b, e float64) bool {
+	return math.Abs(a-b) <= e+kEpsilon
 }
 
 // getGridIndexFromScaledPoint returns the grid index of a point given the coordinate

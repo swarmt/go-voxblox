@@ -1,16 +1,11 @@
 package voxblox
 
 import (
-	"math"
 	"testing"
 )
 
 var blockSize float64
 var tsdfMap *TsdfMap
-
-func almostEqual(a, b, e float64) bool {
-	return math.Abs(a-b) <= e+kEpsilon
-}
 
 func init() {
 	var tsdfVoxelSize = 0.1
@@ -39,8 +34,6 @@ func TestTsdfMapBlockAllocation(t *testing.T) {
 }
 
 func TestTsdfMapIndexLookups(t *testing.T) {
-	// TODO: Break this into multiple tests
-
 	// BLOCK 0 0 0 (coordinate at origin)
 	pointIn000 := Point{x: 0, y: 0, z: 0}
 	block000 := tsdfMap.GetTsdfLayerPtr().allocateNewBlockByCoordinates(pointIn000)
