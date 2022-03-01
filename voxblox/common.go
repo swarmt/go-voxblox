@@ -2,6 +2,7 @@ package voxblox
 
 import (
 	"github.com/ungerik/go3d/float64/vec2"
+	"github.com/ungerik/go3d/float64/vec3"
 	"math"
 )
 
@@ -18,6 +19,10 @@ type Point struct {
 
 func (p Point) asVec2() *vec2.T {
 	return &vec2.T{p.x, p.y}
+}
+
+func (p Point) asVec3() *vec3.T {
+	return &vec3.T{p.x, p.y, p.z}
 }
 
 func MaxInt(x, y int) int {

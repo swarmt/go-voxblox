@@ -1,6 +1,9 @@
 package voxblox
 
-import "math"
+import (
+	"github.com/ungerik/go3d/float64/vec3"
+	"math"
+)
 
 type ShapeType int
 
@@ -8,6 +11,7 @@ type SimulationWorld struct {
 	VoxelSize float64
 	MinBound  Point
 	MaxBound  Point
+	Objects   []interface{}
 }
 
 func NewSimulationWorld(voxelSize float64, minBound Point, maxBound Point) *SimulationWorld {
@@ -18,22 +22,22 @@ func NewSimulationWorld(voxelSize float64, minBound Point, maxBound Point) *Simu
 	}
 }
 
-func (w SimulationWorld) AddObject() {
+func (w SimulationWorld) AddObject(object interface{}) {
+	w.Objects = append(w.Objects, object)
+}
 
+func (w SimulationWorld) AddGroundLevel(f float64) {
+}
+
+type Object interface {
+	Center() Point
+	DistanceToPoint(Point) float64
 }
 
 type Cylinder struct {
 	Center Point
 	Radius float64
 	Height float64
-}
-
-func NewCylinder(center Point, radius float64, height float64) *Cylinder {
-	return &Cylinder{
-		Center: center,
-		Radius: radius,
-		Height: height,
-	}
 }
 
 func (c Cylinder) DistanceToPoint(point Point) float64 {
@@ -61,4 +65,17 @@ func (c Cylinder) DistanceToPoint(point Point) float64 {
 
 func (c Cylinder) RayIntersection() bool {
 	return false
+}
+
+type Plane struct {
+	Center Point
+	Normal Point
+}
+
+func (plane Plane) DistanceToPoint(point Point) float64 {
+	d := -vec3.Dot(plane.Normal.asVec3(), point.asVec3())
+	normalized := plane.Normal.asVec3().Normalized()
+	p := d / normalized.Length()
+	distance := vec3.Dot(plane.Normal.asVec3(), plane.Center.asVec3()) - p
+	return distance
 }
