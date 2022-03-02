@@ -15,7 +15,7 @@ func init() {
 }
 
 func TestTsdfMapBlockAllocation(t *testing.T) {
-	// Layer should have no blocks by default
+	// TsdfLayer should have no blocks by default
 	if tsdfMap.GetTsdfLayerPtr().getNumberOfAllocatedBlocks() != 0 {
 		t.Errorf("Expected no blocks in layer, got %d", len(tsdfMap.TsdfLayer.Blocks))
 	}

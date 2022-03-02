@@ -1,6 +1,6 @@
 package voxblox
 
-type Layer struct {
+type TsdfLayer struct {
 	VoxelSize     float64
 	VoxelsPerSide int
 	Blocks        map[IndexType]*Block
@@ -8,8 +8,8 @@ type Layer struct {
 	BlockSizeInv  float64
 }
 
-func NewLayer(voxelSize float64, voxelsPerSide int) *Layer {
-	l := new(Layer)
+func NewTsdfLayer(voxelSize float64, voxelsPerSide int) *TsdfLayer {
+	l := new(TsdfLayer)
 	l.VoxelSize = voxelSize
 	l.VoxelsPerSide = voxelsPerSide
 	l.Blocks = make(map[IndexType]*Block)
@@ -19,12 +19,12 @@ func NewLayer(voxelSize float64, voxelsPerSide int) *Layer {
 }
 
 // getNumberOfAllocatedBlocks returns the number of blocks allocated in the map
-func (l *Layer) getNumberOfAllocatedBlocks() int {
+func (l *TsdfLayer) getNumberOfAllocatedBlocks() int {
 	return len(l.Blocks)
 }
 
 // getBlock allocates a new block in the map
-func (l *Layer) getBlock(blockIndex IndexType) *Block {
+func (l *TsdfLayer) getBlock(blockIndex IndexType) *Block {
 	// Test if block already exists
 	if block, ok := l.Blocks[blockIndex]; ok {
 		return block
@@ -36,22 +36,22 @@ func (l *Layer) getBlock(blockIndex IndexType) *Block {
 
 // allocateNewBlockByCoordinates allocates a new block in the map by coordinates
 // TODO: This and getBlockPtrByCoordinates should be merged as they are interchangeable
-func (l *Layer) allocateNewBlockByCoordinates(point Point) *Block {
+func (l *TsdfLayer) allocateNewBlockByCoordinates(point Point) *Block {
 	return l.getBlock(getGridIndexFromPoint(point, l.BlockSizeInv))
 }
 
 // computeBlockIndexFromCoordinates computes the block index from coordinates
-func (l *Layer) computeBlockIndexFromCoordinates(point Point) IndexType {
+func (l *TsdfLayer) computeBlockIndexFromCoordinates(point Point) IndexType {
 	return getGridIndexFromPoint(point, l.BlockSizeInv)
 }
 
 // getBlockPtrByCoordinates returns a pointer to the block in the map by coordinates
-func (l *Layer) getBlockPtrByCoordinates(point Point) *Block {
+func (l *TsdfLayer) getBlockPtrByCoordinates(point Point) *Block {
 	return l.getBlockPtrByIndex(l.computeBlockIndexFromCoordinates(point))
 }
 
 // getBlockPtrByIndex returns a pointer to the block in the map by index
-func (l *Layer) getBlockPtrByIndex(index IndexType) *Block {
+func (l *TsdfLayer) getBlockPtrByIndex(index IndexType) *Block {
 	block, ok := l.Blocks[index]
 	if !ok {
 		return l.getBlock(index)
@@ -59,7 +59,7 @@ func (l *Layer) getBlockPtrByIndex(index IndexType) *Block {
 	return block
 }
 
-func (l *Layer) getVoxelPtrByCoordinates(point Point) *TsdfVoxel {
+func (l *TsdfLayer) getVoxelPtrByCoordinates(point Point) *TsdfVoxel {
 	block := l.getBlockPtrByIndex(l.computeBlockIndexFromCoordinates(point))
 	if block == nil {
 		return nil
