@@ -25,7 +25,7 @@ func init() {
 		Radius: 2.0,
 		Height: 4.0,
 	}
-	world.Objects = append(world.Objects, cylinder)
+	world.Objects = append(world.Objects, &cylinder)
 	world.AddGroundLevel(0.0)
 
 	// Generate poses around the cylinder.

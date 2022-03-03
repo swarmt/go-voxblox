@@ -1,7 +1,6 @@
 package voxblox
 
 import (
-	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
 	"github.com/ungerik/go3d/float64/quaternion"
 	"github.com/ungerik/go3d/float64/vec2"
 	"github.com/ungerik/go3d/float64/vec3"
@@ -14,7 +13,7 @@ type SimulationWorld struct {
 	VoxelSize float64
 	MinBound  Point
 	MaxBound  Point
-	Objects   []interface{}
+	Objects   []Object
 }
 
 func NewSimulationWorld(voxelSize float64, minBound Point, maxBound Point) *SimulationWorld {
@@ -22,11 +21,11 @@ func NewSimulationWorld(voxelSize float64, minBound Point, maxBound Point) *Simu
 		VoxelSize: voxelSize,
 		MinBound:  minBound,
 		MaxBound:  maxBound,
-		Objects:   make([]interface{}, 0),
+		Objects:   make([]Object, 0),
 	}
 }
 
-func (w *SimulationWorld) AddObject(object interface{}) {
+func (w *SimulationWorld) AddObject(object Object) {
 	w.Objects = append(w.Objects, object)
 }
 
@@ -36,40 +35,50 @@ func (w *SimulationWorld) AddGroundLevel(height float64) {
 		Normal: Point{0.0, 0.0, 1.0},
 		Color:  [3]uint8{},
 	}
-	w.Objects = append(w.Objects, ground)
+	w.Objects = append(w.Objects, &ground)
 }
 
-func (w *SimulationWorld) GetPointCloudFromViewpoint(
-	viewOrigin *Point,
-	viewDirection *Point,
-	cameraResolution vec2.T,
-	fovHorizontalRad float64,
-	maxDistance float64,
-) sensor_msgs.PointCloud2 {
+func (w *SimulationWorld) GetPointCloudFromViewpoint(viewOrigin Point, viewDirection Point, cameraResolution vec2.T, fovHorizontal float64, maxDistance float64) []*Point {
+	fovHorizontalRad := fovHorizontal * math.Pi / 180.0
 	focalLength := cameraResolution[0] / (2.0 * math.Tan(fovHorizontalRad/2.0))
 
 	nominalViewDirection := Point{1.0, 0.0, 0.0}
-	diff := quaternion.Vec3Diff(nominalViewDirection.asVec3(), viewDirection.asVec3())
-	rotationQuaternion := diff.Normalized()
+	rotationQuaternion := quaternion.Vec3Diff(nominalViewDirection.asVec3(), viewDirection.asVec3())
+
+	// Create a slice to store the points
+	// Make it the same size as the camera resolution so the scan can be structured
+	points := make([]*Point, int(cameraResolution[0]*cameraResolution[1]))
 
 	// Iterate over all the pixels
+	pointsIndex := 0
 	for u := -cameraResolution[0] / 2; u < cameraResolution[0]/2; u++ {
 		for v := -cameraResolution[1] / 2; v < cameraResolution[1]/2; v++ {
-			rayCameraDirection := Point{
-				x: 1.0,
-				y: u / focalLength,
-				z: v / focalLength,
-			}.asVec3()
-			rotationQuaternion.RotateVec3(rayCameraDirection.Normalize())
+			rayCameraDirection := Point{1.0, u / focalLength, v / focalLength}.asVec3().Normalize()
+			rotationQuaternion.RotateVec3(rayCameraDirection)
+			cameraDirection := Point{rayCameraDirection[0], rayCameraDirection[1], rayCameraDirection[2]}
+
+			rayValid := false
+			rayDistance := maxDistance
+			// Iterate over all the objects
+			for _, object := range w.Objects {
+				intersects, objectIntersect, objectDistance := object.RayIntersection(viewOrigin, cameraDirection, maxDistance)
+				if intersects {
+					if !rayValid || objectDistance < rayDistance {
+						rayValid = true
+						rayDistance = objectDistance
+						points[pointsIndex] = &objectIntersect
+					}
+				}
+				pointsIndex++
+			}
 		}
 	}
-
-	return sensor_msgs.PointCloud2{}
+	return points
 }
 
 type Object interface {
-	Center() Point
 	DistanceToPoint(Point) float64
+	RayIntersection(Point, Point, float64) (bool, Point, float64)
 }
 
 type Cylinder struct {
@@ -118,12 +127,6 @@ func (c *Cylinder) RayIntersection(rayOrigin Point, rayDirection Point, maxDista
 	t1 := -1.0
 	t2 := -1.0
 
-	// Don't divide by 0
-	if A < kEpsilon {
-		// NOTE: Voxblox returns false here, but this is a valid intersection.
-		A = kEpsilon
-	}
-
 	underSqrt := B*B - 4*A*C
 	if underSqrt < 0 {
 		return false, intersectPoint, intersectDist
@@ -159,15 +162,17 @@ func (c *Cylinder) RayIntersection(rayOrigin Point, rayDirection Point, maxDista
 		t3 = (-c.Height/2.0 - vectorE[2]) / vectorD[2]
 		t4 = (c.Height/2.0 - vectorE[2]) / vectorD[2]
 
-		q3 := vectorE.Add(vectorD.Scale(t3))
-		q4 := vectorE.Add(vectorD.Scale(t4))
+		s := vectorD.Scaled(t3)
+		q3 := vec3.Add(vectorE, &s)
+		s = vectorD.Scaled(t4)
+		q4 := vec3.Add(vectorE, &s)
 
 		q3Head := vec2.T{q3[0], q3[1]}
-		if t3 >= 0.0 && q3Head.Normalize().Length() < c.Radius {
+		if t3 >= 0.0 && q3Head.Length() < c.Radius {
 			t3Valid = true
 		}
 		q4Head := vec2.T{q4[0], q4[1]}
-		if t4 >= 0.0 && q4Head.Normalize().Length() < c.Radius {
+		if t4 >= 0.0 && q4Head.Length() < c.Radius {
 			t4Valid = true
 		}
 	}
@@ -185,7 +190,7 @@ func (c *Cylinder) RayIntersection(rayOrigin Point, rayDirection Point, maxDista
 		T = math.Min(T, t3)
 	}
 	if t4Valid {
-		T = math.Min(T, t3)
+		T = math.Min(T, t4)
 	}
 
 	// Intersection greater than max dist, so no intersection in the sensor range.
@@ -212,4 +217,8 @@ func (plane *Plane) DistanceToPoint(point Point) float64 {
 	p := d / norm.Length()
 	distance := vec3.Dot(&norm, plane.Center.asVec3()) - p
 	return distance
+}
+
+func (plane *Plane) RayIntersection(rayOrigin Point, rayDirection Point, maxDistance float64) (bool, Point, float64) {
+	return false, Point{}, 0.0
 }
