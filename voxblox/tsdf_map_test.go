@@ -17,19 +17,19 @@ func init() {
 func TestTsdfMapBlockAllocation(t *testing.T) {
 	// TsdfLayer should have no blocks by default
 	if tsdfMap.GetTsdfLayerPtr().getNumberOfAllocatedBlocks() != 0 {
-		t.Errorf("Expected no blocks in layer, got %d", len(tsdfMap.TsdfLayer.Blocks))
+		t.Errorf("Expected no blocks in Layer, got %d", len(tsdfMap.TsdfLayer.Blocks))
 	}
 	tsdfMap.GetTsdfLayerPtr().allocateNewBlockByCoordinates(Point{X: 0, Y: 0.15, Z: 0})
 	if tsdfMap.GetTsdfLayerPtr().getNumberOfAllocatedBlocks() != 1 {
-		t.Errorf("Expected one block in layer, got %d", len(tsdfMap.TsdfLayer.Blocks))
+		t.Errorf("Expected one block in Layer, got %d", len(tsdfMap.TsdfLayer.Blocks))
 	}
 	tsdfMap.GetTsdfLayerPtr().allocateNewBlockByCoordinates(Point{X: 0, Y: 0.13, Z: 0})
 	if tsdfMap.GetTsdfLayerPtr().getNumberOfAllocatedBlocks() != 1 {
-		t.Errorf("Expected one block in layer, got %d", len(tsdfMap.TsdfLayer.Blocks))
+		t.Errorf("Expected one block in Layer, got %d", len(tsdfMap.TsdfLayer.Blocks))
 	}
 	tsdfMap.GetTsdfLayerPtr().allocateNewBlockByCoordinates(Point{X: -10.0, Y: 13.5, Z: 20.0})
 	if tsdfMap.GetTsdfLayerPtr().getNumberOfAllocatedBlocks() != 2 {
-		t.Errorf("Expected two blocks in layer, got %d", len(tsdfMap.TsdfLayer.Blocks))
+		t.Errorf("Expected two blocks in Layer, got %d", len(tsdfMap.TsdfLayer.Blocks))
 	}
 }
 

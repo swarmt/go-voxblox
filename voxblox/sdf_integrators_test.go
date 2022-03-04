@@ -1,7 +1,6 @@
 package voxblox
 
 import (
-	"fmt"
 	"github.com/ungerik/go3d/float64/quaternion"
 	"github.com/ungerik/go3d/float64/vec2"
 	"math"
@@ -11,12 +10,14 @@ import (
 
 var (
 	world              *SimulationWorld
-	poses              []*Transformation
+	poses              []Transformation
+	voxelCarving       bool
 	voxelSize          float64
 	voxelsPerSide      int
 	truncationDistance float64
 	cameraResolution   vec2.T
 	fovHorizontal      float64
+	minDistance        float64
 	maxDistance        float64
 )
 
@@ -42,7 +43,7 @@ func init() {
 	numPoses := 50
 	maxAngle := 2.0 * math.Pi
 	angleIncrement := maxAngle / float64(numPoses)
-	poses = []*Transformation{}
+	poses = []Transformation{}
 	for angle := 0.0; angle < maxAngle; angle += angleIncrement {
 		position := Point{
 			X: radius * math.Sin(angle),
@@ -61,40 +62,48 @@ func init() {
 			Position: *position.asVec3(),
 			Rotation: q,
 		}
-		poses = append(poses, &transform)
+		poses = append(poses, transform)
 	}
 
 	truncationDistance = voxelSize * 4.0
 	cameraResolution = vec2.T{320, 240}
 	fovHorizontal = 150.0
+	minDistance = 0.1
 	maxDistance = 10.0
+	voxelCarving = true
 
 }
 
 func TestTsdfIntegrators(t *testing.T) {
 	// Simple integrator
-	//simpleLayer := NewTsdfLayer(voxelSize, voxelsPerSide)
-	//simpleTsdfIntegrator := NewSimpleTsdfIntegrator(truncationDistance, simpleLayer)
+	simpleLayer := NewTsdfLayer(voxelSize, voxelsPerSide)
+	simpleTsdfIntegrator := NewSimpleTsdfIntegrator(
+		voxelCarving,
+		truncationDistance,
+		minDistance,
+		maxDistance,
+		simpleLayer,
+	)
 
 	// TODO: Merged integrator
 
 	// TODO: Fast integrator
 
 	// Create a text file to store the results.
-	file, _ := os.Create("sdf_integrator_results.txt")
+	file, _ := os.Create("pointcloud.txt")
 	defer file.Close()
 
 	// Iterate over all poses and integrate.
 	for _, pose := range poses {
-		pointCloud := world.getPointcloudFromTransform(
-			pose,
+		pointCloud := world.getPointCloudFromTransform(
+			&pose,
 			cameraResolution,
 			fovHorizontal,
 			maxDistance,
 		)
-		for _, point := range pointCloud {
+		for _, point := range pointCloud.Points {
 			if point.X != 0.0 && point.Y != 0.0 && point.Z != 0.0 {
-				file.WriteString(fmt.Sprintf("%f,%f,%f\n", point.X, point.Y, point.Z))
+				simpleTsdfIntegrator.integratePointCloud(pose, pointCloud, false)
 			}
 		}
 	}

@@ -1,17 +1,21 @@
 package voxblox
 
 type TsdfLayer struct {
-	VoxelSize     float64
-	VoxelsPerSide int
-	Blocks        map[IndexType]*Block
-	BlockSize     float64
-	BlockSizeInv  float64
+	VoxelSize        float64
+	VoxelSizeInv     float64
+	VoxelsPerSide    int
+	VoxelsPerSideInv float64
+	Blocks           map[IndexType]*Block
+	BlockSize        float64
+	BlockSizeInv     float64
 }
 
 func NewTsdfLayer(voxelSize float64, voxelsPerSide int) *TsdfLayer {
 	l := new(TsdfLayer)
 	l.VoxelSize = voxelSize
 	l.VoxelsPerSide = voxelsPerSide
+	l.VoxelSizeInv = 1.0 / voxelSize
+	l.VoxelsPerSideInv = 1.0 / float64(voxelsPerSide)
 	l.Blocks = make(map[IndexType]*Block)
 	l.BlockSize = voxelSize * float64(voxelsPerSide)
 	l.BlockSizeInv = 1.0 / l.BlockSize

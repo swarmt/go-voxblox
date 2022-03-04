@@ -11,8 +11,13 @@ const kEpsilon = 1e-6 // Used for coordinates
 
 // IndexType is the type used for indexing blocks and voxels.
 type IndexType = [3]int
-
 type Color = [3]uint8
+
+type PointCloud struct {
+	Width  int
+	Height int
+	Points []Point
+}
 
 // Point is a matrix of 3x1
 // TODO: Is there a way to alias a vec3 matrix to X Y Z?
