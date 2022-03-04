@@ -2,3 +2,5 @@
 .idea/
 
 .DS_Store
+
+voxblox/sdf_integrator_results.txt

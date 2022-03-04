@@ -29,7 +29,12 @@ func (l *TsdfLayer) getBlock(blockIndex IndexType) *Block {
 	if block, ok := l.Blocks[blockIndex]; ok {
 		return block
 	}
-	newBlock := NewBlock(l.VoxelsPerSide, l.VoxelSize, blockIndex, getOriginPointFromGridIndex(blockIndex, l.BlockSize))
+	newBlock := NewBlock(
+		l.VoxelsPerSide,
+		l.VoxelSize,
+		blockIndex,
+		getOriginPointFromGridIndex(blockIndex, l.BlockSize),
+	)
 	l.Blocks[blockIndex] = newBlock
 	return newBlock
 }

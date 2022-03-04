@@ -38,35 +38,44 @@ func (w *SimulationWorld) AddGroundLevel(height float64) {
 	w.Objects = append(w.Objects, &ground)
 }
 
-func (w *SimulationWorld) GetPointCloudFromViewpoint(viewOrigin Point, viewDirection Point, cameraResolution vec2.T, fovHorizontal float64, maxDistance float64) []*Point {
+func (w *SimulationWorld) GetPointCloudFromViewpoint(
+	viewOrigin vec3.T,
+	viewDirection vec3.T,
+	cameraResolution vec2.T,
+	fovHorizontal float64,
+	maxDistance float64,
+) []Point {
 	fovHorizontalRad := fovHorizontal * math.Pi / 180.0
 	focalLength := cameraResolution[0] / (2.0 * math.Tan(fovHorizontalRad/2.0))
 
 	nominalViewDirection := Point{1.0, 0.0, 0.0}
-	rotationQuaternion := quaternion.Vec3Diff(nominalViewDirection.asVec3(), viewDirection.asVec3())
+	rotationQuaternion := quaternion.Vec3Diff(nominalViewDirection.asVec3(), &viewDirection)
 
 	// Create a slice to store the points
 	// Make it the same size as the camera resolution so the scan can be structured
-	points := make([]*Point, int(cameraResolution[0]*cameraResolution[1]))
+	points := make([]Point, int(cameraResolution[0]*cameraResolution[1]))
 
 	// Iterate over all the pixels
 	pointsIndex := 0
 	for u := -cameraResolution[0] / 2; u < cameraResolution[0]/2; u++ {
 		for v := -cameraResolution[1] / 2; v < cameraResolution[1]/2; v++ {
-			rayCameraDirection := Point{1.0, u / focalLength, v / focalLength}.asVec3().Normalize()
-			rotationQuaternion.RotateVec3(rayCameraDirection)
-			cameraDirection := Point{rayCameraDirection[0], rayCameraDirection[1], rayCameraDirection[2]}
+			rayCameraDirection := vec3.T{1.0, u / focalLength, v / focalLength}
+			rotationQuaternion.RotateVec3(rayCameraDirection.Normalize())
 
 			rayValid := false
 			rayDistance := maxDistance
 			// Iterate over all the objects
 			for _, object := range w.Objects {
-				intersects, objectIntersect, objectDistance := object.RayIntersection(viewOrigin, cameraDirection, maxDistance)
+				intersects, objectIntersect, objectDistance := object.RayIntersection(
+					viewOrigin,
+					rayCameraDirection,
+					maxDistance,
+				)
 				if intersects {
 					if !rayValid || objectDistance < rayDistance {
 						rayValid = true
 						rayDistance = objectDistance
-						points[pointsIndex] = &objectIntersect
+						points[pointsIndex] = objectIntersect
 					}
 				}
 				pointsIndex++
@@ -76,9 +85,26 @@ func (w *SimulationWorld) GetPointCloudFromViewpoint(viewOrigin Point, viewDirec
 	return points
 }
 
+func (w *SimulationWorld) getPointcloudFromTransform(
+	pose *Transformation,
+	cameraRes vec2.T,
+	fovH float64,
+	maxDistance float64,
+) []Point {
+	viewDirection := vec3.T{1.0, 0.0, 0.0}
+	pose.Rotation.RotateVec3(&viewDirection)
+	return w.GetPointCloudFromViewpoint(
+		pose.Position,
+		viewDirection,
+		cameraRes,
+		fovH,
+		maxDistance,
+	)
+}
+
 type Object interface {
 	DistanceToPoint(Point) float64
-	RayIntersection(Point, Point, float64) (bool, Point, float64)
+	RayIntersection(vec3.T, vec3.T, float64) (bool, Point, float64)
 }
 
 type Cylinder struct {
@@ -92,31 +118,35 @@ func (c *Cylinder) DistanceToPoint(point Point) float64 {
 	// TODO: This seems like a simplified distance to cylinder.
 	// TODO: May or may not matter.
 	distance := 0.0
-	minZ := c.Center.x - c.Height/2.0
-	maxZ := c.Center.x + c.Height/2.0
-	if point.z > minZ && point.z < maxZ {
+	minZ := c.Center.X - c.Height/2.0
+	maxZ := c.Center.X + c.Height/2.0
+	if point.Z > minZ && point.Z < maxZ {
 		a := point.asVec2()
 		b := c.Center.asVec2()
 		distance = a.Sub(b).Length() - c.Radius
-	} else if point.z > maxZ {
+	} else if point.Z > maxZ {
 		distance = math.Sqrt(
 			math.Max((point.asVec2().Sub(c.Center.asVec2())).LengthSqr()-c.Radius*c.Radius, 0.0) +
-				(point.z-maxZ)*(point.z-maxZ))
+				(point.Z-maxZ)*(point.Z-maxZ))
 
 	} else {
 		distance = math.Sqrt(
 			math.Max((point.asVec2().Sub(c.Center.asVec2())).LengthSqr()-c.Radius*c.Radius, 0.0) +
-				(point.z-minZ)*(point.z-minZ))
+				(point.Z-minZ)*(point.Z-minZ))
 	}
 	return distance
 }
 
-func (c *Cylinder) RayIntersection(rayOrigin Point, rayDirection Point, maxDistance float64) (bool, Point, float64) {
+func (c *Cylinder) RayIntersection(
+	rayOrigin vec3.T,
+	rayDirection vec3.T,
+	maxDistance float64,
+) (bool, Point, float64) {
 	var intersectPoint Point
 	var intersectDist float64
 
-	vectorE := subtractPoints(rayOrigin, c.Center).asVec3()
-	vectorD := rayDirection.asVec3()
+	var vectorE = vec3.Sub(&rayOrigin, c.Center.asVec3())
+	vectorD := rayDirection
 
 	A := vectorD[0]*vectorD[0] + vectorD[1]*vectorD[1]
 	B := 2*vectorE[0]*vectorD[0] + 2*vectorE[1]*vectorD[1]
@@ -163,9 +193,9 @@ func (c *Cylinder) RayIntersection(rayOrigin Point, rayDirection Point, maxDista
 		t4 = (c.Height/2.0 - vectorE[2]) / vectorD[2]
 
 		s := vectorD.Scaled(t3)
-		q3 := vec3.Add(vectorE, &s)
+		q3 := vec3.Add(&vectorE, &s)
 		s = vectorD.Scaled(t4)
-		q4 := vec3.Add(vectorE, &s)
+		q4 := vec3.Add(&vectorE, &s)
 
 		q3Head := vec2.T{q3[0], q3[1]}
 		if t3 >= 0.0 && q3Head.Length() < c.Radius {
@@ -198,8 +228,8 @@ func (c *Cylinder) RayIntersection(rayOrigin Point, rayDirection Point, maxDista
 		return false, intersectPoint, intersectDist
 	}
 
-	iV := rayOrigin.asVec3().Add(rayDirection.asVec3().Scale(T))
-	intersectPoint = Point{x: iV[0], y: iV[1], z: iV[2]}
+	iV := rayOrigin.Add(rayDirection.Scale(T))
+	intersectPoint = Point{X: iV[0], Y: iV[1], Z: iV[2]}
 	intersectDist = T
 
 	return true, intersectPoint, intersectDist
@@ -219,6 +249,10 @@ func (plane *Plane) DistanceToPoint(point Point) float64 {
 	return distance
 }
 
-func (plane *Plane) RayIntersection(rayOrigin Point, rayDirection Point, maxDistance float64) (bool, Point, float64) {
+func (plane *Plane) RayIntersection(
+	rayOrigin vec3.T,
+	rayDirection vec3.T,
+	maxDistance float64,
+) (bool, Point, float64) {
 	return false, Point{}, 0.0
 }

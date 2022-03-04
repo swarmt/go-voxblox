@@ -1,16 +1,24 @@
 package voxblox
 
 import (
+	"fmt"
 	"github.com/ungerik/go3d/float64/quaternion"
+	"github.com/ungerik/go3d/float64/vec2"
 	"math"
+	"os"
 	"testing"
 )
 
-var world *SimulationWorld
-var poses []*Transformation
-var voxelSize float64
-var voxelsPerSide int
-var truncationDistance float64
+var (
+	world              *SimulationWorld
+	poses              []*Transformation
+	voxelSize          float64
+	voxelsPerSide      int
+	truncationDistance float64
+	cameraResolution   vec2.T
+	fovHorizontal      float64
+	maxDistance        float64
+)
 
 func init() {
 	// Create a test environment.
@@ -26,7 +34,7 @@ func init() {
 		Height: 4.0,
 	}
 	world.Objects = append(world.Objects, &cylinder)
-	world.AddGroundLevel(0.0)
+	//world.AddGroundLevel(0.0) // TODO: Add ground level.
 
 	// Generate poses around the cylinder.
 	radius := 6.0
@@ -37,14 +45,14 @@ func init() {
 	poses = []*Transformation{}
 	for angle := 0.0; angle < maxAngle; angle += angleIncrement {
 		position := Point{
-			x: radius * math.Sin(angle),
-			y: radius * math.Cos(angle),
-			z: height,
+			X: radius * math.Sin(angle),
+			Y: radius * math.Cos(angle),
+			Z: height,
 		}
 		facingDirection := subtractPoints(cylinder.Center, position)
 		desiredYaw := 0.0
-		if facingDirection.x > 1e-4 || facingDirection.y > 1e-4 {
-			desiredYaw = math.Atan2(facingDirection.y, facingDirection.x)
+		if facingDirection.X > 1e-4 || facingDirection.Y > 1e-4 {
+			desiredYaw = math.Atan2(facingDirection.Y, facingDirection.X)
 		}
 		qY := quaternion.FromYAxisAngle(-0.1)
 		qZ := quaternion.FromZAxisAngle(desiredYaw)
@@ -57,6 +65,9 @@ func init() {
 	}
 
 	truncationDistance = voxelSize * 4.0
+	cameraResolution = vec2.T{320, 240}
+	fovHorizontal = 150.0
+	maxDistance = 10.0
 
 }
 
@@ -69,4 +80,22 @@ func TestTsdfIntegrators(t *testing.T) {
 
 	// TODO: Fast integrator
 
+	// Create a text file to store the results.
+	file, _ := os.Create("sdf_integrator_results.txt")
+	defer file.Close()
+
+	// Iterate over all poses and integrate.
+	for _, pose := range poses {
+		pointCloud := world.getPointcloudFromTransform(
+			pose,
+			cameraResolution,
+			fovHorizontal,
+			maxDistance,
+		)
+		for _, point := range pointCloud {
+			if point.X != 0.0 && point.Y != 0.0 && point.Z != 0.0 {
+				file.WriteString(fmt.Sprintf("%f,%f,%f\n", point.X, point.Y, point.Z))
+			}
+		}
+	}
 }
