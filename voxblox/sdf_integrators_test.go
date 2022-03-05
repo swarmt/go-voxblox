@@ -3,6 +3,7 @@ package voxblox
 import (
 	"github.com/ungerik/go3d/float64/quaternion"
 	"github.com/ungerik/go3d/float64/vec2"
+	"github.com/ungerik/go3d/float64/vec3"
 	"math"
 	"os"
 	"testing"
@@ -46,20 +47,20 @@ func init() {
 	poses = []Transformation{}
 	for angle := 0.0; angle < maxAngle; angle += angleIncrement {
 		position := Point{
-			X: radius * math.Sin(angle),
-			Y: radius * math.Cos(angle),
-			Z: height,
+			radius * math.Sin(angle),
+			radius * math.Cos(angle),
+			height,
 		}
-		facingDirection := subtractPoints(cylinder.Center, position)
+		facingDirection := vec3.Sub(&cylinder.Center, &position)
 		desiredYaw := 0.0
-		if facingDirection.X > 1e-4 || facingDirection.Y > 1e-4 {
-			desiredYaw = math.Atan2(facingDirection.Y, facingDirection.X)
+		if facingDirection[0] > 1e-4 || facingDirection[1] > 1e-4 {
+			desiredYaw = math.Atan2(facingDirection[1], facingDirection[0])
 		}
 		qY := quaternion.FromYAxisAngle(-0.1)
 		qZ := quaternion.FromZAxisAngle(desiredYaw)
 		q := quaternion.Mul(&qY, &qZ)
 		transform := Transformation{
-			Position: *position.asVec3(),
+			Position: position,
 			Rotation: q,
 		}
 		poses = append(poses, transform)
@@ -102,7 +103,7 @@ func TestTsdfIntegrators(t *testing.T) {
 			maxDistance,
 		)
 		for _, point := range pointCloud.Points {
-			if point.X != 0.0 && point.Y != 0.0 && point.Z != 0.0 {
+			if point[0] != 0.0 && point[1] != 0.0 && point[2] != 0.0 {
 				simpleTsdfIntegrator.integratePointCloud(pose, pointCloud, false)
 			}
 		}

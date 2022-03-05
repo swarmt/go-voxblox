@@ -7,8 +7,7 @@ import (
 )
 
 type Object interface {
-	DistanceToPoint(Point) float64
-	RayIntersection(vec3.T, vec3.T, float64) (bool, Point, float64)
+	RayIntersection(Point, Point, float64) (bool, Point, float64)
 }
 
 type Cylinder struct {
@@ -18,38 +17,15 @@ type Cylinder struct {
 	Color  Color
 }
 
-func (c *Cylinder) DistanceToPoint(point Point) float64 {
-	// TODO: This seems like a simplified distance to cylinder.
-	// TODO: May or may not matter.
-	distance := 0.0
-	minZ := c.Center.X - c.Height/2.0
-	maxZ := c.Center.X + c.Height/2.0
-	if point.Z > minZ && point.Z < maxZ {
-		a := point.asVec2()
-		b := c.Center.asVec2()
-		distance = a.Sub(b).Length() - c.Radius
-	} else if point.Z > maxZ {
-		distance = math.Sqrt(
-			math.Max((point.asVec2().Sub(c.Center.asVec2())).LengthSqr()-c.Radius*c.Radius, 0.0) +
-				(point.Z-maxZ)*(point.Z-maxZ))
-
-	} else {
-		distance = math.Sqrt(
-			math.Max((point.asVec2().Sub(c.Center.asVec2())).LengthSqr()-c.Radius*c.Radius, 0.0) +
-				(point.Z-minZ)*(point.Z-minZ))
-	}
-	return distance
-}
-
 func (c *Cylinder) RayIntersection(
-	rayOrigin vec3.T,
+	rayOrigin Point,
 	rayDirection vec3.T,
 	maxDistance float64,
 ) (bool, Point, float64) {
 	var intersectPoint Point
 	var intersectDist float64
 
-	var vectorE = vec3.Sub(&rayOrigin, c.Center.asVec3())
+	var vectorE = vec3.Sub(&rayOrigin, &c.Center)
 	vectorD := rayDirection
 
 	A := vectorD[0]*vectorD[0] + vectorD[1]*vectorD[1]
@@ -133,7 +109,7 @@ func (c *Cylinder) RayIntersection(
 	}
 
 	iV := rayOrigin.Add(rayDirection.Scale(T))
-	intersectPoint = Point{X: iV[0], Y: iV[1], Z: iV[2]}
+	intersectPoint = Point{iV[0], iV[1], iV[2]}
 	intersectDist = T
 
 	return true, intersectPoint, intersectDist
@@ -146,15 +122,15 @@ type Plane struct {
 }
 
 func (plane *Plane) DistanceToPoint(point Point) float64 {
-	norm := plane.Normal.asVec3().Normalized()
-	d := -vec3.Dot(&norm, point.asVec3())
+	norm := plane.Normal.Normalized()
+	d := -vec3.Dot(&norm, &point)
 	p := d / norm.Length()
-	distance := vec3.Dot(&norm, plane.Center.asVec3()) - p
+	distance := vec3.Dot(&norm, &plane.Center) - p
 	return distance
 }
 
 func (plane *Plane) RayIntersection(
-	rayOrigin vec3.T,
+	rayOrigin Point,
 	rayDirection vec3.T,
 	maxDistance float64,
 ) (bool, Point, float64) {

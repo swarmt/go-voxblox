@@ -1,7 +1,6 @@
 package voxblox
 
 import (
-	"github.com/ungerik/go3d/float64/vec2"
 	"github.com/ungerik/go3d/float64/vec3"
 	"math"
 )
@@ -19,19 +18,9 @@ type PointCloud struct {
 	Points []Point
 }
 
-// Point is a matrix of 3x1
-// TODO: Is there a way to alias a vec3 matrix to X Y Z?
-type Point struct {
-	X, Y, Z float64
-}
-
-func (p Point) asVec2() *vec2.T {
-	return &vec2.T{p.X, p.Y}
-}
-
-func (p Point) asVec3() *vec3.T {
-	return &vec3.T{p.X, p.Y, p.Z}
-}
+// Point is 3x1 vector
+// X, Y, Z are the coordinates
+type Point = vec3.T
 
 func MaxInt(x, y int) int {
 	if x < y {
@@ -47,14 +36,6 @@ func MinInt(x, y int) int {
 	return x
 }
 
-func subtractPoints(a, b Point) Point {
-	return Point{a.X - b.X, a.Y - b.Y, a.Z - b.Z}
-}
-
-func addPoints(a, b Point) Point {
-	return Point{a.X + b.X, a.Y + b.Y, a.Z + b.Z}
-}
-
 func almostEqual(a, b, e float64) bool {
 	return math.Abs(a-b) <= e+kEpsilon
 }
@@ -62,25 +43,25 @@ func almostEqual(a, b, e float64) bool {
 // getGridIndexFromScaledPoint returns the grid index of a point given the coordinate
 func getGridIndexFromScaledPoint(scaledPoint Point) IndexType {
 	return IndexType{
-		int(math.Floor(scaledPoint.X + kEpsilon)),
-		int(math.Floor(scaledPoint.Y + kEpsilon)),
-		int(math.Floor(scaledPoint.Z + kEpsilon)),
+		int(math.Floor(scaledPoint[0] + kEpsilon)),
+		int(math.Floor(scaledPoint[1] + kEpsilon)),
+		int(math.Floor(scaledPoint[2] + kEpsilon)),
 	}
 }
 
 func getGridIndexFromPoint(point Point, blockSizeInv float64) IndexType {
 	return IndexType{
-		int(math.Floor(point.X*blockSizeInv + kEpsilon)),
-		int(math.Floor(point.Y*blockSizeInv + kEpsilon)),
-		int(math.Floor(point.Z*blockSizeInv + kEpsilon)),
+		int(math.Floor(point[0]*blockSizeInv + kEpsilon)),
+		int(math.Floor(point[1]*blockSizeInv + kEpsilon)),
+		int(math.Floor(point[2]*blockSizeInv + kEpsilon)),
 	}
 }
 
 func getGridIndexFromOriginPoint(point Point, blockSizeInv float64) IndexType {
 	return IndexType{
-		int(math.Round(point.X * blockSizeInv)),
-		int(math.Round(point.Y * blockSizeInv)),
-		int(math.Round(point.Z * blockSizeInv)),
+		int(math.Round(point[0] * blockSizeInv)),
+		int(math.Round(point[1] * blockSizeInv)),
+		int(math.Round(point[2] * blockSizeInv)),
 	}
 }
 

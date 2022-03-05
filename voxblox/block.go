@@ -1,5 +1,7 @@
 package voxblox
 
+import "github.com/ungerik/go3d/float64/vec3"
+
 type Status int
 
 const (
@@ -56,7 +58,7 @@ func (b *Block) getVoxelPtrByCoordinates(point Point) *TsdfVoxel {
 
 func (b *Block) computeTruncatedVoxelIndexFromCoordinates(point Point) IndexType {
 	maxValue := b.VoxelsPerSide - 1
-	voxelIndex := getGridIndexFromPoint(subtractPoints(point, b.Origin), b.VoxelSizeInv)
+	voxelIndex := getGridIndexFromPoint(vec3.Sub(&point, &b.Origin), b.VoxelSizeInv)
 	index := IndexType{
 		MaxInt(MinInt(voxelIndex[0], maxValue), 0.0),
 		MaxInt(MinInt(voxelIndex[1], maxValue), 0.0),
@@ -67,5 +69,5 @@ func (b *Block) computeTruncatedVoxelIndexFromCoordinates(point Point) IndexType
 
 func (b *Block) computeCoordinatesFromVoxelIndex(index IndexType) Point {
 	centerPoint := getCenterPointFromGridIndex(index, b.VoxelSize)
-	return addPoints(b.Origin, centerPoint)
+	return vec3.Add(&b.Origin, &centerPoint)
 }

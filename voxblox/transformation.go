@@ -12,6 +12,6 @@ type Transformation struct {
 
 // TransformPoint by rotation and translation.
 func (t Transformation) TransformPoint(point Point) vec3.T {
-	rotatedPoint := t.Rotation.RotatedVec3(point.asVec3())
+	rotatedPoint := t.Rotation.RotatedVec3(&point)
 	return vec3.Add(&rotatedPoint, &t.Position)
 }

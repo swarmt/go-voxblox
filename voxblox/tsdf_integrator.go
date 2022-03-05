@@ -1,9 +1,5 @@
 package voxblox
 
-import (
-	"github.com/ungerik/go3d/float64/vec3"
-)
-
 type TsdfIntegrator interface {
 	integratePointCloud(
 		pose Transformation,
@@ -47,7 +43,7 @@ func (i *SimpleTsdfIntegrator) integratePointCloud(
 
 	// Integrate the point cloud.
 	for _, point := range pointCloud.Points {
-		if point.X == 0 && point.Y == 0 && point.Z == 0 {
+		if point[0] == 0 && point[1] == 0 && point[2] == 0 {
 			continue
 		}
 		origin := pose.Position
@@ -58,7 +54,7 @@ func (i *SimpleTsdfIntegrator) integratePointCloud(
 	}
 }
 
-func isPointValid(i *SimpleTsdfIntegrator, point vec3.T, freeSpacePoint bool) (bool, bool) {
+func isPointValid(i *SimpleTsdfIntegrator, point Point, freeSpacePoint bool) (bool, bool) {
 	rayDistance := point.Length()
 	_ = rayDistance // TODO
 	return false, false
