@@ -75,3 +75,11 @@ func (l *TsdfLayer) getVoxelPtrByCoordinates(point Point) *TsdfVoxel {
 	}
 	return l.getVoxelPtrByCoordinates(point)
 }
+
+func allocateStorageAndGetVoxelPtr(layer *TsdfLayer, globalVoxelIndex IndexType) *TsdfVoxel {
+	blockIndex := getBlockIndexFromGlobalVoxelIndex(globalVoxelIndex, layer.VoxelsPerSideInv)
+	block := layer.getBlockPtrByIndex(blockIndex)
+	voxelIndex := getLocalFromGlobalVoxelIndex(globalVoxelIndex, blockIndex, layer.VoxelsPerSide)
+	voxel := block.getVoxel(voxelIndex)
+	return voxel
+}

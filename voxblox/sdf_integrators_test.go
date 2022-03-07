@@ -20,6 +20,7 @@ var (
 	fovHorizontal      float64
 	minDistance        float64
 	maxDistance        float64
+	maxWeight          float64
 )
 
 func init() {
@@ -71,6 +72,7 @@ func init() {
 	fovHorizontal = 150.0
 	minDistance = 0.1
 	maxDistance = 10.0
+	maxWeight = 1000.0
 	voxelCarving = true
 
 }
@@ -83,6 +85,7 @@ func TestTsdfIntegrators(t *testing.T) {
 		truncationDistance,
 		minDistance,
 		maxDistance,
+		maxWeight,
 		simpleLayer,
 	)
 
@@ -102,10 +105,72 @@ func TestTsdfIntegrators(t *testing.T) {
 			fovHorizontal,
 			maxDistance,
 		)
-		for _, point := range pointCloud.Points {
-			if point[0] != 0.0 && point[1] != 0.0 && point[2] != 0.0 {
-				simpleTsdfIntegrator.integratePointCloud(pose, pointCloud, false)
-			}
-		}
+		simpleTsdfIntegrator.integratePointCloud(pose, pointCloud)
+	}
+}
+
+func TestGetVoxelWeight(t *testing.T) {
+	pointC := Point{0.714538097, -2.8530097, -1.72378588}
+	weight := getVoxelWeight(pointC, false)
+	if !almostEqual(weight, 0.336537421, kEpsilon) {
+		t.Errorf("Expected weight to be 0.336537421, got %f", weight)
+	}
+	weight = getVoxelWeight(pointC, true)
+	if weight != 1.0 {
+		t.Errorf("Expected weight to be 1.0, got %f", weight)
+	}
+
+}
+
+func TestUpdateTsdfVoxel(t *testing.T) {
+	layer := NewTsdfLayer(voxelSize, voxelsPerSide)
+	origin := Point{0.0, 6.0, 2.0}
+	pointC := Point{0.714538097, -2.8530097, -1.72378588}
+	pointG := Point{-2.66666508, 5.2854619, 1.1920929e-07}
+	globalVoxelIndex := IndexType{0, 60, 20}
+	truncationDistance := 0.4
+	maxWeight := 1000.0
+	voxel := allocateStorageAndGetVoxelPtr(layer, globalVoxelIndex)
+	weight := getVoxelWeight(pointC, false)
+
+	updateTsdfVoxel(
+		layer,
+		origin,
+		pointG,
+		globalVoxelIndex,
+		Color{},
+		weight,
+		truncationDistance,
+		maxWeight,
+		voxel,
+	)
+
+	if !almostEqual(voxel.getDistance(), 0.4, kEpsilon) {
+		t.Errorf("Expected Tsdf to be 0.4, got %f", voxel.getDistance())
+	}
+	if !almostEqual(voxel.getWeight(), 0.336537421, kEpsilon) {
+		t.Errorf("Expected weight to be 0.336537421, got %f", voxel.getWeight())
+	}
+	if len(layer.Blocks) != 1 {
+		t.Errorf("Expected 1 block, got %d", len(layer.Blocks))
+	}
+
+	// Update the voxel again.
+	updateTsdfVoxel(
+		layer,
+		origin,
+		pointG,
+		globalVoxelIndex,
+		Color{},
+		weight,
+		truncationDistance,
+		maxWeight,
+		voxel,
+	)
+	if !almostEqual(voxel.getDistance(), 0.4, kEpsilon) {
+		t.Errorf("Expected Tsdf to be 0.4, got %f", voxel.getDistance())
+	}
+	if !almostEqual(voxel.getWeight(), 0.336537421*2, kEpsilon) {
+		t.Errorf("Expected weight to be 0.336537421 * 2, got %f", voxel.getWeight())
 	}
 }

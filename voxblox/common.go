@@ -8,7 +8,6 @@ import (
 // Constants
 const kEpsilon = 1e-6 // Used for coordinates
 
-// IndexType is the type used for indexing blocks and voxels.
 type IndexType = [3]int
 type Color = [3]uint8
 
@@ -21,6 +20,14 @@ type PointCloud struct {
 // Point is 3x1 vector
 // X, Y, Z are the coordinates
 type Point = vec3.T
+
+func AddIndex(a IndexType, b IndexType) IndexType {
+	return IndexType{a[0] + b[0], a[1] + b[1], a[2] + b[2]}
+}
+
+func SubIndex(a IndexType, b IndexType) IndexType {
+	return IndexType{a[0] - b[0], a[1] - b[1], a[2] - b[2]}
+}
 
 func MaxInt(x, y int) int {
 	if x < y {
@@ -38,6 +45,20 @@ func MinInt(x, y int) int {
 
 func almostEqual(a, b, e float64) bool {
 	return math.Abs(a-b) <= e+kEpsilon
+}
+
+func Sgn(a float64) int {
+	switch {
+	case a < 0:
+		return -1
+	case a > 0:
+		return +1
+	}
+	return 0
+}
+
+func IndexToFloat(index IndexType) vec3.T {
+	return vec3.T{float64(index[0]), float64(index[1]), float64(index[2])}
 }
 
 // getGridIndexFromScaledPoint returns the grid index of a point given the coordinate
@@ -78,5 +99,28 @@ func getCenterPointFromGridIndex(idx IndexType, gridSize float64) Point {
 		(float64(idx[0]) + 0.5) * gridSize,
 		(float64(idx[1]) + 0.5) * gridSize,
 		(float64(idx[2]) + 0.5) * gridSize,
+	}
+}
+
+func getBlockIndexFromGlobalVoxelIndex(
+	globalVoxelIndex IndexType,
+	voxelsPerSideInv float64,
+) IndexType {
+	return IndexType{
+		int(math.Floor(float64(globalVoxelIndex[0]) * voxelsPerSideInv)),
+		int(math.Floor(float64(globalVoxelIndex[1]) * voxelsPerSideInv)),
+		int(math.Floor(float64(globalVoxelIndex[2]) * voxelsPerSideInv)),
+	}
+}
+
+func getLocalFromGlobalVoxelIndex(
+	globalVoxelIndex IndexType,
+	blockIndex IndexType,
+	voxelsPerSide int,
+) IndexType {
+	return IndexType{
+		globalVoxelIndex[0] - blockIndex[0]*voxelsPerSide,
+		globalVoxelIndex[1] - blockIndex[1]*voxelsPerSide,
+		globalVoxelIndex[2] - blockIndex[2]*voxelsPerSide,
 	}
 }

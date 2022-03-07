@@ -165,13 +165,25 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 
 	pointIn000center := block000.computeCoordinatesFromVoxelIndex(voxelIndex)
 	if !almostEqual(pointIn000center[0], pointIn000[0], tsdfMap.TsdfVoxelSize) {
-		t.Errorf("Expected pointIn000center[0] to be %f, got %f", pointIn000[0], pointIn000center[0])
+		t.Errorf(
+			"Expected pointIn000center[0] to be %f, got %f",
+			pointIn000[0],
+			pointIn000center[0],
+		)
 	}
 	if !almostEqual(pointIn000center[1], pointIn000[1], tsdfMap.TsdfVoxelSize) {
-		t.Errorf("Expected pointIn000center[1] to be %f, got %f", pointIn000[1], pointIn000center[1])
+		t.Errorf(
+			"Expected pointIn000center[1] to be %f, got %f",
+			pointIn000[1],
+			pointIn000center[1],
+		)
 	}
 	if !almostEqual(pointIn000center[2], pointIn000[2], tsdfMap.TsdfVoxelSize) {
-		t.Errorf("Expected pointIn000center[2] to be %f, got %f", pointIn000[2], pointIn000center[2])
+		t.Errorf(
+			"Expected pointIn000center[2] to be %f, got %f",
+			pointIn000[2],
+			pointIn000center[2],
+		)
 	}
 
 	// Voxel 0 0 0
@@ -185,13 +197,25 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 	}
 	pointIn000center = block000.computeCoordinatesFromVoxelIndex(voxelIndex)
 	if !almostEqual(pointIn000center[0], pointIn000[0], tsdfMap.TsdfVoxelSize) {
-		t.Errorf("Expected pointIn000center[0] to be %f, got %f", pointIn000[0], pointIn000center[0])
+		t.Errorf(
+			"Expected pointIn000center[0] to be %f, got %f",
+			pointIn000[0],
+			pointIn000center[0],
+		)
 	}
 	if !almostEqual(pointIn000center[1], pointIn000[1], tsdfMap.TsdfVoxelSize) {
-		t.Errorf("Expected pointIn000center[1] to be %f, got %f", pointIn000[1], pointIn000center[1])
+		t.Errorf(
+			"Expected pointIn000center[1] to be %f, got %f",
+			pointIn000[1],
+			pointIn000center[1],
+		)
 	}
 	if !almostEqual(pointIn000center[2], pointIn000[2], tsdfMap.TsdfVoxelSize) {
-		t.Errorf("Expected pointIn000center[2] to be %f, got %f", pointIn000[2], pointIn000center[2])
+		t.Errorf(
+			"Expected pointIn000center[2] to be %f, got %f",
+			pointIn000[2],
+			pointIn000center[2],
+		)
 	}
 
 	// Voxel 7 7 7
@@ -209,13 +233,25 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 	}
 	pointIn000center = block000.computeCoordinatesFromVoxelIndex(voxelIndex)
 	if !almostEqual(pointIn000center[0], pointIn000[0], tsdfMap.TsdfVoxelSize) {
-		t.Errorf("Expected pointIn000center[0] to be %f, got %f", pointIn000[0], pointIn000center[0])
+		t.Errorf(
+			"Expected pointIn000center[0] to be %f, got %f",
+			pointIn000[0],
+			pointIn000center[0],
+		)
 	}
 	if !almostEqual(pointIn000center[1], pointIn000[1], tsdfMap.TsdfVoxelSize) {
-		t.Errorf("Expected pointIn000center[1] to be %f, got %f", pointIn000[1], pointIn000center[1])
+		t.Errorf(
+			"Expected pointIn000center[1] to be %f, got %f",
+			pointIn000[1],
+			pointIn000center[1],
+		)
 	}
 	if !almostEqual(pointIn000center[2], pointIn000[2], tsdfMap.TsdfVoxelSize) {
-		t.Errorf("Expected pointIn000center[2] to be %f, got %f", pointIn000[2], pointIn000center[2])
+		t.Errorf(
+			"Expected pointIn000center[2] to be %f, got %f",
+			pointIn000[2],
+			pointIn000center[2],
+		)
 	}
 
 	// Block -1 -1 -1
