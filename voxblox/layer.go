@@ -108,6 +108,12 @@ func (l *TsdfLayer) getVoxelPtrByCoordinates(point Point) *TsdfVoxel {
 	return l.getVoxelPtrByCoordinates(point)
 }
 
+func (l *TsdfLayer) getBlocks() map[IndexType]*Block {
+	l.mutex.RLock()
+	defer l.mutex.RUnlock()
+	return l.blocks
+}
+
 // allocateStorageAndGetVoxelPtr allocates a new block in the map and returns a pointer to the voxel
 func allocateStorageAndGetVoxelPtr(layer *TsdfLayer, globalVoxelIndex IndexType) *TsdfVoxel {
 	blockIndex := getBlockIndexFromGlobalVoxelIndex(globalVoxelIndex, layer.getVoxelsPerSideInv())
