@@ -16,29 +16,17 @@ type TsdfIntegrator interface {
 }
 
 type SimpleTsdfIntegrator struct {
-	VoxelCarving       bool
-	TruncationDistance float64
-	MinDistance        float64
-	MaxDistance        float64
-	MaxWeight          float64
-	Layer              *TsdfLayer
+	Config Config
+	layer  *TsdfLayer
 }
 
 func NewSimpleTsdfIntegrator(
-	voxelCarving bool,
-	truncationDistance float64,
-	minDistance float64,
-	maxDistance float64,
-	maxWeight float64,
+	config Config,
 	layer *TsdfLayer,
 ) *SimpleTsdfIntegrator {
 	return &SimpleTsdfIntegrator{
-		VoxelCarving:       voxelCarving,
-		TruncationDistance: truncationDistance,
-		MinDistance:        minDistance,
-		MaxDistance:        maxDistance,
-		MaxWeight:          maxWeight,
-		Layer:              layer,
+		Config: config,
+		layer:  layer,
 	}
 }
 
@@ -96,10 +84,7 @@ func updateTsdfVoxel(
 	voxel.setWeight(newWeight)
 }
 
-func getVoxelWeight(pointC Point, useConstWeight bool) float64 {
-	if useConstWeight {
-		return 1.0
-	}
+func getVoxelWeight(pointC Point) float64 {
 	distZ := math.Abs(pointC[2])
 	if distZ > kEpsilon {
 		return 1.0 / (distZ * distZ)
@@ -109,36 +94,38 @@ func getVoxelWeight(pointC Point, useConstWeight bool) float64 {
 
 func (i *SimpleTsdfIntegrator) integratePoint(pose Transformation, points []Point) {
 	for _, point := range points {
-		ray := validateRay(point, i.MinDistance, i.MaxDistance, i.VoxelCarving)
+		ray := validateRay(point, i.Config.MinRange, i.Config.MaxRange, i.Config.AllowCarving)
 		if ray.Valid {
 			//Transform the point into the global frame.
 			ray.Origin = pose.Position
 			ray.Point = pose.transformPoint(point)
 
 			// Create a new Ray-caster.
-			// TODO: Allow clearing from config
 			rayCaster := NewRayCaster(
 				ray,
-				i.Layer.getVoxelSizeInv(),
-				i.TruncationDistance,
-				i.MaxDistance,
-				true,
+				i.layer.getVoxelSizeInv(),
+				i.Config.TruncationDistance,
+				i.Config.MaxRange,
+				i.Config.AllowClearing,
 			)
 			var globalVoxelIdx IndexType
 			for rayCaster.nextRayIndex(&globalVoxelIdx) {
-				voxel := allocateStorageAndGetVoxelPtr(i.Layer, globalVoxelIdx)
-				// TODO: weight drop off in config
-				weight := getVoxelWeight(point, false)
+				voxel := allocateStorageAndGetVoxelPtr(i.layer, globalVoxelIdx)
+				// TODO: weight drop off in Config
+				weight := 1.0
+				if !i.Config.ConstWeight {
+					weight = getVoxelWeight(point)
+				}
 				// TODO: Voxel color
 				updateTsdfVoxel(
-					i.Layer,
+					i.layer,
 					ray.Origin,
 					ray.Point,
 					globalVoxelIdx,
 					Color{},
 					weight,
-					i.TruncationDistance,
-					i.MaxWeight,
+					i.Config.TruncationDistance,
+					i.Config.MaxWeight,
 					voxel,
 				)
 			}
