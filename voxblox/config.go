@@ -10,4 +10,5 @@ type Config struct {
 	AllowClearing      bool    `yaml:"allow_clearing"`
 	MaxWeight          float64 `yaml:"max_weight"`
 	ConstWeight        bool    `yaml:"const_weight"`
+	IntegratorThreads  int     `yaml:"integrator_threads"`
 }

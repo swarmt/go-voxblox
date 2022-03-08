@@ -74,29 +74,3 @@ func TestRayIntersectionCylinder(t *testing.T) {
 		t.Errorf("Ray should not intersect cylinder")
 	}
 }
-
-func TestDistanceToPlane(t *testing.T) {
-	plane := Plane{
-		Normal: Point{0.0, 0.0, 1.0},
-		Center: Point{0.0, 0.0, 0.0},
-	}
-	if plane.DistanceToPoint(Point{0.0, 0.0, 10.0}) != 10.0 {
-		t.Errorf("Incorrect distance to plane")
-	}
-	if plane.DistanceToPoint(Point{0.0, 0.0, -10.0}) != -10.0 {
-		t.Errorf("Incorrect distance to plane")
-	}
-	if plane.DistanceToPoint(Point{1.0, 1.0, 1.0}) != 1.0 {
-		t.Errorf("Incorrect distance to plane")
-	}
-	if plane.DistanceToPoint(Point{1.0, 1.0, 1.0}) != 1.0 {
-		t.Errorf("Incorrect distance to plane")
-	}
-	plane = Plane{
-		Normal: Point{1.2, 8.6, 2.0},
-		Center: Point{0.0, 0.0, 0.0},
-	}
-	if !almostEqual(plane.DistanceToPoint(Point{2.2, 1.0, 10.0}), 3.505910087489654, 0.0) {
-		t.Errorf("Incorrect distance to plane")
-	}
-}

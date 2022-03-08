@@ -1,10 +1,8 @@
 package voxblox
 
 import (
-	"math"
-	"runtime"
-
 	"github.com/ungerik/go3d/float64/vec3"
+	"math"
 )
 
 type TsdfIntegrator interface {
@@ -84,7 +82,7 @@ func updateTsdfVoxel(
 	voxel.setWeight(newWeight)
 }
 
-func getVoxelWeight(pointC Point) float64 {
+func calculateWeight(pointC Point) float64 {
 	distZ := math.Abs(pointC[2])
 	if distZ > kEpsilon {
 		return 1.0 / (distZ * distZ)
@@ -111,10 +109,9 @@ func (i *SimpleTsdfIntegrator) integratePoint(pose Transformation, points []Poin
 			var globalVoxelIdx IndexType
 			for rayCaster.nextRayIndex(&globalVoxelIdx) {
 				voxel := allocateStorageAndGetVoxelPtr(i.layer, globalVoxelIdx)
-				// TODO: weight drop off in Config
 				weight := 1.0
 				if !i.Config.ConstWeight {
-					weight = getVoxelWeight(point)
+					weight = calculateWeight(point)
 				}
 				// TODO: Voxel color
 				updateTsdfVoxel(
@@ -137,14 +134,13 @@ func (i *SimpleTsdfIntegrator) integratePointCloud(
 	pose Transformation,
 	pointCloud PointCloud,
 ) {
-	// Integrate the point cloud points with multiple cores
-	// TODO: Configurable number of cores
-	numCores := runtime.NumCPU()
-	numPointsPerCore := len(pointCloud.Points) / numCores
-	for coreIdx := 0; coreIdx < numCores; coreIdx++ {
-		startIdx := coreIdx * numPointsPerCore
-		endIdx := (coreIdx + 1) * numPointsPerCore
-		if coreIdx == numCores-1 {
+	// Integrate the point cloud points with multiple threads
+	nThreads := i.Config.IntegratorThreads
+	nPointsPerThread := len(pointCloud.Points) / nThreads
+	for threadIdx := 0; threadIdx < nThreads; threadIdx++ {
+		startIdx := threadIdx * nPointsPerThread
+		endIdx := (threadIdx + 1) * nPointsPerThread
+		if threadIdx == nThreads-1 {
 			endIdx = len(pointCloud.Points)
 		}
 		go i.integratePoint(pose, pointCloud.Points[startIdx:endIdx])

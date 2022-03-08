@@ -30,6 +30,7 @@ func init() {
 		AllowClearing:      true,
 		AllowCarving:       true,
 		ConstWeight:        false,
+		IntegratorThreads:  8,
 	}
 
 	// Create a test environment.
@@ -104,7 +105,7 @@ func TestTsdfIntegrators(t *testing.T) {
 
 func TestGetVoxelWeight(t *testing.T) {
 	pointC := Point{0.714538097, -2.8530097, -1.72378588}
-	weight := getVoxelWeight(pointC)
+	weight := calculateWeight(pointC)
 	if !almostEqual(weight, 0.336537421, kEpsilon) {
 		t.Errorf("Expected weight to be 0.336537421, got %f", weight)
 	}
@@ -119,7 +120,7 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 	truncationDistance := 0.4
 	maxWeight := 1000.0
 	voxel := allocateStorageAndGetVoxelPtr(layer, globalVoxelIndex)
-	weight := getVoxelWeight(pointC)
+	weight := calculateWeight(pointC)
 
 	updateTsdfVoxel(
 		layer,

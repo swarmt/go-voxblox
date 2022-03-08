@@ -121,14 +121,6 @@ type Plane struct {
 	Color  Color
 }
 
-func (plane *Plane) DistanceToPoint(point Point) float64 {
-	norm := plane.Normal.Normalized()
-	d := -vec3.Dot(&norm, &point)
-	p := d / norm.Length()
-	distance := vec3.Dot(&norm, &plane.Center) - p
-	return distance
-}
-
 func (plane *Plane) RayIntersection(
 	rayOrigin Point,
 	rayDirection vec3.T,
