@@ -3,6 +3,7 @@ package voxblox
 import (
 	"github.com/ungerik/go3d/float64/vec3"
 	"math"
+	"runtime"
 )
 
 type TsdfIntegrator interface {
@@ -61,12 +62,12 @@ func updateTsdfVoxel(
 	maxWeight float64,
 	voxel *TsdfVoxel,
 ) {
-	voxelCenter := getCenterPointFromGridIndex(globalVoxelIndex, layer.VoxelSize)
+	voxelCenter := getCenterPointFromGridIndex(globalVoxelIndex, layer.GetVoxelSize())
 	sdf := computeDistance(origin, pointG, voxelCenter)
 
 	updatedWeight := weight
 
-	// TODO: weight drop off
+	// TODO: Weight drop off
 
 	// TODO: Sparsity compensation
 
@@ -105,12 +106,8 @@ func getVoxelWeight(pointC Point, useConstWeight bool) float64 {
 	return 0.0
 }
 
-func (i *SimpleTsdfIntegrator) integratePointCloud(
-	pose Transformation,
-	pointCloud PointCloud,
-) {
-	// Integrate the point cloud.
-	for _, point := range pointCloud.Points {
+func (i *SimpleTsdfIntegrator) integratePoint(pose Transformation, points []Point) {
+	for _, point := range points {
 		ray := validateRay(point, i.MinDistance, i.MaxDistance, i.VoxelCarving)
 		if ray.Valid {
 			//Transform the point into the global frame.
@@ -118,10 +115,10 @@ func (i *SimpleTsdfIntegrator) integratePointCloud(
 			ray.Point = pose.TransformPoint(point)
 
 			// Create a new Ray-caster.
-			// TODO: Allow clearing
+			// TODO: Allow clearing from config
 			rayCaster := NewRayCaster(
 				ray,
-				i.Layer.VoxelSizeInv,
+				i.Layer.GetVoxelSizeInv(),
 				i.TruncationDistance,
 				i.MaxDistance,
 				true,
@@ -146,4 +143,23 @@ func (i *SimpleTsdfIntegrator) integratePointCloud(
 			}
 		}
 	}
+}
+
+func (i *SimpleTsdfIntegrator) integratePointCloud(
+	pose Transformation,
+	pointCloud PointCloud,
+) {
+	// Integrate the point cloud points with multiple cores
+	// TODO: Configurable number of cores
+	numCores := runtime.NumCPU()
+	numPointsPerCore := len(pointCloud.Points) / numCores
+	for coreIdx := 0; coreIdx < numCores; coreIdx++ {
+		startIdx := coreIdx * numPointsPerCore
+		endIdx := (coreIdx + 1) * numPointsPerCore
+		if coreIdx == numCores-1 {
+			endIdx = len(pointCloud.Points)
+		}
+		go i.integratePoint(pose, pointCloud.Points[startIdx:endIdx])
+	}
+
 }

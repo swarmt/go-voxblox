@@ -5,7 +5,6 @@ import (
 	"github.com/ungerik/go3d/float64/vec2"
 	"github.com/ungerik/go3d/float64/vec3"
 	"math"
-	"os"
 	"testing"
 )
 
@@ -93,10 +92,6 @@ func TestTsdfIntegrators(t *testing.T) {
 
 	// TODO: Fast integrator
 
-	// Create a text file to store the results.
-	file, _ := os.Create("pointcloud.txt")
-	defer file.Close()
-
 	// Iterate over all poses and integrate.
 	for _, pose := range poses {
 		pointCloud := world.getPointCloudFromTransform(
@@ -107,6 +102,12 @@ func TestTsdfIntegrators(t *testing.T) {
 		)
 		simpleTsdfIntegrator.integratePointCloud(pose, pointCloud)
 	}
+
+	// Check the number of blocks in the layers
+	if len(simpleLayer.blocks) == 0 {
+		t.Errorf("No blocks in simple layer")
+	}
+
 }
 
 func TestGetVoxelWeight(t *testing.T) {
@@ -151,8 +152,8 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 	if !almostEqual(voxel.getWeight(), 0.336537421, kEpsilon) {
 		t.Errorf("Expected weight to be 0.336537421, got %f", voxel.getWeight())
 	}
-	if len(layer.Blocks) != 1 {
-		t.Errorf("Expected 1 block, got %d", len(layer.Blocks))
+	if len(layer.blocks) != 1 {
+		t.Errorf("Expected 1 block, got %d", len(layer.blocks))
 	}
 
 	// Update the voxel again.

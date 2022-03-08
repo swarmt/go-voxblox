@@ -17,19 +17,19 @@ func init() {
 func TestTsdfMapBlockAllocation(t *testing.T) {
 	// TsdfLayer should have no blocks by default
 	if tsdfMap.GetTsdfLayerPtr().getNumberOfAllocatedBlocks() != 0 {
-		t.Errorf("Expected no blocks in Layer, got %d", len(tsdfMap.TsdfLayer.Blocks))
+		t.Errorf("Expected no blocks in Layer, got %d", len(tsdfMap.TsdfLayer.blocks))
 	}
 	tsdfMap.GetTsdfLayerPtr().allocateNewBlockByCoordinates(Point{0, 0.15, 0})
 	if tsdfMap.GetTsdfLayerPtr().getNumberOfAllocatedBlocks() != 1 {
-		t.Errorf("Expected one block in Layer, got %d", len(tsdfMap.TsdfLayer.Blocks))
+		t.Errorf("Expected one block in Layer, got %d", len(tsdfMap.TsdfLayer.blocks))
 	}
 	tsdfMap.GetTsdfLayerPtr().allocateNewBlockByCoordinates(Point{0, 0.13, 0})
 	if tsdfMap.GetTsdfLayerPtr().getNumberOfAllocatedBlocks() != 1 {
-		t.Errorf("Expected one block in Layer, got %d", len(tsdfMap.TsdfLayer.Blocks))
+		t.Errorf("Expected one block in Layer, got %d", len(tsdfMap.TsdfLayer.blocks))
 	}
 	tsdfMap.GetTsdfLayerPtr().allocateNewBlockByCoordinates(Point{-10.0, 13.5, 20.0})
 	if tsdfMap.GetTsdfLayerPtr().getNumberOfAllocatedBlocks() != 2 {
-		t.Errorf("Expected two blocks in Layer, got %d", len(tsdfMap.TsdfLayer.Blocks))
+		t.Errorf("Expected two blocks in Layer, got %d", len(tsdfMap.TsdfLayer.blocks))
 	}
 }
 
@@ -99,7 +99,7 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 		t.Errorf("Expected block111.BlockIndex to be {1, 1, 1}, got %v", block111.BlockIndex)
 	}
 	if block111v2.BlockSize != blockSize {
-		t.Errorf("Expected block111.BlockSize to be %f, got %f", blockSize, block111v2.BlockSize)
+		t.Errorf("Expected block111.blockSize to be %f, got %f", blockSize, block111v2.BlockSize)
 	}
 
 	// BLOCK -1 -1 -1 (coordinate at origin)
@@ -118,7 +118,7 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 	}
 	if blockNeg111.BlockSize != blockSize {
 		t.Errorf(
-			"Expected blockNeg111.BlockSize to be %f, got %f",
+			"Expected blockNeg111.blockSize to be %f, got %f",
 			blockSize,
 			blockNeg111.BlockSize,
 		)
@@ -142,7 +142,7 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 	}
 	if blockNeg111v2.BlockSize != blockSize {
 		t.Errorf(
-			"Expected blockNeg111.BlockSize to be %f, got %f",
+			"Expected blockNeg111.blockSize to be %f, got %f",
 			blockSize,
 			blockNeg111v2.BlockSize,
 		)

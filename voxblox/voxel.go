@@ -6,7 +6,7 @@ type TsdfVoxel struct {
 	Index    IndexType
 	distance float64
 	weight   float64
-	mutex    sync.RWMutex // TODO: I'm going to try using a mutex per voxel for its simplicity. May need to change this later.
+	mutex    sync.RWMutex
 }
 
 func (v *TsdfVoxel) getWeight() float64 {

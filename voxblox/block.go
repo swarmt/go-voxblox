@@ -1,6 +1,9 @@
 package voxblox
 
-import "github.com/ungerik/go3d/float64/vec3"
+import (
+	"github.com/ungerik/go3d/float64/vec3"
+	"sync"
+)
 
 type Status int
 
@@ -23,6 +26,7 @@ type Block struct {
 	BlockSize     float64
 	BlockSizeInv  float64
 	Voxels        map[IndexType]*TsdfVoxel
+	mutex         sync.RWMutex
 }
 
 func NewBlock(voxelsPerSide int, voxelSize float64, index IndexType, origin Point) *Block {
@@ -43,12 +47,18 @@ func NewBlock(voxelsPerSide int, voxelSize float64, index IndexType, origin Poin
 
 // getBlock allocates a new block in the map
 func (b *Block) getVoxel(voxelIndex IndexType) *TsdfVoxel {
-	// Test if block already exists
-	if voxel, ok := b.Voxels[voxelIndex]; ok {
+	// Test if voxel already exists
+	b.mutex.RLock()
+	voxel, ok := b.Voxels[voxelIndex]
+	b.mutex.RUnlock()
+	if ok {
 		return voxel
 	}
+	// Create a new voxel
 	newVoxel := NewVoxel(voxelIndex)
+	b.mutex.Lock()
 	b.Voxels[voxelIndex] = newVoxel
+	b.mutex.Unlock()
 	return newVoxel
 }
 
