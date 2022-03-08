@@ -55,7 +55,7 @@ func TestRayCaster(t *testing.T) {
 	}
 	//Transform the point into the global frame.
 	ray.Origin = pose.Position
-	ray.Point = pose.TransformPoint(point)
+	ray.Point = pose.transformPoint(point)
 	voxelSizeInv := 10.0
 	truncationDistance := 0.4
 

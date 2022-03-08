@@ -3,10 +3,16 @@ package voxblox
 import "sync"
 
 type TsdfVoxel struct {
-	Index    IndexType
+	index    IndexType
 	distance float64
 	weight   float64
 	mutex    sync.RWMutex
+}
+
+func (v *TsdfVoxel) getIndex() IndexType {
+	v.mutex.RLock()
+	defer v.mutex.RUnlock()
+	return v.index
 }
 
 func (v *TsdfVoxel) getWeight() float64 {
@@ -35,7 +41,7 @@ func (v *TsdfVoxel) setDistance(distance float64) {
 
 func NewVoxel(index IndexType) *TsdfVoxel {
 	return &TsdfVoxel{
-		Index: index,
+		index: index,
 		mutex: sync.RWMutex{},
 	}
 }

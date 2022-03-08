@@ -25,31 +25,37 @@ func NewTsdfLayer(voxelSize float64, voxelsPerSide int) *TsdfLayer {
 	return l
 }
 
-func (l *TsdfLayer) GetVoxelsPerSide() int {
+func (l *TsdfLayer) getBlockSizeInv() float64 {
+	l.mutex.RLock()
+	defer l.mutex.RUnlock()
+	return l.blockSizeInv
+}
+
+func (l *TsdfLayer) getVoxelsPerSide() int {
 	l.mutex.RLock()
 	defer l.mutex.RUnlock()
 	return l.voxelsPerSide
 }
 
-func (l *TsdfLayer) GetVoxelsPerSideInv() float64 {
+func (l *TsdfLayer) getVoxelsPerSideInv() float64 {
 	l.mutex.RLock()
 	defer l.mutex.RUnlock()
 	return l.voxelsPerSideInv
 }
 
-func (l *TsdfLayer) GetVoxelSize() float64 {
+func (l *TsdfLayer) getVoxelSize() float64 {
 	l.mutex.RLock()
 	defer l.mutex.RUnlock()
 	return l.voxelSize
 }
 
-func (l *TsdfLayer) GetVoxelSizeInv() float64 {
+func (l *TsdfLayer) getVoxelSizeInv() float64 {
 	l.mutex.RLock()
 	defer l.mutex.RUnlock()
 	return l.voxelSizeInv
 }
 
-func (l *TsdfLayer) GetBlockSize() float64 {
+func (l *TsdfLayer) getBlockSize() float64 {
 	l.mutex.RLock()
 	defer l.mutex.RUnlock()
 	return l.blockSize
@@ -57,6 +63,8 @@ func (l *TsdfLayer) GetBlockSize() float64 {
 
 // getNumberOfAllocatedBlocks returns the number of blocks allocated in the map
 func (l *TsdfLayer) getNumberOfAllocatedBlocks() int {
+	l.mutex.RLock()
+	defer l.mutex.RUnlock()
 	return len(l.blocks)
 }
 
@@ -70,10 +78,10 @@ func (l *TsdfLayer) getBlock(blockIndex IndexType) *Block {
 		return block
 	}
 	newBlock := NewBlock(
-		l.GetVoxelsPerSide(),
-		l.GetVoxelSize(),
+		l.getVoxelsPerSide(),
+		l.getVoxelSize(),
 		blockIndex,
-		getOriginPointFromGridIndex(blockIndex, l.GetBlockSize()),
+		getOriginPointFromGridIndex(blockIndex, l.getBlockSize()),
 	)
 	l.mutex.Lock()
 	l.blocks[blockIndex] = newBlock
@@ -81,15 +89,9 @@ func (l *TsdfLayer) getBlock(blockIndex IndexType) *Block {
 	return newBlock
 }
 
-// allocateNewBlockByCoordinates allocates a new block in the map by coordinates
-// TODO: This and getBlockPtrByCoordinates should be merged as they are interchangeable
-func (l *TsdfLayer) allocateNewBlockByCoordinates(point Point) *Block {
-	return l.getBlock(getGridIndexFromPoint(point, l.blockSizeInv))
-}
-
 // computeBlockIndexFromCoordinates computes the block index from coordinates
 func (l *TsdfLayer) computeBlockIndexFromCoordinates(point Point) IndexType {
-	return getGridIndexFromPoint(point, l.blockSizeInv)
+	return getGridIndexFromPoint(point, l.getBlockSizeInv())
 }
 
 // getBlockPtrByCoordinates returns a pointer to the block in the map by coordinates
@@ -97,6 +99,7 @@ func (l *TsdfLayer) getBlockPtrByCoordinates(point Point) *Block {
 	return l.getBlock(l.computeBlockIndexFromCoordinates(point))
 }
 
+// getVoxelPtrByCoordinates returns a pointer to the voxel in the block in the map by coordinates
 func (l *TsdfLayer) getVoxelPtrByCoordinates(point Point) *TsdfVoxel {
 	block := l.getBlock(l.computeBlockIndexFromCoordinates(point))
 	if block == nil {
@@ -105,10 +108,11 @@ func (l *TsdfLayer) getVoxelPtrByCoordinates(point Point) *TsdfVoxel {
 	return l.getVoxelPtrByCoordinates(point)
 }
 
+// allocateStorageAndGetVoxelPtr allocates a new block in the map and returns a pointer to the voxel
 func allocateStorageAndGetVoxelPtr(layer *TsdfLayer, globalVoxelIndex IndexType) *TsdfVoxel {
-	blockIndex := getBlockIndexFromGlobalVoxelIndex(globalVoxelIndex, layer.GetVoxelsPerSideInv())
+	blockIndex := getBlockIndexFromGlobalVoxelIndex(globalVoxelIndex, layer.getVoxelsPerSideInv())
 	block := layer.getBlock(blockIndex)
-	voxelIndex := getLocalFromGlobalVoxelIndex(globalVoxelIndex, blockIndex, layer.GetVoxelsPerSide())
+	voxelIndex := getLocalFromGlobalVoxelIndex(globalVoxelIndex, blockIndex, layer.getVoxelsPerSide())
 	voxel := block.getVoxel(voxelIndex)
 	return voxel
 }

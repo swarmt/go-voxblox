@@ -62,7 +62,7 @@ func updateTsdfVoxel(
 	maxWeight float64,
 	voxel *TsdfVoxel,
 ) {
-	voxelCenter := getCenterPointFromGridIndex(globalVoxelIndex, layer.GetVoxelSize())
+	voxelCenter := getCenterPointFromGridIndex(globalVoxelIndex, layer.getVoxelSize())
 	sdf := computeDistance(origin, pointG, voxelCenter)
 
 	updatedWeight := weight
@@ -112,13 +112,13 @@ func (i *SimpleTsdfIntegrator) integratePoint(pose Transformation, points []Poin
 		if ray.Valid {
 			//Transform the point into the global frame.
 			ray.Origin = pose.Position
-			ray.Point = pose.TransformPoint(point)
+			ray.Point = pose.transformPoint(point)
 
 			// Create a new Ray-caster.
 			// TODO: Allow clearing from config
 			rayCaster := NewRayCaster(
 				ray,
-				i.Layer.GetVoxelSizeInv(),
+				i.Layer.getVoxelSizeInv(),
 				i.TruncationDistance,
 				i.MaxDistance,
 				true,

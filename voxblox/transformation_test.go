@@ -11,7 +11,7 @@ func TestTransformPoint(t *testing.T) {
 		Position: vec3.T{0, 6, 2},
 		Rotation: quaternion.T{0.0353406072, -0.0353406072, -0.706223071, 0.706223071},
 	}
-	point := transformation.TransformPoint(Point{0.714538097, -2.8530097, -1.72378588})
+	point := transformation.transformPoint(Point{0.714538097, -2.8530097, -1.72378588})
 	if !almostEqual(point[0], -2.66666508, 0.0) {
 		t.Errorf("Expected %f, got %f", -2.66666508, point[0])
 	}

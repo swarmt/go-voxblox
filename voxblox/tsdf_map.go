@@ -1,19 +1,19 @@
 package voxblox
 
 type TsdfMap struct {
-	TsdfVoxelSize     float64
-	TsdfVoxelsPerSide int
-	TsdfLayer         *TsdfLayer
+	voxelSize     float64
+	voxelsPerSide int
+	layer         *TsdfLayer
 }
 
-func NewTsdfMap(tsdfVoxelSize float64, tsdfVoxelsPerSide int) *TsdfMap {
+func NewTsdfMap(voxelSize float64, voxelsPerSide int) *TsdfMap {
 	m := new(TsdfMap)
-	m.TsdfVoxelSize = tsdfVoxelSize
-	m.TsdfVoxelsPerSide = tsdfVoxelsPerSide
-	m.TsdfLayer = NewTsdfLayer(m.TsdfVoxelSize, m.TsdfVoxelsPerSide)
+	m.voxelSize = voxelSize
+	m.voxelsPerSide = voxelsPerSide
+	m.layer = NewTsdfLayer(voxelSize, voxelsPerSide)
 	return m
 }
 
 func (t *TsdfMap) GetTsdfLayerPtr() *TsdfLayer {
-	return t.TsdfLayer
+	return t.layer
 }

@@ -10,8 +10,8 @@ type Transformation struct {
 	Rotation quaternion.T
 }
 
-// TransformPoint by rotation and translation.
-func (t Transformation) TransformPoint(point Point) vec3.T {
+// transformPoint by rotation and translation.
+func (t Transformation) transformPoint(point Point) vec3.T {
 	rotatedPoint := t.Rotation.RotatedVec3(&point)
 	return vec3.Add(&rotatedPoint, &t.Position)
 }
