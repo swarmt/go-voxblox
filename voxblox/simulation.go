@@ -1,10 +1,11 @@
 package voxblox
 
 import (
+	"math"
+
 	"github.com/ungerik/go3d/float64/quaternion"
 	"github.com/ungerik/go3d/float64/vec2"
 	"github.com/ungerik/go3d/float64/vec3"
-	"math"
 )
 
 type ShapeType int
@@ -16,7 +17,7 @@ type SimulationWorld struct {
 	Objects   []Object
 }
 
-func NewSimulationWorld(voxelSize float64, minBound Point, maxBound Point) *SimulationWorld {
+func NewSimulationWorld(voxelSize float64, minBound, maxBound Point) *SimulationWorld {
 	return &SimulationWorld{
 		VoxelSize: voxelSize,
 		MinBound:  minBound,

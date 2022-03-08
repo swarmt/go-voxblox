@@ -1,8 +1,9 @@
 package voxblox
 
 import (
-	"github.com/ungerik/go3d/float64/vec3"
 	"math"
+
+	"github.com/ungerik/go3d/float64/vec3"
 )
 
 // Constants
@@ -21,11 +22,11 @@ type PointCloud struct {
 // X, Y, Z are the coordinates
 type Point = vec3.T
 
-func AddIndex(a IndexType, b IndexType) IndexType {
+func AddIndex(a, b IndexType) IndexType {
 	return IndexType{a[0] + b[0], a[1] + b[1], a[2] + b[2]}
 }
 
-func SubIndex(a IndexType, b IndexType) IndexType {
+func SubIndex(a, b IndexType) IndexType {
 	return IndexType{a[0] - b[0], a[1] - b[1], a[2] - b[2]}
 }
 

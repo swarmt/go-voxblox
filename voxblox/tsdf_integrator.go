@@ -1,9 +1,10 @@
 package voxblox
 
 import (
-	"github.com/ungerik/go3d/float64/vec3"
 	"math"
 	"runtime"
+
+	"github.com/ungerik/go3d/float64/vec3"
 )
 
 type TsdfIntegrator interface {
@@ -41,7 +42,7 @@ func NewSimpleTsdfIntegrator(
 	}
 }
 
-func computeDistance(origin Point, pointG Point, voxelCenter Point) float64 {
+func computeDistance(origin, pointG, voxelCenter Point) float64 {
 	vVoxelOrigin := voxelCenter.Sub(&origin)
 	vPointOrigin := pointG.Sub(&origin)
 

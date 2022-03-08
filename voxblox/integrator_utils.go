@@ -1,8 +1,9 @@
 package voxblox
 
 import (
-	"github.com/ungerik/go3d/float64/vec3"
 	"math"
+
+	"github.com/ungerik/go3d/float64/vec3"
 )
 
 type Ray struct {
@@ -28,7 +29,7 @@ type RayCaster struct {
 	endScaled          Point
 }
 
-func (r *RayCaster) SetUp(startScaled Point, endScaled Point) {
+func (r *RayCaster) SetUp(startScaled, endScaled Point) {
 	r.startScaled = startScaled
 	r.endScaled = endScaled
 	r.currentIndex = getGridIndexFromScaledPoint(startScaled)
