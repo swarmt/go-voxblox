@@ -10,6 +10,7 @@ import (
 const kEpsilon = 1e-6 // Used for coordinates
 
 type IndexType = [3]int
+
 type Color = [3]uint8
 
 type PointCloud struct {
@@ -123,5 +124,29 @@ func getLocalFromGlobalVoxelIndex(
 		globalVoxelIndex[0] - blockIndex[0]*voxelsPerSide,
 		globalVoxelIndex[1] - blockIndex[1]*voxelsPerSide,
 		globalVoxelIndex[2] - blockIndex[2]*voxelsPerSide,
+	}
+}
+
+func getGlobalVoxelIndexFromBlockAndVoxelIndex(
+	blockIndex IndexType,
+	voxelIndex IndexType,
+	voxelsPerSide int,
+) IndexType {
+	return IndexType{
+		blockIndex[0]*voxelsPerSide + voxelIndex[0],
+		blockIndex[1]*voxelsPerSide + voxelIndex[1],
+		blockIndex[2]*voxelsPerSide + voxelIndex[2],
+	}
+}
+
+func transformPointCloud(transformation Transformation, pointCloud PointCloud) PointCloud {
+	transformedPoints := make([]Point, len(pointCloud.Points))
+	for i, point := range pointCloud.Points {
+		transformedPoints[i] = transformation.transformPoint(point)
+	}
+	return PointCloud{
+		Width:  pointCloud.Width,
+		Height: pointCloud.Height,
+		Points: transformedPoints,
 	}
 }

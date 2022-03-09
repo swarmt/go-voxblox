@@ -126,5 +126,18 @@ func (plane *Plane) RayIntersection(
 	rayDirection vec3.T,
 	maxDistance float64,
 ) (bool, Point, float64) {
-	return false, Point{}, 0.0
+	denominator := vec3.Dot(&plane.Normal, &rayDirection)
+	if math.Abs(denominator) < kEpsilon {
+		return false, Point{}, 0.0
+	}
+
+	delta := vec3.Sub(&plane.Center, &rayOrigin)
+	distance := vec3.Dot(&delta, &plane.Normal) / denominator
+	if distance < 0.0 || distance > maxDistance {
+		return false, Point{}, 0.0
+	}
+
+	intersectPoint := rayOrigin.Add(rayDirection.Scale(distance))
+
+	return true, *intersectPoint, distance
 }

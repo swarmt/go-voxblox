@@ -127,4 +127,12 @@ func TestRayCaster(t *testing.T) {
 			rayCaster.lengthInSteps,
 		)
 	}
+
+	var globalVoxelIdx IndexType
+	for rayCaster.nextRayIndex(&globalVoxelIdx) {
+	}
+
+	if rayCaster.currentStep != 62 {
+		t.Errorf("Raycaster current step should be 62")
+	}
 }

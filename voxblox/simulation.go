@@ -53,11 +53,10 @@ func (w *SimulationWorld) GetPointCloudFromViewpoint(
 	rotationQuaternion := quaternion.Vec3Diff(&nominalViewDirection, &viewDirection)
 
 	// Create a slice to store the points
-	// Make it the same size as the camera resolution so the scan can be structured
-	points := make([]Point, int(cameraResolution[0]*cameraResolution[1]))
+	// TODO: Structured points
+	var points []Point
 
 	// Iterate over all the pixels
-	pointsIndex := 0
 	for u := -cameraResolution[0] / 2; u < cameraResolution[0]/2; u++ {
 		for v := -cameraResolution[1] / 2; v < cameraResolution[1]/2; v++ {
 			rayCameraDirection := vec3.T{1.0, u / focalLength, v / focalLength}
@@ -76,10 +75,9 @@ func (w *SimulationWorld) GetPointCloudFromViewpoint(
 					if !rayValid || objectDistance < rayDistance {
 						rayValid = true
 						rayDistance = objectDistance
-						points[pointsIndex] = objectIntersect
+						points = append(points, objectIntersect)
 					}
 				}
-				pointsIndex++
 			}
 		}
 	}
@@ -90,7 +88,7 @@ func (w *SimulationWorld) GetPointCloudFromViewpoint(
 	}
 }
 
-func (w *SimulationWorld) getPointCloudFromTransform(
+func (w *SimulationWorld) GetPointCloudFromTransform(
 	pose *Transformation,
 	cameraRes vec2.T,
 	fovH float64,

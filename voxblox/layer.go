@@ -1,6 +1,8 @@
 package voxblox
 
-import "sync"
+import (
+	"sync"
+)
 
 type TsdfLayer struct {
 	voxelSize        float64
@@ -61,6 +63,28 @@ func (l *TsdfLayer) getBlockSize() float64 {
 	return l.blockSize
 }
 
+// getBlocks returns a copy of the map of blocks
+func (l *TsdfLayer) getBlocks() map[IndexType]*Block {
+	l.mutex.RLock()
+	defer l.mutex.RUnlock()
+	return l.blocks
+}
+
+// getVoxelCenters returns all voxel centers (global coordinates) in the layer.
+// Thread-safe.
+func (l *TsdfLayer) getVoxelCenters() []Point {
+	var voxelCenters []Point
+	l.mutex.RLock()
+	defer l.mutex.RUnlock()
+	for _, block := range l.getBlocks() {
+		for _, voxel := range block.getVoxels() {
+			coordinates := block.computeCoordinatesFromVoxelIndex(voxel.getIndex())
+			voxelCenters = append(voxelCenters, coordinates)
+		}
+	}
+	return voxelCenters
+}
+
 // getNumberOfAllocatedBlocks returns the number of blocks allocated in the map
 func (l *TsdfLayer) getNumberOfAllocatedBlocks() int {
 	l.mutex.RLock()
@@ -106,12 +130,6 @@ func (l *TsdfLayer) getVoxelPtrByCoordinates(point Point) *TsdfVoxel {
 		return nil
 	}
 	return l.getVoxelPtrByCoordinates(point)
-}
-
-func (l *TsdfLayer) getBlocks() map[IndexType]*Block {
-	l.mutex.RLock()
-	defer l.mutex.RUnlock()
-	return l.blocks
 }
 
 // allocateStorageAndGetVoxelPtr allocates a new block in the map and returns a pointer to the voxel

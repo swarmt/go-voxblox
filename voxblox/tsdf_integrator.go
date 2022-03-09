@@ -90,11 +90,12 @@ func calculateWeight(pointC Point) float64 {
 	return 0.0
 }
 
-func (i *SimpleTsdfIntegrator) integratePoint(pose Transformation, points []Point) {
+func (i *SimpleTsdfIntegrator) integratePoints(pose Transformation, points []Point) {
 	for _, point := range points {
-		ray := validateRay(point, i.Config.MinRange, i.Config.MaxRange, i.Config.AllowCarving)
+		ray := validateRay(point, i.Config.MinRange, i.Config.MaxRange, i.Config.AllowClearing)
+
 		if ray.Valid {
-			//Transform the point into the global frame.
+			// Transform the point into the global frame.
 			ray.Origin = pose.Position
 			ray.Point = pose.transformPoint(point)
 
@@ -104,7 +105,7 @@ func (i *SimpleTsdfIntegrator) integratePoint(pose Transformation, points []Poin
 				i.layer.getVoxelSizeInv(),
 				i.Config.TruncationDistance,
 				i.Config.MaxRange,
-				i.Config.AllowClearing,
+				i.Config.AllowCarving,
 			)
 			var globalVoxelIdx IndexType
 			for rayCaster.nextRayIndex(&globalVoxelIdx) {
@@ -135,6 +136,7 @@ func (i *SimpleTsdfIntegrator) integratePointCloud(
 	pointCloud PointCloud,
 ) {
 	// Integrate the point cloud points with multiple threads
+	// TODO: re-order points to minimize mutex lock time. Shuffle?
 	nThreads := i.Config.IntegratorThreads
 	nPointsPerThread := len(pointCloud.Points) / nThreads
 	for threadIdx := 0; threadIdx < nThreads; threadIdx++ {
@@ -143,7 +145,6 @@ func (i *SimpleTsdfIntegrator) integratePointCloud(
 		if threadIdx == nThreads-1 {
 			endIdx = len(pointCloud.Points)
 		}
-		go i.integratePoint(pose, pointCloud.Points[startIdx:endIdx])
+		go i.integratePoints(pose, pointCloud.Points[startIdx:endIdx])
 	}
-
 }

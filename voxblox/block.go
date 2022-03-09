@@ -11,7 +11,7 @@ type Block struct {
 	voxelsPerSide int
 	voxelSize     float64
 	origin        Point
-	blockIndex    IndexType
+	index         IndexType
 	updated       bool
 	numVoxels     int
 	voxelSizeInv  float64
@@ -28,7 +28,7 @@ func NewBlock(voxelsPerSide int, voxelSize float64, index IndexType, origin Poin
 	b.voxelsPerSide = voxelsPerSide
 	b.voxelSize = voxelSize
 	b.origin = origin
-	b.blockIndex = index
+	b.index = index
 	b.updated = false
 	b.numVoxels = voxelsPerSide * voxelsPerSide * voxelsPerSide
 	b.voxelSizeInv = 1.0 / voxelSize
@@ -40,10 +40,10 @@ func NewBlock(voxelsPerSide int, voxelSize float64, index IndexType, origin Poin
 
 // getOrigin returns a reference the origin of the block.
 // Thread-safe.
-func (b *Block) getOrigin() *Point {
+func (b *Block) getOrigin() Point {
 	b.mutex.RLock()
 	defer b.mutex.RUnlock()
-	return &b.origin
+	return b.origin
 }
 
 // getVoxelSize returns the voxel size for the Block.
@@ -54,7 +54,7 @@ func (b *Block) getVoxelSize() float64 {
 	return b.voxelSize
 }
 
-// getVoxelSizeInv returns the inverse of the voxel size for the Block.
+// getVoxelSizeInv returns the Inverse of the voxel size for the Block.
 // Thread-safe.
 func (b *Block) getVoxelSizeInv() float64 {
 	b.mutex.RLock()
@@ -68,6 +68,14 @@ func (b *Block) getVoxelsPerSide() int {
 	b.mutex.RLock()
 	defer b.mutex.RUnlock()
 	return b.voxelsPerSide
+}
+
+// getVoxels returns a copy of the map of voxels.
+// Thread-safe.
+func (b *Block) getVoxels() map[IndexType]*TsdfVoxel {
+	b.mutex.RLock()
+	defer b.mutex.RUnlock()
+	return b.voxels
 }
 
 // getVoxel returns a reference to a voxel at the given index .
@@ -98,7 +106,8 @@ func (b *Block) getVoxelPtrByCoordinates(point Point) *TsdfVoxel {
 // Computes the truncated voxel index from the given coordinates.
 func (b *Block) computeTruncatedVoxelIndexFromCoordinates(point Point) IndexType {
 	maxValue := b.getVoxelsPerSide() - 1
-	voxelIndex := getGridIndexFromPoint(vec3.Sub(&point, b.getOrigin()), b.getVoxelSizeInv())
+	origin := b.getOrigin()
+	voxelIndex := getGridIndexFromPoint(vec3.Sub(&point, &origin), b.getVoxelSizeInv())
 	index := IndexType{
 		MaxInt(MinInt(voxelIndex[0], maxValue), 0.0),
 		MaxInt(MinInt(voxelIndex[1], maxValue), 0.0),
@@ -111,5 +120,6 @@ func (b *Block) computeTruncatedVoxelIndexFromCoordinates(point Point) IndexType
 // Computes the coordinates (Voxel center) from the given truncated voxel index.
 func (b *Block) computeCoordinatesFromVoxelIndex(index IndexType) Point {
 	centerPoint := getCenterPointFromGridIndex(index, b.getVoxelSize())
-	return vec3.Add(b.getOrigin(), &centerPoint)
+	origin := b.getOrigin()
+	return vec3.Add(&origin, &centerPoint)
 }

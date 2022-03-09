@@ -13,6 +13,7 @@ var (
 	poses            []Transformation
 	cameraResolution vec2.T
 	fovHorizontal    float64
+	maxDistance      float64
 	config           Config
 )
 
@@ -20,6 +21,7 @@ func init() {
 	// Configuration
 	cameraResolution = vec2.T{320, 240}
 	fovHorizontal = 150.0
+	maxDistance = 5.0
 
 	config = Config{
 		VoxelSize:          0.1,
@@ -30,7 +32,8 @@ func init() {
 		AllowClearing:      true,
 		AllowCarving:       true,
 		ConstWeight:        false,
-		IntegratorThreads:  8,
+		MaxWeight:          10000.0,
+		IntegratorThreads:  1,
 	}
 
 	// Create a test environment.
@@ -44,7 +47,8 @@ func init() {
 		Height: 4.0,
 	}
 	world.Objects = append(world.Objects, &cylinder)
-	//world.AddGroundLevel(0.0) // TODO: Add ground level.
+	plane := Plane{Center: Point{0.0, 0.0, 0.0}, Normal: vec3.T{0.0, 0.0, 1.0}}
+	world.AddObject(&plane)
 
 	// Generate poses around the cylinder.
 	radius := 6.0
@@ -60,7 +64,7 @@ func init() {
 			height,
 		}
 		facingDirection := vec3.Sub(&cylinder.Center, &position)
-		desiredYaw := 0.0
+		desiredYaw := -math.Pi / 2.0
 		if facingDirection[0] > 1e-4 || facingDirection[1] > 1e-4 {
 			desiredYaw = math.Atan2(facingDirection[1], facingDirection[0])
 		}
@@ -73,7 +77,6 @@ func init() {
 		}
 		poses = append(poses, transform)
 	}
-
 }
 
 func TestTsdfIntegrators(t *testing.T) {
@@ -86,21 +89,58 @@ func TestTsdfIntegrators(t *testing.T) {
 	// TODO: Fast integrator
 
 	// Iterate over all poses and integrate.
-	for _, pose := range poses {
-		pointCloud := world.getPointCloudFromTransform(
+	for i, pose := range poses {
+		pointCloud := world.GetPointCloudFromTransform(
 			&pose,
 			cameraResolution,
 			fovHorizontal,
-			config.MaxRange,
+			maxDistance,
 		)
-		simpleTsdfIntegrator.integratePointCloud(pose, pointCloud)
+		poseInverse := pose.Inverse()
+		transformedPointCloud := transformPointCloud(poseInverse, pointCloud)
+
+		// Check transformed point cloud.
+		if i == 0 {
+			if !almostEqual(pointCloud.Points[0][0], -2.66666627, 0.001) ||
+				!almostEqual(pointCloud.Points[0][1], 5.28546286, 0.001) ||
+				!almostEqual(pointCloud.Points[0][2], 0.0, 0.001) {
+				t.Errorf("Pointcloud is not correct")
+			}
+			if !almostEqual(transformedPointCloud.Points[0][0], 0.714538097, 0.001) ||
+				!almostEqual(transformedPointCloud.Points[0][1], -2.8530097, 0.001) ||
+				!almostEqual(transformedPointCloud.Points[0][2], -1.72378588, 0.001) {
+				t.Errorf("Transformed pointcloud is not correct")
+			}
+		}
+		if i == 40 {
+			if !almostEqual(pointCloud.Points[0][0], -5.66353178, 0.001) ||
+				!almostEqual(pointCloud.Points[0][1], -0.985067368, 0.001) ||
+				!almostEqual(pointCloud.Points[0][2], 0.0, 0.001) {
+				t.Errorf("Pointcloud is not correct")
+			}
+			if !almostEqual(transformedPointCloud.Points[0][0], 0.727970123, 0.001) ||
+				!almostEqual(transformedPointCloud.Points[0][1], -2.74875736, 0.001) ||
+				!almostEqual(transformedPointCloud.Points[0][2], -1.99428153, 0.001) {
+				t.Errorf("Transformed pointcloud is not correct")
+			}
+		}
+
+		simpleTsdfIntegrator.integratePointCloud(pose, transformedPointCloud)
 	}
 
 	// Check the number of blocks in the layers
-	if len(simpleLayer.blocks) == 0 {
+	if simpleLayer.getNumberOfAllocatedBlocks() == 0 {
 		t.Errorf("No blocks in simple layer")
 	}
 
+	// Check a block origin
+	block01Neg1 := simpleLayer.getBlock(IndexType{0, 1, -1})
+	origin := block01Neg1.getOrigin()
+	if origin[0] != 0.0 || origin[1] != 1.6 || origin[2] != -1.6 {
+		t.Errorf("Wrong block origin: %v", origin)
+	}
+
+	convertTsdfLayerToTxtFile(simpleLayer, "simple_layer.txt")
 }
 
 func TestGetVoxelWeight(t *testing.T) {
@@ -108,6 +148,11 @@ func TestGetVoxelWeight(t *testing.T) {
 	weight := calculateWeight(pointC)
 	if !almostEqual(weight, 0.336537421, kEpsilon) {
 		t.Errorf("Expected weight to be 0.336537421, got %f", weight)
+	}
+	pointC = Point{1.42907524, -5.14151907, -1.49416912}
+	weight = calculateWeight(pointC)
+	if !almostEqual(weight, 0.447920054, kEpsilon) {
+		t.Errorf("Expected weight to be 0.447920054, got %f", weight)
 	}
 }
 
@@ -144,7 +189,15 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 		t.Errorf("Expected 1 block, got %d", len(layer.blocks))
 	}
 
-	// Update the voxel again.
+	origin = Point{0.0, 6.0, 2.0}
+	pointC = Point{1.42907524, -5.14151907, -1.49416912}
+	pointG = Point{-4.96666479, 4.57092476, 1.1920929e-07}
+	globalVoxelIndex = IndexType{-1, 59, 19}
+	truncationDistance = 0.4
+	maxWeight = 10000.0
+	voxel = allocateStorageAndGetVoxelPtr(layer, globalVoxelIndex)
+	weight = calculateWeight(pointC)
+
 	updateTsdfVoxel(
 		layer,
 		origin,
@@ -156,10 +209,11 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 		maxWeight,
 		voxel,
 	)
+
 	if !almostEqual(voxel.getDistance(), 0.4, kEpsilon) {
 		t.Errorf("Expected Tsdf to be 0.4, got %f", voxel.getDistance())
 	}
-	if !almostEqual(voxel.getWeight(), 0.336537421*2, kEpsilon) {
-		t.Errorf("Expected weight to be 0.336537421 * 2, got %f", voxel.getWeight())
+	if !almostEqual(voxel.getWeight(), 0.447920054, kEpsilon) {
+		t.Errorf("Expected weight to be 0.336537421, got %f", voxel.getWeight())
 	}
 }

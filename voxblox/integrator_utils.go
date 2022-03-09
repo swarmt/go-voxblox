@@ -17,7 +17,7 @@ type Ray struct {
 type RayCaster struct {
 	TruncationDistance float64
 	MaxDistance        float64
-	AllowClearing      bool
+	AllowCarving       bool
 	lengthInSteps      int
 	stepSigns          IndexType
 	currentIndex       IndexType
@@ -110,12 +110,12 @@ func NewRayCaster(
 	voxelSizeInv float64,
 	truncationDistance float64,
 	maxDistance float64,
-	allowClearing bool,
+	allowCarving bool,
 ) *RayCaster {
 	rayCaster := &RayCaster{
 		TruncationDistance: truncationDistance,
 		MaxDistance:        maxDistance,
-		AllowClearing:      allowClearing,
+		AllowCarving:       allowCarving,
 	}
 
 	unitRay := vec3.Sub(&ray.Point, &ray.Origin)
@@ -126,13 +126,13 @@ func NewRayCaster(
 		ray.Length = math.Min(math.Max(ray.Length-truncationDistance, 0), maxDistance)
 		rayEnd = vec3.Add(&ray.Origin, unitRay.Scale(ray.Length))
 		rayStart = ray.Origin
-		if !allowClearing {
+		if !allowCarving {
 			rayStart = rayEnd
 		}
 	} else {
 		rayEnd = vec3.Add(&ray.Point, unitRay.Scale(truncationDistance))
 		rayStart = ray.Origin
-		if !allowClearing {
+		if !allowCarving {
 			rayStart = vec3.Sub(&ray.Point, &unitRay)
 		}
 	}

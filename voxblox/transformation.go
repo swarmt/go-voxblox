@@ -15,3 +15,12 @@ func (t Transformation) transformPoint(point Point) vec3.T {
 	rotatedPoint := t.Rotation.RotatedVec3(&point)
 	return vec3.Add(&rotatedPoint, &t.Position)
 }
+
+func (t Transformation) Inverse() Transformation {
+	rotationInverted := t.Rotation.Inverted()
+	pointRotated := rotationInverted.RotatedVec3(&t.Position)
+	return Transformation{
+		Position: pointRotated.Inverted(),
+		Rotation: rotationInverted,
+	}
+}

@@ -74,3 +74,28 @@ func TestRayIntersectionCylinder(t *testing.T) {
 		t.Errorf("Ray should not intersect cylinder")
 	}
 }
+
+func TestRayIntersectionPlane(t *testing.T) {
+	plane := Plane{
+		Center: Point{0.0, 0.0, 0.0},
+		Normal: vec3.T{0.0, 0.0, 1.0},
+		Color:  Color{},
+	}
+	intersects, intersectPoint, intersectDistance := plane.RayIntersection(
+		Point{0, 6, 2},
+		Point{-0.782229722, -0.209599614, -0.586672366},
+		10.0,
+	)
+	if !intersects {
+		t.Errorf("Ray should intersect plane")
+	}
+	if !almostEqual(intersectPoint[0], -2.66666627, kEpsilon) ||
+		!almostEqual(intersectPoint[1], 5.28546286, kEpsilon) ||
+		!almostEqual(intersectPoint[2], 0.0, kEpsilon) {
+		t.Errorf("Incorrect intersection point: %v", intersectPoint)
+	}
+	if !almostEqual(intersectDistance, 3.40905786, kEpsilon) {
+		t.Errorf("Incorrect intersection distance: %v", intersectDistance)
+	}
+
+}
