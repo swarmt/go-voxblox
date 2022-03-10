@@ -34,7 +34,7 @@ func TestTsdfMapBlockAllocation(t *testing.T) {
 }
 
 func TestTsdfMapIndexLookups(t *testing.T) {
-	// BLOCK 0 0 0 (coordinate at origin)
+	// BLOCK 0 0 0 (coordinate at Origin)
 	pointIn000 := Point{0, 0, 0}
 	block000 := tsdfLayer.getBlockPtrByCoordinates(pointIn000)
 	if block000 == nil {
@@ -44,12 +44,12 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 	if tsdfLayer.computeBlockIndexFromCoordinates(pointIn000) != index000 {
 		t.Errorf("Expected {0, 0, 0} to be returned by GetBlockPtrByCoordinates")
 	}
-	if block000.origin != pointIn000 {
-		t.Errorf("Expected block000.origin to be {0, 0, 0}, got %v", block000.origin)
+	if block000.Origin != pointIn000 {
+		t.Errorf("Expected block000.Origin to be {0, 0, 0}, got %v", block000.Origin)
 	}
 
 	// BLOCK 0 0 0 (coordinate within block)
-	pointIn000v2 := Point{0.0, tsdfLayer.getVoxelSize(), 0.0}
+	pointIn000v2 := Point{0.0, tsdfLayer.VoxelSize, 0.0}
 	block000v2 := tsdfLayer.getBlockPtrByCoordinates(pointIn000v2)
 	if block000v2 == nil {
 		t.Errorf("Expected block000v2 to not be nil")
@@ -61,7 +61,7 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 		t.Errorf("Expected block000 to be block000v2")
 	}
 
-	// BLOCK 1 1 1 (coordinate at origin)
+	// BLOCK 1 1 1 (coordinate at Origin)
 	pointIn111 := Point{blockSize, blockSize, blockSize}
 	block111 := tsdfLayer.getBlockPtrByCoordinates(pointIn111)
 	if block111 == nil {
@@ -71,16 +71,16 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 	if tsdfLayer.computeBlockIndexFromCoordinates(pointIn111) != index111 {
 		t.Errorf("Expected {1, 1, 1} to be returned by GetBlockPtrByCoordinates")
 	}
-	if block111.origin != (Point{blockSize, blockSize, blockSize}) {
-		t.Errorf("Expected block111.origin to be {%f, %f, %f}, got %v",
-			blockSize, blockSize, blockSize, block111.origin)
+	if block111.Origin != (Point{blockSize, blockSize, blockSize}) {
+		t.Errorf("Expected block111.Origin to be {%f, %f, %f}, got %v",
+			blockSize, blockSize, blockSize, block111.Origin)
 	}
 	if block111.index != index111 {
 		t.Errorf("Expected block111.index to be {1, 1, 1}, got %v", block111.index)
 	}
 
 	// BLOCK 1 1 1 (coordinate within block)
-	pointIn111v2 := Point{blockSize, blockSize + tsdfLayer.getVoxelSize(), blockSize}
+	pointIn111v2 := Point{blockSize, blockSize + tsdfLayer.VoxelSize, blockSize}
 	block111v2 := tsdfLayer.getBlockPtrByCoordinates(pointIn111v2)
 	if block111v2 == nil {
 		t.Errorf("Expected block111v2 to not be nil")
@@ -91,18 +91,18 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 	if block111 != block111v2 {
 		t.Errorf("Expected block111 to be block111v2")
 	}
-	if block111v2.origin != (Point{blockSize, blockSize, blockSize}) {
-		t.Errorf("Expected block111.origin to be {%f, %f, %f}, got %v",
-			blockSize, blockSize, blockSize, block111.origin)
+	if block111v2.Origin != (Point{blockSize, blockSize, blockSize}) {
+		t.Errorf("Expected block111.Origin to be {%f, %f, %f}, got %v",
+			blockSize, blockSize, blockSize, block111.Origin)
 	}
 	if block111v2.index != index111 {
 		t.Errorf("Expected block111.index to be {1, 1, 1}, got %v", block111.index)
 	}
 	if block111v2.blockSize != blockSize {
-		t.Errorf("Expected block111.blockSize to be %f, got %f", blockSize, block111v2.blockSize)
+		t.Errorf("Expected block111.BlockSize to be %f, got %f", blockSize, block111v2.blockSize)
 	}
 
-	// BLOCK -1 -1 -1 (coordinate at origin)
+	// BLOCK -1 -1 -1 (coordinate at Origin)
 	pointInNeg111 := Point{-blockSize, -blockSize, -blockSize}
 	blockNeg111 := tsdfLayer.getBlockPtrByCoordinates(pointInNeg111)
 	if blockNeg111 == nil {
@@ -112,20 +112,20 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 	if tsdfLayer.computeBlockIndexFromCoordinates(pointInNeg111) != indexNeg111 {
 		t.Errorf("Expected {0, 0, 0} to be returned by GetBlockPtrByCoordinates")
 	}
-	if blockNeg111.origin != (Point{-blockSize, -blockSize, -blockSize}) {
-		t.Errorf("Expected blockNeg111.origin to be {%f, %f, %f}, got %v",
-			-blockSize, -blockSize, -blockSize, blockNeg111.origin)
+	if blockNeg111.Origin != (Point{-blockSize, -blockSize, -blockSize}) {
+		t.Errorf("Expected blockNeg111.Origin to be {%f, %f, %f}, got %v",
+			-blockSize, -blockSize, -blockSize, blockNeg111.Origin)
 	}
 	if blockNeg111.blockSize != blockSize {
 		t.Errorf(
-			"Expected blockNeg111.blockSize to be %f, got %f",
+			"Expected blockNeg111.BlockSize to be %f, got %f",
 			blockSize,
 			blockNeg111.blockSize,
 		)
 	}
 
 	// BLOCK -1 -1 -1 (coordinate within block)
-	pointInNeg111v2 := Point{-blockSize, -blockSize + tsdfLayer.getVoxelSize(), -blockSize}
+	pointInNeg111v2 := Point{-blockSize, -blockSize + tsdfLayer.VoxelSize, -blockSize}
 	blockNeg111v2 := tsdfLayer.getBlockPtrByCoordinates(pointInNeg111v2)
 	if blockNeg111v2 == nil {
 		t.Errorf("Expected blockNeg111v2 to not be nil")
@@ -136,13 +136,13 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 	if blockNeg111 != blockNeg111v2 {
 		t.Errorf("Expected blockNeg111 to be blockNeg111v2")
 	}
-	if blockNeg111v2.origin != (Point{-blockSize, -blockSize, -blockSize}) {
-		t.Errorf("Expected blockNeg111.origin to be {%f, %f, %f}, got %v",
-			-blockSize, -blockSize, -blockSize, blockNeg111.origin)
+	if blockNeg111v2.Origin != (Point{-blockSize, -blockSize, -blockSize}) {
+		t.Errorf("Expected blockNeg111.Origin to be {%f, %f, %f}, got %v",
+			-blockSize, -blockSize, -blockSize, blockNeg111.Origin)
 	}
 	if blockNeg111v2.blockSize != blockSize {
 		t.Errorf(
-			"Expected blockNeg111.blockSize to be %f, got %f",
+			"Expected blockNeg111.BlockSize to be %f, got %f",
 			blockSize,
 			blockNeg111v2.blockSize,
 		)
@@ -151,7 +151,7 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 	// Block 0 0 0
 
 	// Voxel 0 1 0
-	pointIn000 = Point{0.0, 1.0 * tsdfLayer.getVoxelSize(), 0.0}
+	pointIn000 = Point{0.0, 1.0 * tsdfLayer.VoxelSize, 0.0}
 	if block000.getVoxelPtrByCoordinates(pointIn000) == nil {
 		t.Errorf("Expected pointIn000 to not be nil")
 	}
@@ -164,9 +164,9 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 	}
 
 	pointIn000center := block000.computeCoordinatesFromVoxelIndex(voxelIndex)
-	if !almostEqual(pointIn000center[0], pointIn000[0], tsdfLayer.getVoxelSize()) ||
-		!almostEqual(pointIn000center[1], pointIn000[1], tsdfLayer.getVoxelSize()) ||
-		!almostEqual(pointIn000center[2], pointIn000[2], tsdfLayer.getVoxelSize()) {
+	if !almostEqual(pointIn000center[0], pointIn000[0], tsdfLayer.VoxelSize) ||
+		!almostEqual(pointIn000center[1], pointIn000[1], tsdfLayer.VoxelSize) ||
+		!almostEqual(pointIn000center[2], pointIn000[2], tsdfLayer.VoxelSize) {
 		t.Errorf("Expected pointIn000center to be {%f, %f, %f}, got {%f, %f, %f}",
 			pointIn000[0], pointIn000[1], pointIn000[2],
 			pointIn000center[0], pointIn000center[1], pointIn000center[2])
@@ -182,9 +182,9 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 		t.Errorf("Expected {0, 0, 0} to be returned by computeTruncatedVoxelIndexFromCoordinates")
 	}
 	pointIn000center = block000.computeCoordinatesFromVoxelIndex(voxelIndex)
-	if !almostEqual(pointIn000center[0], pointIn000[0], tsdfLayer.getVoxelSize()) ||
-		!almostEqual(pointIn000center[1], pointIn000[1], tsdfLayer.getVoxelSize()) ||
-		!almostEqual(pointIn000center[2], pointIn000[2], tsdfLayer.getVoxelSize()) {
+	if !almostEqual(pointIn000center[0], pointIn000[0], tsdfLayer.VoxelSize) ||
+		!almostEqual(pointIn000center[1], pointIn000[1], tsdfLayer.VoxelSize) ||
+		!almostEqual(pointIn000center[2], pointIn000[2], tsdfLayer.VoxelSize) {
 		t.Errorf("Expected pointIn000center to be {%f, %f, %f}, got {%f, %f, %f}",
 			pointIn000[0], pointIn000[1], pointIn000[2],
 			pointIn000center[0], pointIn000center[1], pointIn000center[2])
@@ -192,9 +192,9 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 
 	// Voxel 7 7 7
 	pointIn000 = Point{
-		7.0 * tsdfLayer.getVoxelSize(),
-		7.0 * tsdfLayer.getVoxelSize(),
-		7.0 * tsdfLayer.getVoxelSize(),
+		7.0 * tsdfLayer.VoxelSize,
+		7.0 * tsdfLayer.VoxelSize,
+		7.0 * tsdfLayer.VoxelSize,
 	}
 	if block000.getVoxelPtrByCoordinates(pointIn000) == nil {
 		t.Errorf("Expected pointIn000 to not be nil")
@@ -204,9 +204,9 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 		t.Errorf("Expected {7, 7, 7} to be returned by computeTruncatedVoxelIndexFromCoordinates")
 	}
 	pointIn000center = block000.computeCoordinatesFromVoxelIndex(voxelIndex)
-	if !almostEqual(pointIn000center[0], pointIn000[0], tsdfLayer.getVoxelSize()) ||
-		!almostEqual(pointIn000center[1], pointIn000[1], tsdfLayer.getVoxelSize()) ||
-		!almostEqual(pointIn000center[2], pointIn000[2], tsdfLayer.getVoxelSize()) {
+	if !almostEqual(pointIn000center[0], pointIn000[0], tsdfLayer.VoxelSize) ||
+		!almostEqual(pointIn000center[1], pointIn000[1], tsdfLayer.VoxelSize) ||
+		!almostEqual(pointIn000center[2], pointIn000[2], tsdfLayer.VoxelSize) {
 		t.Errorf("Expected pointIn000center to be {%f, %f, %f}, got {%f, %f, %f}",
 			pointIn000[0], pointIn000[1], pointIn000[2],
 			pointIn000center[0], pointIn000center[1], pointIn000center[2])
@@ -229,9 +229,9 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 		t.Errorf("Expected {0, 0, 0} to be returned by computeTruncatedVoxelIndexFromCoordinates")
 	}
 	pointIn000center = blockNeg111.computeCoordinatesFromVoxelIndex(voxelIndex)
-	if !almostEqual(pointIn000center[0], pointInNeg111[0], tsdfLayer.getVoxelSize()) ||
-		!almostEqual(pointIn000center[1], pointInNeg111[1], tsdfLayer.getVoxelSize()) ||
-		!almostEqual(pointIn000center[2], pointInNeg111[2], tsdfLayer.getVoxelSize()) {
+	if !almostEqual(pointIn000center[0], pointInNeg111[0], tsdfLayer.VoxelSize) ||
+		!almostEqual(pointIn000center[1], pointInNeg111[1], tsdfLayer.VoxelSize) ||
+		!almostEqual(pointIn000center[2], pointInNeg111[2], tsdfLayer.VoxelSize) {
 		t.Errorf("Expected pointIn000center to be {%f, %f, %f}, got {%f, %f, %f}",
 			pointIn000[0], pointIn000[1], pointIn000[2],
 			pointIn000center[0], pointIn000center[1], pointIn000center[2])
@@ -247,9 +247,9 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 		t.Errorf("Expected {7, 7, 7} to be returned by computeTruncatedVoxelIndexFromCoordinates")
 	}
 	pointIn777center := blockNeg111.computeCoordinatesFromVoxelIndex(voxelIndex)
-	if !almostEqual(pointIn777center[0], pointInNeg111[0], tsdfLayer.getVoxelSize()) ||
-		!almostEqual(pointIn777center[1], pointInNeg111[1], tsdfLayer.getVoxelSize()) ||
-		!almostEqual(pointIn777center[2], pointInNeg111[2], tsdfLayer.getVoxelSize()) {
+	if !almostEqual(pointIn777center[0], pointInNeg111[0], tsdfLayer.VoxelSize) ||
+		!almostEqual(pointIn777center[1], pointInNeg111[1], tsdfLayer.VoxelSize) ||
+		!almostEqual(pointIn777center[2], pointInNeg111[2], tsdfLayer.VoxelSize) {
 		t.Errorf("Expected pointIn000center to be {%f, %f, %f}, got {%f, %f, %f}",
 			pointInNeg111[0], pointInNeg111[1], pointInNeg111[2],
 			pointIn777center[0], pointIn777center[1], pointIn777center[2])
@@ -259,9 +259,9 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 
 	// Voxel 3 6 5
 	pointInNeg110 := Point{
-		-5.0 * tsdfLayer.getVoxelSize(),
-		-2.0 * tsdfLayer.getVoxelSize(),
-		5.0 * tsdfLayer.getVoxelSize(),
+		-5.0 * tsdfLayer.VoxelSize,
+		-2.0 * tsdfLayer.VoxelSize,
+		5.0 * tsdfLayer.VoxelSize,
 	}
 	blockNeg1Neg1Pos0 := tsdfLayer.getBlockPtrByCoordinates(pointInNeg110)
 	if blockNeg1Neg1Pos0 == nil {
@@ -279,9 +279,9 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 		t.Errorf("Expected {3, 6, 5} to be returned by computeTruncatedVoxelIndexFromCoordinates")
 	}
 	pointInNeg110center := blockNeg1Neg1Pos0.computeCoordinatesFromVoxelIndex(voxelIndex)
-	if !almostEqual(pointInNeg110center[0], pointInNeg110[0], tsdfLayer.getVoxelSize()) ||
-		!almostEqual(pointInNeg110center[1], pointInNeg110[1], tsdfLayer.getVoxelSize()) ||
-		!almostEqual(pointInNeg110center[2], pointInNeg110[2], tsdfLayer.getVoxelSize()) {
+	if !almostEqual(pointInNeg110center[0], pointInNeg110[0], tsdfLayer.VoxelSize) ||
+		!almostEqual(pointInNeg110center[1], pointInNeg110[1], tsdfLayer.VoxelSize) ||
+		!almostEqual(pointInNeg110center[2], pointInNeg110[2], tsdfLayer.VoxelSize) {
 		t.Errorf("Expected pointInNeg110center to be {%f, %f, %f}, got {%f, %f, %f}",
 			pointInNeg110[0], pointInNeg110[1], pointInNeg110[2],
 			pointInNeg110center[0], pointInNeg110center[1], pointInNeg110center[2])

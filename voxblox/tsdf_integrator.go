@@ -1,11 +1,10 @@
 package voxblox
 
 import (
+	"github.com/ungerik/go3d/float64/vec3"
 	"math"
 	"math/rand"
 	"sync"
-
-	"github.com/ungerik/go3d/float64/vec3"
 )
 
 type TsdfIntegrator interface {
@@ -49,7 +48,7 @@ func (i *SimpleTsdfIntegrator) updateTsdfVoxel(
 	weight float64,
 	voxel *TsdfVoxel,
 ) {
-	voxelSize := i.layer.getVoxelSize()
+	voxelSize := i.layer.VoxelSize
 
 	voxelCenter := getCenterPointFromGridIndex(globalVoxelIndex, voxelSize)
 	sdf := computeDistance(origin, pointG, voxelCenter)
@@ -98,7 +97,11 @@ func calculateWeight(pointC Point) float64 {
 	return 0.0
 }
 
-func (i *SimpleTsdfIntegrator) integratePoints(pose Transformation, points []Point, wg *sync.WaitGroup) {
+func (i *SimpleTsdfIntegrator) integratePoints(
+	pose Transformation,
+	points []Point,
+	wg *sync.WaitGroup,
+) {
 	for _, point := range points {
 		ray := validateRay(point, i.Config.MinRange, i.Config.MaxRange, i.Config.AllowClearing)
 
@@ -110,7 +113,7 @@ func (i *SimpleTsdfIntegrator) integratePoints(pose Transformation, points []Poi
 			// Create a new Ray-caster.
 			rayCaster := NewRayCaster(
 				ray,
-				i.layer.getVoxelSizeInv(),
+				i.layer.VoxelSizeInv,
 				i.Config.TruncationDistance,
 				i.Config.MaxRange,
 				i.Config.AllowCarving,
@@ -147,12 +150,13 @@ func shufflePoints(points []Point) []Point {
 	return shuffled
 }
 
+// integratePointCloud integrates a point cloud into the TSDF layer.
 func (i *SimpleTsdfIntegrator) integratePointCloud(
 	pose Transformation,
 	pointCloud PointCloud,
 ) {
-	// Integrate the point cloud points with multiple threads
-	// TODO: re-order points to minimize mutex lock time. Shuffle?
+	// Shuffle points to minimize mutex contention.
+	// TODO: better way to do this?
 	points := shufflePoints(pointCloud.Points)
 
 	nThreads := i.Config.IntegratorThreads

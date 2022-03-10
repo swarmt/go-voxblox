@@ -5,6 +5,7 @@ import (
 	"github.com/ungerik/go3d/float64/vec2"
 	"github.com/ungerik/go3d/float64/vec3"
 	"math"
+	"runtime"
 	"testing"
 )
 
@@ -33,7 +34,7 @@ func init() {
 		AllowCarving:       true,
 		ConstWeight:        false,
 		MaxWeight:          10000.0,
-		IntegratorThreads:  12,
+		IntegratorThreads:  runtime.NumCPU(),
 	}
 
 	// Create a test environment.
@@ -79,7 +80,7 @@ func init() {
 	}
 }
 
-func TestNewSimpleTsdfIntegrator(t *testing.T) {
+func TestSimpleTsdfIntegratorSingleCloud(t *testing.T) {
 	// Simple integrator
 	simpleLayer := NewTsdfLayer(config.VoxelSize, config.BlockSize)
 	simpleTsdfIntegrator := NewSimpleTsdfIntegrator(config, simpleLayer)
@@ -156,14 +157,14 @@ func TestTsdfIntegrators(t *testing.T) {
 		t.Errorf("No blocks in simple layer")
 	}
 
-	// Check a block origin
+	// Check a block Origin
 	block01Neg1 := simpleLayer.getBlock(IndexType{0, 1, -1})
-	origin := block01Neg1.getOrigin()
+	origin := block01Neg1.Origin
 	if origin[0] != 0.0 || origin[1] != 1.6 || origin[2] != -1.6 {
-		t.Errorf("Wrong block origin: %v", origin)
+		t.Errorf("Wrong block Origin: %v", origin)
 	}
 
-	convertTsdfLayerToTxtFile(simpleLayer, "simple_layer.txt")
+	//convertTsdfLayerToTxtFile(simpleLayer, "simple_layer.txt")
 }
 
 func TestGetVoxelWeight(t *testing.T) {

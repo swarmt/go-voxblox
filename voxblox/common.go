@@ -1,7 +1,9 @@
 package voxblox
 
 import (
+	"log"
 	"math"
+	"time"
 
 	"github.com/ungerik/go3d/float64/vec3"
 )
@@ -57,6 +59,12 @@ func Sgn(a float64) int {
 		return +1
 	}
 	return 0
+}
+
+// timeTrack is a helper function for timing the execution of a function.
+func timeTrack(start time.Time, name string) {
+	elapsed := time.Since(start)
+	log.Printf("%s took %s", name, elapsed)
 }
 
 func IndexToFloat(index IndexType) vec3.T {
