@@ -51,7 +51,7 @@ func (b *Block) getVoxels() map[IndexType]*TsdfVoxel {
 func (b *Block) addVoxel(voxel *TsdfVoxel) {
 	b.mutex.Lock()
 	defer b.mutex.Unlock()
-	b.voxels[voxel.getIndex()] = voxel
+	b.voxels[voxel.Index] = voxel
 }
 
 // getVoxel returns a reference to a voxel at the given index .
@@ -88,7 +88,7 @@ func (b *Block) computeTruncatedVoxelIndexFromCoordinates(point Point) IndexType
 		MaxInt(MinInt(voxelIndex[1], maxValue), 0.0),
 		MaxInt(MinInt(voxelIndex[2], maxValue), 0.0),
 	}
-	return b.getVoxel(index).getIndex()
+	return b.getVoxel(index).Index
 }
 
 // computeCoordinatesFromVoxelIndex

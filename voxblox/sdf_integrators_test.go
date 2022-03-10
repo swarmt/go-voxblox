@@ -113,7 +113,7 @@ func TestSimpleTsdfIntegratorSingleCloud(t *testing.T) {
 		t.Errorf("Number of allocated blocks is not correct")
 	}
 
-	voxel := allocateStorageAndGetVoxelPtr(simpleTsdfIntegrator.layer, IndexType{0, 60, 20})
+	voxel := getVoxelFromGlobalIndex(simpleTsdfIntegrator.Layer, IndexType{0, 60, 20})
 	if !almostEqual(voxel.getDistance(), 0.4, kEpsilon) {
 		t.Errorf("Wrong distance: %v", voxel.getDistance())
 	}
@@ -154,7 +154,7 @@ func TestTsdfIntegrators(t *testing.T) {
 
 	// Check the number of blocks in the layers
 	if simpleLayer.getNumberOfAllocatedBlocks() == 0 {
-		t.Errorf("No blocks in simple layer")
+		t.Errorf("No blocks in simple Layer")
 	}
 
 	// Check a block Origin
@@ -186,7 +186,7 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 	pointC := Point{0.714538097, -2.8530097, -1.72378588}
 	pointG := Point{-2.66666508, 5.2854619, 1.1920929e-07}
 	globalVoxelIndex := IndexType{0, 60, 20}
-	voxel := allocateStorageAndGetVoxelPtr(layer, globalVoxelIndex)
+	voxel := getVoxelFromGlobalIndex(layer, globalVoxelIndex)
 	weight := calculateWeight(pointC)
 
 	config = Config{

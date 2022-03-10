@@ -60,7 +60,7 @@ func (r *RayCaster) SetUp(startScaled, endScaled Point) {
 		math.Max(0, float64(r.stepSigns[1])),
 		math.Max(0, float64(r.stepSigns[2])),
 	}
-	currentIndexPoint := IndexToFloat(r.currentIndex)
+	currentIndexPoint := IndexToPoint(r.currentIndex)
 	startScaledShifted := startScaled.Sub(&currentIndexPoint)
 
 	distanceToBoundaries := correctedStep.Sub(startScaledShifted)

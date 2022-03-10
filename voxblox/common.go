@@ -25,10 +25,6 @@ type PointCloud struct {
 // X, Y, Z are the coordinates
 type Point = vec3.T
 
-func AddIndex(a, b IndexType) IndexType {
-	return IndexType{a[0] + b[0], a[1] + b[1], a[2] + b[2]}
-}
-
 func SubIndex(a, b IndexType) IndexType {
 	return IndexType{a[0] - b[0], a[1] - b[1], a[2] - b[2]}
 }
@@ -67,11 +63,12 @@ func timeTrack(start time.Time, name string) {
 	log.Printf("%s took %s", name, elapsed)
 }
 
-func IndexToFloat(index IndexType) vec3.T {
-	return vec3.T{float64(index[0]), float64(index[1]), float64(index[2])}
+// IndexToPoint converts an index to a point.
+func IndexToPoint(index IndexType) Point {
+	return Point{float64(index[0]), float64(index[1]), float64(index[2])}
 }
 
-// getGridIndexFromScaledPoint returns the grid index of a point given the coordinate
+// getGridIndexFromScaledPoint returns the grid Index of a point given the coordinate
 func getGridIndexFromScaledPoint(scaledPoint Point) IndexType {
 	return IndexType{
 		int(math.Floor(scaledPoint[0] + kEpsilon)),
@@ -144,17 +141,5 @@ func getGlobalVoxelIndexFromBlockAndVoxelIndex(
 		blockIndex[0]*voxelsPerSide + voxelIndex[0],
 		blockIndex[1]*voxelsPerSide + voxelIndex[1],
 		blockIndex[2]*voxelsPerSide + voxelIndex[2],
-	}
-}
-
-func transformPointCloud(transformation Transformation, pointCloud PointCloud) PointCloud {
-	transformedPoints := make([]Point, len(pointCloud.Points))
-	for i, point := range pointCloud.Points {
-		transformedPoints[i] = transformation.transformPoint(point)
-	}
-	return PointCloud{
-		Width:  pointCloud.Width,
-		Height: pointCloud.Height,
-		Points: transformedPoints,
 	}
 }

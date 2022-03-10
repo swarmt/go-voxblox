@@ -22,9 +22,9 @@ func NewTsdfLayer(voxelSize float64, voxelsPerSide int) *TsdfLayer {
 	l.VoxelsPerSide = voxelsPerSide
 	l.VoxelSizeInv = 1.0 / voxelSize
 	l.VoxelsPerSideInv = 1.0 / float64(voxelsPerSide)
-	l.blocks = make(map[IndexType]*Block)
 	l.BlockSize = voxelSize * float64(voxelsPerSide)
 	l.BlockSizeInv = 1.0 / l.BlockSize
+	l.blocks = make(map[IndexType]*Block)
 	return l
 }
 
@@ -35,7 +35,7 @@ func (l *TsdfLayer) getBlocks() map[IndexType]*Block {
 	return l.blocks
 }
 
-// getVoxelCenters returns all voxel centers (global coordinates) in the layer close to the surface.
+// getVoxelCenters returns all voxel centers (global coordinates) in the Layer close to the surface.
 // Thread-safe.
 func (l *TsdfLayer) getVoxelCenters() []Point {
 	var voxelCenters []Point
@@ -44,7 +44,7 @@ func (l *TsdfLayer) getVoxelCenters() []Point {
 	for _, block := range l.getBlocks() {
 		for _, voxel := range block.getVoxels() {
 			if math.Abs(voxel.getDistance()) < block.VoxelSize {
-				coordinates := block.computeCoordinatesFromVoxelIndex(voxel.getIndex())
+				coordinates := block.computeCoordinatesFromVoxelIndex(voxel.Index)
 				voxelCenters = append(voxelCenters, coordinates)
 			}
 		}
@@ -80,17 +80,17 @@ func (l *TsdfLayer) getBlock(blockIndex IndexType) *Block {
 	return newBlock
 }
 
-// computeBlockIndexFromCoordinates computes the block index from coordinates
+// computeBlockIndexFromCoordinates computes the block Index from coordinates
 func (l *TsdfLayer) computeBlockIndexFromCoordinates(point Point) IndexType {
 	return getGridIndexFromPoint(point, l.BlockSizeInv)
 }
 
-// getBlockPtrByCoordinates returns a pointer to the block in the map by coordinates
+// getBlockPtrByCoordinates returns a pointer to the block by coordinates
 func (l *TsdfLayer) getBlockPtrByCoordinates(point Point) *Block {
 	return l.getBlock(l.computeBlockIndexFromCoordinates(point))
 }
 
-// getVoxelPtrByCoordinates returns a pointer to the voxel in the block in the map by coordinates
+// getVoxelPtrByCoordinates returns a pointer to the voxel in the block by coordinates
 func (l *TsdfLayer) getVoxelPtrByCoordinates(point Point) *TsdfVoxel {
 	block := l.getBlock(l.computeBlockIndexFromCoordinates(point))
 	if block == nil {
@@ -99,8 +99,8 @@ func (l *TsdfLayer) getVoxelPtrByCoordinates(point Point) *TsdfVoxel {
 	return l.getVoxelPtrByCoordinates(point)
 }
 
-// allocateStorageAndGetVoxelPtr allocates a new block in the map and returns a pointer to the voxel
-func allocateStorageAndGetVoxelPtr(layer *TsdfLayer, globalVoxelIndex IndexType) *TsdfVoxel {
+// getVoxelFromGlobalIndex allocates a new block in the map and returns a pointer to the voxel
+func getVoxelFromGlobalIndex(layer *TsdfLayer, globalVoxelIndex IndexType) *TsdfVoxel {
 	blockIndex := getBlockIndexFromGlobalVoxelIndex(globalVoxelIndex, layer.VoxelsPerSideInv)
 	block := layer.getBlock(blockIndex)
 	voxelIndex := getLocalFromGlobalVoxelIndex(globalVoxelIndex, blockIndex, layer.VoxelsPerSide)

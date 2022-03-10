@@ -18,7 +18,7 @@ type TsdfIntegrator interface {
 
 type SimpleTsdfIntegrator struct {
 	Config Config
-	layer  *TsdfLayer
+	Layer  *TsdfLayer
 }
 
 func NewSimpleTsdfIntegrator(
@@ -27,7 +27,7 @@ func NewSimpleTsdfIntegrator(
 ) *SimpleTsdfIntegrator {
 	return &SimpleTsdfIntegrator{
 		Config: config,
-		layer:  layer,
+		Layer:  layer,
 	}
 }
 
@@ -49,7 +49,7 @@ func (i *SimpleTsdfIntegrator) updateTsdfVoxel(
 	weight float64,
 	voxel *TsdfVoxel,
 ) {
-	voxelSize := i.layer.VoxelSize
+	voxelSize := i.Layer.VoxelSize
 
 	voxelCenter := getCenterPointFromGridIndex(globalVoxelIndex, voxelSize)
 	sdf := computeDistance(origin, pointG, voxelCenter)
@@ -114,14 +114,14 @@ func (i *SimpleTsdfIntegrator) integratePoints(
 			// Create a new Ray-caster.
 			rayCaster := NewRayCaster(
 				ray,
-				i.layer.VoxelSizeInv,
+				i.Layer.VoxelSizeInv,
 				i.Config.TruncationDistance,
 				i.Config.MaxRange,
 				i.Config.AllowCarving,
 			)
 			var globalVoxelIdx IndexType
 			for rayCaster.nextRayIndex(&globalVoxelIdx) {
-				voxel := allocateStorageAndGetVoxelPtr(i.layer, globalVoxelIdx)
+				voxel := getVoxelFromGlobalIndex(i.Layer, globalVoxelIdx)
 				weight := 1.0
 				if !i.Config.ConstWeight {
 					weight = calculateWeight(point)
@@ -151,7 +151,7 @@ func shufflePoints(points []Point) []Point {
 	return shuffled
 }
 
-// integratePointCloud integrates a point cloud into the TSDF layer.
+// integratePointCloud integrates a point cloud into the TSDF Layer.
 func (i *SimpleTsdfIntegrator) integratePointCloud(
 	pose Transformation,
 	pointCloud PointCloud,

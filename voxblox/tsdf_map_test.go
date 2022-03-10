@@ -15,21 +15,21 @@ func init() {
 }
 
 func TestTsdfMapBlockAllocation(t *testing.T) {
-	// layer should have no blocks by default
+	// Layer should have no blocks by default
 	if tsdfLayer.getNumberOfAllocatedBlocks() != 0 {
-		t.Errorf("Expected no blocks in layer, got %d", tsdfLayer.getNumberOfAllocatedBlocks())
+		t.Errorf("Expected no blocks in Layer, got %d", tsdfLayer.getNumberOfAllocatedBlocks())
 	}
 	tsdfLayer.getBlockPtrByCoordinates(Point{0, 0.15, 0})
 	if tsdfLayer.getNumberOfAllocatedBlocks() != 1 {
-		t.Errorf("Expected one block in layer, got %d", tsdfLayer.getNumberOfAllocatedBlocks())
+		t.Errorf("Expected one block in Layer, got %d", tsdfLayer.getNumberOfAllocatedBlocks())
 	}
 	tsdfLayer.getBlockPtrByCoordinates(Point{0, 0.13, 0})
 	if tsdfLayer.getNumberOfAllocatedBlocks() != 1 {
-		t.Errorf("Expected one block in layer, got %d", tsdfLayer.getNumberOfAllocatedBlocks())
+		t.Errorf("Expected one block in Layer, got %d", tsdfLayer.getNumberOfAllocatedBlocks())
 	}
 	tsdfLayer.getBlockPtrByCoordinates(Point{-10.0, 13.5, 20.0})
 	if tsdfLayer.getNumberOfAllocatedBlocks() != 2 {
-		t.Errorf("Expected two blocks in layer, got %d", tsdfLayer.getNumberOfAllocatedBlocks())
+		t.Errorf("Expected two blocks in Layer, got %d", tsdfLayer.getNumberOfAllocatedBlocks())
 	}
 }
 
@@ -76,7 +76,7 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 			blockSize, blockSize, blockSize, block111.Origin)
 	}
 	if block111.index != index111 {
-		t.Errorf("Expected block111.index to be {1, 1, 1}, got %v", block111.index)
+		t.Errorf("Expected block111.Index to be {1, 1, 1}, got %v", block111.index)
 	}
 
 	// BLOCK 1 1 1 (coordinate within block)
@@ -96,7 +96,7 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 			blockSize, blockSize, blockSize, block111.Origin)
 	}
 	if block111v2.index != index111 {
-		t.Errorf("Expected block111.index to be {1, 1, 1}, got %v", block111.index)
+		t.Errorf("Expected block111.Index to be {1, 1, 1}, got %v", block111.index)
 	}
 	if block111v2.BlockSize != blockSize {
 		t.Errorf("Expected block111.BlockSize to be %f, got %f", blockSize, block111v2.BlockSize)
@@ -269,7 +269,7 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 	}
 	if tsdfLayer.computeBlockIndexFromCoordinates(pointInNeg110) !=
 		(IndexType{-1, -1, 0}) {
-		t.Errorf("Expected index to be {-1, -1, 0}")
+		t.Errorf("Expected Index to be {-1, -1, 0}")
 	}
 	if blockNeg1Neg1Pos0.getVoxelPtrByCoordinates(pointInNeg110) == nil {
 		t.Errorf("Expected pointInNeg110 to not be nil")
@@ -304,7 +304,7 @@ func TestComputeBlockIndexFromOriginFromBlockIndex(t *testing.T) {
 
 				if blockIndex != blockIndexFromOrigin {
 					t.Errorf(
-						"Expected index (%v) to be equal to blockIndexFromOrigin (%v)",
+						"Expected Index (%v) to be equal to blockIndexFromOrigin (%v)",
 						blockIndex,
 						blockIndexFromOrigin,
 					)
