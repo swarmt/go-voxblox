@@ -1,10 +1,11 @@
 package voxblox
 
 import (
-	"github.com/ungerik/go3d/float64/vec3"
 	"math"
 	"math/rand"
 	"sync"
+
+	"github.com/ungerik/go3d/float64/vec3"
 )
 
 type TsdfIntegrator interface {
@@ -57,7 +58,7 @@ func (i *SimpleTsdfIntegrator) updateTsdfVoxel(
 
 	// Weight drop-off
 	dropOffEpsilon := voxelSize
-	if i.Config.ConstWeight == true && sdf < -dropOffEpsilon {
+	if i.Config.ConstWeight && sdf < -dropOffEpsilon {
 		updatedWeight = weight * (i.Config.TruncationDistance + sdf) /
 			(i.Config.TruncationDistance - dropOffEpsilon)
 		updatedWeight = math.Max(updatedWeight, 0.0)
