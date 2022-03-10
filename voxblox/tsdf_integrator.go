@@ -3,6 +3,8 @@ package voxblox
 import (
 	"github.com/ungerik/go3d/float64/vec3"
 	"math"
+	"math/rand"
+	"sync"
 )
 
 type TsdfIntegrator interface {
@@ -38,23 +40,28 @@ func computeDistance(origin, pointG, voxelCenter Point) float64 {
 	return sdf
 }
 
-func updateTsdfVoxel(
-	layer *TsdfLayer,
+func (i *SimpleTsdfIntegrator) updateTsdfVoxel(
 	origin Point,
 	pointG Point,
 	globalVoxelIndex IndexType,
 	color Color,
 	weight float64,
-	truncationDistance float64,
-	maxWeight float64,
 	voxel *TsdfVoxel,
 ) {
-	voxelCenter := getCenterPointFromGridIndex(globalVoxelIndex, layer.getVoxelSize())
+	voxelSize := i.layer.getVoxelSize()
+
+	voxelCenter := getCenterPointFromGridIndex(globalVoxelIndex, voxelSize)
 	sdf := computeDistance(origin, pointG, voxelCenter)
 
 	updatedWeight := weight
 
-	// TODO: Weight drop off
+	// Weight drop-off
+	dropOffEpsilon := voxelSize
+	if i.Config.ConstWeight == true && sdf < -dropOffEpsilon {
+		updatedWeight = weight * (i.Config.TruncationDistance + sdf) /
+			(i.Config.TruncationDistance - dropOffEpsilon)
+		updatedWeight = math.Max(updatedWeight, 0.0)
+	}
 
 	// TODO: Sparsity compensation
 
@@ -64,7 +71,7 @@ func updateTsdfVoxel(
 	if newWeight < kEpsilon {
 		return
 	}
-	newWeight = math.Min(newWeight, maxWeight)
+	newWeight = math.Min(newWeight, i.Config.MaxWeight)
 
 	// Calculate the new distance
 	newSdf := (sdf*updatedWeight + voxel.getDistance()*voxelWeight) / newWeight
@@ -73,9 +80,9 @@ func updateTsdfVoxel(
 
 	var newDistance float64
 	if sdf > 0 {
-		newDistance = math.Min(truncationDistance, newSdf)
+		newDistance = math.Min(i.Config.TruncationDistance, newSdf)
 	} else {
-		newDistance = math.Max(-truncationDistance, newSdf)
+		newDistance = math.Max(-i.Config.TruncationDistance, newSdf)
 	}
 
 	voxel.setDistance(newDistance)
@@ -90,7 +97,7 @@ func calculateWeight(pointC Point) float64 {
 	return 0.0
 }
 
-func (i *SimpleTsdfIntegrator) integratePoints(pose Transformation, points []Point) {
+func (i *SimpleTsdfIntegrator) integratePoints(pose Transformation, points []Point, wg *sync.WaitGroup) {
 	for _, point := range points {
 		ray := validateRay(point, i.Config.MinRange, i.Config.MaxRange, i.Config.AllowClearing)
 
@@ -115,20 +122,28 @@ func (i *SimpleTsdfIntegrator) integratePoints(pose Transformation, points []Poi
 					weight = calculateWeight(point)
 				}
 				// TODO: Voxel color
-				updateTsdfVoxel(
-					i.layer,
+				i.updateTsdfVoxel(
 					ray.Origin,
 					ray.Point,
 					globalVoxelIdx,
 					Color{},
 					weight,
-					i.Config.TruncationDistance,
-					i.Config.MaxWeight,
 					voxel,
 				)
 			}
 		}
 	}
+	wg.Done()
+}
+
+// shufflePoints returns a shuffled slice of points.
+func shufflePoints(points []Point) []Point {
+	shuffled := make([]Point, len(points))
+	perm := rand.Perm(len(points))
+	for i, v := range perm {
+		shuffled[v] = points[i]
+	}
+	return shuffled
 }
 
 func (i *SimpleTsdfIntegrator) integratePointCloud(
@@ -137,14 +152,19 @@ func (i *SimpleTsdfIntegrator) integratePointCloud(
 ) {
 	// Integrate the point cloud points with multiple threads
 	// TODO: re-order points to minimize mutex lock time. Shuffle?
+	points := shufflePoints(pointCloud.Points)
+
 	nThreads := i.Config.IntegratorThreads
-	nPointsPerThread := len(pointCloud.Points) / nThreads
+	wg := &sync.WaitGroup{}
+	nPointsPerThread := len(points) / nThreads
 	for threadIdx := 0; threadIdx < nThreads; threadIdx++ {
 		startIdx := threadIdx * nPointsPerThread
 		endIdx := (threadIdx + 1) * nPointsPerThread
 		if threadIdx == nThreads-1 {
-			endIdx = len(pointCloud.Points)
+			endIdx = len(points)
 		}
-		go i.integratePoints(pose, pointCloud.Points[startIdx:endIdx])
+		wg.Add(1)
+		go i.integratePoints(pose, points[startIdx:endIdx], wg)
 	}
+	wg.Wait()
 }

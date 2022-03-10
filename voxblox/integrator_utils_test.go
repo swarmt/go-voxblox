@@ -135,4 +135,31 @@ func TestRayCaster(t *testing.T) {
 	if rayCaster.currentStep != 62 {
 		t.Errorf("Raycaster current step should be 62")
 	}
+
+	ray = &Ray{
+		Valid:    true,
+		Origin:   Point{0.0, 6.0, 2.0},
+		Point:    Point{3.04000235, 2.57022285, 2.38418579e-07},
+		Length:   4.60049868,
+		Clearing: true,
+	}
+
+	rayCaster = NewRayCaster(
+		ray,
+		10.0,
+		0.4,
+		5.0,
+		true,
+	)
+	if !almostEqual(rayCaster.startScaled[0], 0.0, kEpsilon) ||
+		!almostEqual(rayCaster.startScaled[1], 60.0, kEpsilon) ||
+		!almostEqual(rayCaster.startScaled[2], 20.0, kEpsilon) {
+		t.Errorf("Raycaster start scaled incorrect")
+	}
+	if !almostEqual(rayCaster.endScaled[0], 27.9682636, kEpsilon) ||
+		!almostEqual(rayCaster.endScaled[1], 28.4457779, kEpsilon) ||
+		!almostEqual(rayCaster.endScaled[2], 1.5998435, kEpsilon) {
+		t.Errorf("Raycaster start scaled incorrect")
+	}
+
 }

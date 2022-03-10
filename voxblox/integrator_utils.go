@@ -123,6 +123,8 @@ func NewRayCaster(
 
 	var rayStart, rayEnd Point
 	if ray.Clearing {
+		delta := vec3.Sub(&ray.Point, &ray.Origin)
+		ray.Length = delta.Length()
 		ray.Length = math.Min(math.Max(ray.Length-truncationDistance, 0), maxDistance)
 		rayEnd = vec3.Add(&ray.Origin, unitRay.Scale(ray.Length))
 		rayStart = ray.Origin

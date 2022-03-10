@@ -21,19 +21,19 @@ func init() {
 	// Configuration
 	cameraResolution = vec2.T{320, 240}
 	fovHorizontal = 150.0
-	maxDistance = 5.0
+	maxDistance = 10.0
 
 	config = Config{
 		VoxelSize:          0.1,
 		BlockSize:          16,
 		MinRange:           0.1,
-		MaxRange:           10.0,
+		MaxRange:           5.0,
 		TruncationDistance: 0.1 * 4.0,
 		AllowClearing:      true,
 		AllowCarving:       true,
 		ConstWeight:        false,
 		MaxWeight:          10000.0,
-		IntegratorThreads:  1,
+		IntegratorThreads:  12,
 	}
 
 	// Create a test environment.
@@ -79,6 +79,56 @@ func init() {
 	}
 }
 
+func TestNewSimpleTsdfIntegrator(t *testing.T) {
+	// Simple integrator
+	simpleLayer := NewTsdfLayer(config.VoxelSize, config.BlockSize)
+	simpleTsdfIntegrator := NewSimpleTsdfIntegrator(config, simpleLayer)
+
+	pointCloud := world.GetPointCloudFromTransform(
+		&poses[0],
+		cameraResolution,
+		fovHorizontal,
+		maxDistance,
+	)
+
+	poseInverse := poses[0].Inverse()
+	transformedPointCloud := transformPointCloud(poseInverse, pointCloud)
+
+	// Check transformed point cloud.
+	if !almostEqual(pointCloud.Points[0][0], -2.66666627, 0.001) ||
+		!almostEqual(pointCloud.Points[0][1], 5.28546286, 0.001) ||
+		!almostEqual(pointCloud.Points[0][2], 0.0, 0.001) {
+		t.Errorf("Pointcloud is not correct")
+	}
+	if !almostEqual(transformedPointCloud.Points[0][0], 0.714538097, 0.001) ||
+		!almostEqual(transformedPointCloud.Points[0][1], -2.8530097, 0.001) ||
+		!almostEqual(transformedPointCloud.Points[0][2], -1.72378588, 0.001) {
+		t.Errorf("Transformed pointcloud is not correct")
+	}
+
+	simpleTsdfIntegrator.integratePointCloud(poses[0], transformedPointCloud)
+
+	if simpleLayer.getNumberOfAllocatedBlocks() != 62 {
+		t.Errorf("Number of allocated blocks is not correct")
+	}
+
+	voxel := allocateStorageAndGetVoxelPtr(simpleTsdfIntegrator.layer, IndexType{0, 60, 20})
+	if !almostEqual(voxel.getDistance(), 0.4, kEpsilon) {
+		t.Errorf("Wrong distance: %v", voxel.getDistance())
+	}
+	if !almostEqual(voxel.getWeight(), 10000.0, kEpsilon) {
+		t.Errorf("Wrong weight: %v", voxel.getWeight())
+	}
+
+	voxel = simpleLayer.getBlock(IndexType{-1, 0, 2}).getVoxel(IndexType{4, 15, 0})
+	if !almostEqual(voxel.getDistance(), -0.122520447, 0.001) {
+		t.Errorf("Wrong distance: %v", voxel.getDistance())
+	}
+	if !almostEqual(voxel.getWeight(), 0.531333983, 0.1) {
+		t.Errorf("Wrong weight: %v", voxel.getWeight())
+	}
+}
+
 func TestTsdfIntegrators(t *testing.T) {
 	// Simple integrator
 	simpleLayer := NewTsdfLayer(config.VoxelSize, config.BlockSize)
@@ -89,7 +139,7 @@ func TestTsdfIntegrators(t *testing.T) {
 	// TODO: Fast integrator
 
 	// Iterate over all poses and integrate.
-	for i, pose := range poses {
+	for _, pose := range poses {
 		pointCloud := world.GetPointCloudFromTransform(
 			&pose,
 			cameraResolution,
@@ -98,33 +148,6 @@ func TestTsdfIntegrators(t *testing.T) {
 		)
 		poseInverse := pose.Inverse()
 		transformedPointCloud := transformPointCloud(poseInverse, pointCloud)
-
-		// Check transformed point cloud.
-		if i == 0 {
-			if !almostEqual(pointCloud.Points[0][0], -2.66666627, 0.001) ||
-				!almostEqual(pointCloud.Points[0][1], 5.28546286, 0.001) ||
-				!almostEqual(pointCloud.Points[0][2], 0.0, 0.001) {
-				t.Errorf("Pointcloud is not correct")
-			}
-			if !almostEqual(transformedPointCloud.Points[0][0], 0.714538097, 0.001) ||
-				!almostEqual(transformedPointCloud.Points[0][1], -2.8530097, 0.001) ||
-				!almostEqual(transformedPointCloud.Points[0][2], -1.72378588, 0.001) {
-				t.Errorf("Transformed pointcloud is not correct")
-			}
-		}
-		if i == 40 {
-			if !almostEqual(pointCloud.Points[0][0], -5.66353178, 0.001) ||
-				!almostEqual(pointCloud.Points[0][1], -0.985067368, 0.001) ||
-				!almostEqual(pointCloud.Points[0][2], 0.0, 0.001) {
-				t.Errorf("Pointcloud is not correct")
-			}
-			if !almostEqual(transformedPointCloud.Points[0][0], 0.727970123, 0.001) ||
-				!almostEqual(transformedPointCloud.Points[0][1], -2.74875736, 0.001) ||
-				!almostEqual(transformedPointCloud.Points[0][2], -1.99428153, 0.001) {
-				t.Errorf("Transformed pointcloud is not correct")
-			}
-		}
-
 		simpleTsdfIntegrator.integratePointCloud(pose, transformedPointCloud)
 	}
 
@@ -162,20 +185,25 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 	pointC := Point{0.714538097, -2.8530097, -1.72378588}
 	pointG := Point{-2.66666508, 5.2854619, 1.1920929e-07}
 	globalVoxelIndex := IndexType{0, 60, 20}
-	truncationDistance := 0.4
-	maxWeight := 1000.0
 	voxel := allocateStorageAndGetVoxelPtr(layer, globalVoxelIndex)
 	weight := calculateWeight(pointC)
 
-	updateTsdfVoxel(
-		layer,
+	config = Config{
+		VoxelSize:          0.1,
+		BlockSize:          10,
+		TruncationDistance: 0.4,
+		MaxWeight:          10000.0,
+		ConstWeight:        false,
+	}
+
+	simpleTsdfIntegrator := NewSimpleTsdfIntegrator(config, layer)
+
+	simpleTsdfIntegrator.updateTsdfVoxel(
 		origin,
 		pointG,
 		globalVoxelIndex,
 		Color{},
 		weight,
-		truncationDistance,
-		maxWeight,
 		voxel,
 	)
 
@@ -187,33 +215,5 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 	}
 	if len(layer.blocks) != 1 {
 		t.Errorf("Expected 1 block, got %d", len(layer.blocks))
-	}
-
-	origin = Point{0.0, 6.0, 2.0}
-	pointC = Point{1.42907524, -5.14151907, -1.49416912}
-	pointG = Point{-4.96666479, 4.57092476, 1.1920929e-07}
-	globalVoxelIndex = IndexType{-1, 59, 19}
-	truncationDistance = 0.4
-	maxWeight = 10000.0
-	voxel = allocateStorageAndGetVoxelPtr(layer, globalVoxelIndex)
-	weight = calculateWeight(pointC)
-
-	updateTsdfVoxel(
-		layer,
-		origin,
-		pointG,
-		globalVoxelIndex,
-		Color{},
-		weight,
-		truncationDistance,
-		maxWeight,
-		voxel,
-	)
-
-	if !almostEqual(voxel.getDistance(), 0.4, kEpsilon) {
-		t.Errorf("Expected Tsdf to be 0.4, got %f", voxel.getDistance())
-	}
-	if !almostEqual(voxel.getWeight(), 0.447920054, kEpsilon) {
-		t.Errorf("Expected weight to be 0.336537421, got %f", voxel.getWeight())
 	}
 }

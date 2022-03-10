@@ -1,6 +1,7 @@
 package voxblox
 
 import (
+	"math"
 	"sync"
 )
 
@@ -70,7 +71,7 @@ func (l *TsdfLayer) getBlocks() map[IndexType]*Block {
 	return l.blocks
 }
 
-// getVoxelCenters returns all voxel centers (global coordinates) in the layer.
+// getVoxelCenters returns all voxel centers (global coordinates) in the layer close to the surface.
 // Thread-safe.
 func (l *TsdfLayer) getVoxelCenters() []Point {
 	var voxelCenters []Point
@@ -78,8 +79,10 @@ func (l *TsdfLayer) getVoxelCenters() []Point {
 	defer l.mutex.RUnlock()
 	for _, block := range l.getBlocks() {
 		for _, voxel := range block.getVoxels() {
-			coordinates := block.computeCoordinatesFromVoxelIndex(voxel.getIndex())
-			voxelCenters = append(voxelCenters, coordinates)
+			if math.Abs(voxel.getDistance()) < block.getVoxelSize() {
+				coordinates := block.computeCoordinatesFromVoxelIndex(voxel.getIndex())
+				voxelCenters = append(voxelCenters, coordinates)
+			}
 		}
 	}
 	return voxelCenters

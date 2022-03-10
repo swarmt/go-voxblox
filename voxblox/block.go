@@ -78,6 +78,12 @@ func (b *Block) getVoxels() map[IndexType]*TsdfVoxel {
 	return b.voxels
 }
 
+func (b *Block) addVoxel(voxel *TsdfVoxel) {
+	b.mutex.Lock()
+	defer b.mutex.Unlock()
+	b.voxels[voxel.getIndex()] = voxel
+}
+
 // getVoxel returns a reference to a voxel at the given index .
 // Creates a new voxel if it doesn't exist.
 func (b *Block) getVoxel(voxelIndex IndexType) *TsdfVoxel {
@@ -90,9 +96,7 @@ func (b *Block) getVoxel(voxelIndex IndexType) *TsdfVoxel {
 	}
 	// Create a new voxel
 	newVoxel := NewVoxel(voxelIndex)
-	b.mutex.Lock()
-	b.voxels[voxelIndex] = newVoxel
-	b.mutex.Unlock()
+	b.addVoxel(newVoxel)
 	return newVoxel
 }
 
