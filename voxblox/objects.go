@@ -1,9 +1,10 @@
 package voxblox
 
 import (
+	"math"
+
 	"github.com/ungerik/go3d/float64/vec2"
 	"github.com/ungerik/go3d/float64/vec3"
-	"math"
 )
 
 type Object interface {
@@ -25,7 +26,7 @@ func (c *Cylinder) RayIntersection(
 	var intersectPoint Point
 	var intersectDist float64
 
-	var vectorE = vec3.Sub(&rayOrigin, &c.Center)
+	vectorE := vec3.Sub(&rayOrigin, &c.Center)
 	vectorD := rayDirection
 
 	A := vectorD[0]*vectorD[0] + vectorD[1]*vectorD[1]

@@ -1,8 +1,9 @@
 package voxblox
 
 import (
-	"github.com/ungerik/go3d/float64/vec3"
 	"testing"
+
+	"github.com/ungerik/go3d/float64/vec3"
 )
 
 func TestRayIntersectionCylinder(t *testing.T) {
@@ -97,5 +98,4 @@ func TestRayIntersectionPlane(t *testing.T) {
 	if !almostEqual(intersectDistance, 3.40905786, kEpsilon) {
 		t.Errorf("Incorrect intersection distance: %v", intersectDistance)
 	}
-
 }

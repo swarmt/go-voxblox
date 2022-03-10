@@ -1,11 +1,12 @@
 package voxblox
 
 import (
-	"github.com/ungerik/go3d/float64/vec3"
 	"math"
 	"math/rand"
 	"sync"
 	"time"
+
+	"github.com/ungerik/go3d/float64/vec3"
 )
 
 type TsdfIntegrator interface {

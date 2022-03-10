@@ -1,10 +1,11 @@
 package voxblox
 
 import (
+	"testing"
+
 	"github.com/ungerik/go3d/float64/quaternion"
 	"github.com/ungerik/go3d/float64/vec2"
 	"github.com/ungerik/go3d/float64/vec3"
-	"testing"
 )
 
 func TestGetPointCloudFromTransform(t *testing.T) {

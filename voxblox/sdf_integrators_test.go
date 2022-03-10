@@ -1,12 +1,13 @@
 package voxblox
 
 import (
-	"github.com/ungerik/go3d/float64/quaternion"
-	"github.com/ungerik/go3d/float64/vec2"
-	"github.com/ungerik/go3d/float64/vec3"
 	"math"
 	"runtime"
 	"testing"
+
+	"github.com/ungerik/go3d/float64/quaternion"
+	"github.com/ungerik/go3d/float64/vec2"
+	"github.com/ungerik/go3d/float64/vec3"
 )
 
 var (
@@ -164,7 +165,7 @@ func TestTsdfIntegrators(t *testing.T) {
 		t.Errorf("Wrong block Origin: %v", origin)
 	}
 
-	//convertTsdfLayerToTxtFile(simpleLayer, "simple_layer.txt")
+	// convertTsdfLayerToTxtFile(simpleLayer, "simple_layer.txt")
 }
 
 func TestGetVoxelWeight(t *testing.T) {

@@ -4,12 +4,14 @@ import (
 	"testing"
 )
 
-var blockSize float64
-var tsdfLayer *TsdfLayer
+var (
+	blockSize float64
+	tsdfLayer *TsdfLayer
+)
 
 func init() {
-	var tsdfVoxelSize = 0.1
-	var tsdfVoxelsPerSide = 8
+	tsdfVoxelSize := 0.1
+	tsdfVoxelsPerSide := 8
 	blockSize = tsdfVoxelSize * float64(tsdfVoxelsPerSide)
 	tsdfLayer = NewTsdfLayer(tsdfVoxelSize, tsdfVoxelsPerSide)
 }
@@ -286,7 +288,6 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 			pointInNeg110[0], pointInNeg110[1], pointInNeg110[2],
 			pointInNeg110center[0], pointInNeg110center[1], pointInNeg110center[2])
 	}
-
 }
 
 func TestComputeBlockIndexFromOriginFromBlockIndex(t *testing.T) {
