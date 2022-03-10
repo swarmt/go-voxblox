@@ -108,12 +108,12 @@ func NewRayCaster(
 	ray *Ray,
 	voxelSizeInv float64,
 	truncationDistance float64,
-	maxDistance float64,
+	maxRange float64,
 	allowCarving bool,
 ) *RayCaster {
 	rayCaster := &RayCaster{
 		TruncationDistance: truncationDistance,
-		MaxDistance:        maxDistance,
+		MaxDistance:        maxRange,
 		AllowCarving:       allowCarving,
 	}
 
@@ -124,7 +124,7 @@ func NewRayCaster(
 	if ray.Clearing {
 		delta := vec3.Sub(&ray.Point, &ray.Origin)
 		ray.Length = delta.Length()
-		ray.Length = math.Min(math.Max(ray.Length-truncationDistance, 0), maxDistance)
+		ray.Length = math.Min(math.Max(ray.Length-truncationDistance, 0), maxRange)
 		rayEnd = vec3.Add(&ray.Origin, unitRay.Scale(ray.Length))
 		rayStart = ray.Origin
 		if !allowCarving {

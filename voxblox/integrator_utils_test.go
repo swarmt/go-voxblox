@@ -13,8 +13,7 @@ func TestGetRay(t *testing.T) {
 		t.Errorf("Ray should not be valid")
 	}
 
-	valid = validateRay(&ray, Point{0, 0, 10}, 1, 15, true)
-	if valid == false {
+	if validateRay(&ray, Point{0, 0, 10}, 1, 15, true) == false {
 		t.Errorf("Ray should be valid")
 	}
 	if ray.Length != 10.0 {
@@ -24,23 +23,20 @@ func TestGetRay(t *testing.T) {
 		t.Errorf("Ray should not be clearing")
 	}
 
-	valid = validateRay(&ray, Point{0, 0, 10}, 1, 8, true)
-	if valid == false {
+	if validateRay(&ray, Point{0, 0, 10}, 1, 8, true) == false {
 		t.Errorf("Ray should be valid")
 	}
 	if ray.Clearing != true {
 		t.Errorf("Ray should be clearing")
 	}
 
-	valid = validateRay(&ray, Point{0, 0, 10}, 1, 8, false)
-	if valid == false {
+	if validateRay(&ray, Point{0, 0, 10}, 1, 8, false) == false {
 		t.Errorf("Ray should be valid")
 	}
 	if ray.Clearing == true {
 		t.Errorf("Ray should not be clearing")
 	}
-	valid = validateRay(&ray, Point{0.714538097, -2.8530097, -1.72378588}, 0.1, 5, true)
-	if valid == false {
+	if validateRay(&ray, Point{0.714538097, -2.8530097, -1.72378588}, 0.1, 5, true) == false {
 		t.Errorf("Ray should be valid")
 	}
 	if ray.Clearing == true {
