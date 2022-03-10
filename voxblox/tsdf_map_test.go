@@ -98,8 +98,8 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 	if block111v2.index != index111 {
 		t.Errorf("Expected block111.index to be {1, 1, 1}, got %v", block111.index)
 	}
-	if block111v2.blockSize != blockSize {
-		t.Errorf("Expected block111.BlockSize to be %f, got %f", blockSize, block111v2.blockSize)
+	if block111v2.BlockSize != blockSize {
+		t.Errorf("Expected block111.BlockSize to be %f, got %f", blockSize, block111v2.BlockSize)
 	}
 
 	// BLOCK -1 -1 -1 (coordinate at Origin)
@@ -116,11 +116,11 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 		t.Errorf("Expected blockNeg111.Origin to be {%f, %f, %f}, got %v",
 			-blockSize, -blockSize, -blockSize, blockNeg111.Origin)
 	}
-	if blockNeg111.blockSize != blockSize {
+	if blockNeg111.BlockSize != blockSize {
 		t.Errorf(
 			"Expected blockNeg111.BlockSize to be %f, got %f",
 			blockSize,
-			blockNeg111.blockSize,
+			blockNeg111.BlockSize,
 		)
 	}
 
@@ -140,11 +140,11 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 		t.Errorf("Expected blockNeg111.Origin to be {%f, %f, %f}, got %v",
 			-blockSize, -blockSize, -blockSize, blockNeg111.Origin)
 	}
-	if blockNeg111v2.blockSize != blockSize {
+	if blockNeg111v2.BlockSize != blockSize {
 		t.Errorf(
 			"Expected blockNeg111.BlockSize to be %f, got %f",
 			blockSize,
-			blockNeg111v2.blockSize,
+			blockNeg111v2.BlockSize,
 		)
 	}
 
@@ -216,9 +216,9 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 
 	// Voxel 0 0 0
 	pointInNeg111 = Point{
-		-1.0 * blockNeg111.blockSize,
-		-1.0 * blockNeg111.blockSize,
-		-1.0 * blockNeg111.blockSize,
+		-1.0 * blockNeg111.BlockSize,
+		-1.0 * blockNeg111.BlockSize,
+		-1.0 * blockNeg111.BlockSize,
 	}
 	if blockNeg111.getVoxelPtrByCoordinates(pointInNeg111) == nil {
 		t.Errorf("Expected pointInNeg111 to not be nil")

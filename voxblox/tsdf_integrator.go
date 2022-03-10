@@ -5,6 +5,7 @@ import (
 	"math"
 	"math/rand"
 	"sync"
+	"time"
 )
 
 type TsdfIntegrator interface {
@@ -155,6 +156,8 @@ func (i *SimpleTsdfIntegrator) integratePointCloud(
 	pose Transformation,
 	pointCloud PointCloud,
 ) {
+	defer timeTrack(time.Now(), "integratePointCloud")
+
 	// Shuffle points to minimize mutex contention.
 	// TODO: better way to do this?
 	points := shufflePoints(pointCloud.Points)

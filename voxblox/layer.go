@@ -10,9 +10,9 @@ type TsdfLayer struct {
 	VoxelSizeInv     float64
 	VoxelsPerSide    int
 	VoxelsPerSideInv float64
-	blocks           map[IndexType]*Block
 	BlockSize        float64
 	BlockSizeInv     float64
+	blocks           map[IndexType]*Block
 	mutex            sync.RWMutex
 }
 
