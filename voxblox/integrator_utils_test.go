@@ -6,13 +6,14 @@ import (
 )
 
 func TestGetRay(t *testing.T) {
-	ray := validateRay(Point{0, 0, 0}, 1, 15, true)
-	if ray.Valid == true {
+	var ray Ray
+	valid := validateRay(&ray, Point{0, 0, 0}, 1, 15, true)
+	if valid == true {
 		t.Errorf("Ray should not be valid")
 	}
 
-	ray = validateRay(Point{0, 0, 10}, 1, 15, true)
-	if ray.Valid == false {
+	valid = validateRay(&ray, Point{0, 0, 10}, 1, 15, true)
+	if valid == false {
 		t.Errorf("Ray should be valid")
 	}
 	if ray.Length != 10.0 {
@@ -22,23 +23,23 @@ func TestGetRay(t *testing.T) {
 		t.Errorf("Ray should not be clearing")
 	}
 
-	ray = validateRay(Point{0, 0, 10}, 1, 8, true)
-	if ray.Valid == false {
+	valid = validateRay(&ray, Point{0, 0, 10}, 1, 8, true)
+	if valid == false {
 		t.Errorf("Ray should be valid")
 	}
 	if ray.Clearing != true {
 		t.Errorf("Ray should be clearing")
 	}
 
-	ray = validateRay(Point{0, 0, 10}, 1, 8, false)
-	if ray.Valid == false {
+	valid = validateRay(&ray, Point{0, 0, 10}, 1, 8, false)
+	if valid == false {
 		t.Errorf("Ray should be valid")
 	}
 	if ray.Clearing == true {
 		t.Errorf("Ray should not be clearing")
 	}
-	ray = validateRay(Point{0.714538097, -2.8530097, -1.72378588}, 0.1, 5, true)
-	if ray.Valid == false {
+	valid = validateRay(&ray, Point{0.714538097, -2.8530097, -1.72378588}, 0.1, 5, true)
+	if valid == false {
 		t.Errorf("Ray should be valid")
 	}
 	if ray.Clearing == true {
@@ -48,7 +49,8 @@ func TestGetRay(t *testing.T) {
 
 func TestRayCaster(t *testing.T) {
 	point := Point{0.714538097, -2.8530097, -1.72378588}
-	ray := validateRay(point, 0.1, 5, true)
+	var ray Ray
+	validateRay(&ray, point, 0.1, 5, true)
 	pose := Transformation{
 		Position: Point{0, 6, 2},
 		Rotation: quaternion.T{0.0353406072, -0.0353406072, -0.706223071, 0.706223071},
@@ -60,7 +62,7 @@ func TestRayCaster(t *testing.T) {
 	truncationDistance := 0.4
 
 	// Create a ray caster.
-	rayCaster := NewRayCaster(ray, voxelSizeInv, truncationDistance, 5, true)
+	rayCaster := NewRayCaster(&ray, voxelSizeInv, truncationDistance, 5, true)
 	if rayCaster.currentIndex[0] != 0 ||
 		rayCaster.currentIndex[1] != 60 ||
 		rayCaster.currentIndex[2] != 20 {
@@ -136,8 +138,7 @@ func TestRayCaster(t *testing.T) {
 		t.Errorf("Raycaster current step should be 62")
 	}
 
-	ray = &Ray{
-		Valid:    true,
+	ray = Ray{
 		Origin:   Point{0.0, 6.0, 2.0},
 		Point:    Point{3.04000235, 2.57022285, 2.38418579e-07},
 		Length:   4.60049868,
@@ -145,7 +146,7 @@ func TestRayCaster(t *testing.T) {
 	}
 
 	rayCaster = NewRayCaster(
-		ray,
+		&ray,
 		10.0,
 		0.4,
 		5.0,

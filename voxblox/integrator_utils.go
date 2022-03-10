@@ -7,7 +7,6 @@ import (
 )
 
 type Ray struct {
-	Valid    bool
 	Origin   vec3.T
 	Point    vec3.T
 	Length   float64
@@ -150,31 +149,28 @@ func NewRayCaster(
 }
 
 func validateRay(
+	ray *Ray,
 	point Point,
 	minLength float64,
 	maxLength float64,
 	allowClearing bool,
-) *Ray {
-	ray := Ray{Clearing: false}
+) bool {
+	ray.Clearing = false
+
 	// Faster than checking the ray length for 0,0,0 points.
 	if point[0] == 0 && point[1] == 0 && point[2] == 0 {
-		ray.Valid = false
-		return &ray
+		return false
 	}
 	ray.Length = point.Length()
 	if ray.Length < minLength {
-		ray.Valid = false
-		return &ray
+		return false
 	} else if ray.Length > maxLength {
 		if allowClearing {
-			ray.Valid = true
 			ray.Clearing = true
-			return &ray
+			return true
 		} else {
-			ray.Valid = true
-			return &ray
+			return true
 		}
 	}
-	ray.Valid = true
-	return &ray
+	return true
 }

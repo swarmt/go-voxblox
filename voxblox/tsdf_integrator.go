@@ -104,16 +104,15 @@ func (i *SimpleTsdfIntegrator) integratePoints(
 	wg *sync.WaitGroup,
 ) {
 	for _, point := range points {
-		ray := validateRay(point, i.Config.MinRange, i.Config.MaxRange, i.Config.AllowClearing)
-
-		if ray.Valid {
+		var ray Ray
+		if validateRay(&ray, point, i.Config.MinRange, i.Config.MaxRange, i.Config.AllowClearing) {
 			// Transform the point into the global frame.
 			ray.Origin = pose.Position
 			ray.Point = pose.transformPoint(point)
 
 			// Create a new Ray-caster.
 			rayCaster := NewRayCaster(
-				ray,
+				&ray,
 				i.Layer.VoxelSizeInv,
 				i.Config.TruncationDistance,
 				i.Config.MaxRange,
