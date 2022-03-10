@@ -1,8 +1,9 @@
 package voxblox
 
 import (
-	"github.com/ungerik/go3d/float64/vec3"
 	"sync"
+
+	"github.com/ungerik/go3d/float64/vec3"
 )
 
 // Block contains a map of voxels.

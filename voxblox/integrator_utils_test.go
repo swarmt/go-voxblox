@@ -1,8 +1,9 @@
 package voxblox
 
 import (
-	"github.com/ungerik/go3d/float64/quaternion"
 	"testing"
+
+	"github.com/ungerik/go3d/float64/quaternion"
 )
 
 func TestGetRay(t *testing.T) {
@@ -55,7 +56,7 @@ func TestRayCaster(t *testing.T) {
 		Position: Point{0, 6, 2},
 		Rotation: quaternion.T{0.0353406072, -0.0353406072, -0.706223071, 0.706223071},
 	}
-	//Transform the point into the global frame.
+	// Transform the point into the global frame.
 	ray.Origin = pose.Position
 	ray.Point = pose.transformPoint(point)
 	voxelSizeInv := 10.0
@@ -162,5 +163,4 @@ func TestRayCaster(t *testing.T) {
 		!almostEqual(rayCaster.endScaled[2], 1.5998435, kEpsilon) {
 		t.Errorf("Raycaster start scaled incorrect")
 	}
-
 }
