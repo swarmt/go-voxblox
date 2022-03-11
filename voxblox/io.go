@@ -7,7 +7,6 @@ import (
 
 // convertTsdfLayerToTxtFile writes a tsdf Layer to a text file.
 // TODO: This is a temporary function.
-// TODO: The output looks incorrect, need to fix.
 func convertTsdfLayerToTxtFile(layer *TsdfLayer, fileName string) {
 	// Create a new file
 	file, _ := os.Create(fileName)
