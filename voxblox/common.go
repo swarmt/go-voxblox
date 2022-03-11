@@ -72,7 +72,7 @@ func timeTrack(start time.Time, name string) {
 	log.Printf("%s took %s", name, elapsed)
 }
 
-// IndexToPoint converts an index to a point.
+// IndexToPoint converts an Index to a point.
 func IndexToPoint(index IndexType) Point {
 	return Point{float64(index[0]), float64(index[1]), float64(index[2])}
 }

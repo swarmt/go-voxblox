@@ -35,6 +35,19 @@ func (l *TsdfLayer) getBlocks() map[IndexType]*Block {
 	return l.blocks
 }
 
+// getUpdatedBlocks returns a map of references to blocks that have been updated
+func (l *TsdfLayer) getUpdatedBlocks() map[IndexType]*Block {
+	l.mutex.RLock()
+	defer l.mutex.RUnlock()
+	updatedBlocks := make(map[IndexType]*Block)
+	for index, block := range l.blocks {
+		if block.getUpdated() {
+			updatedBlocks[index] = block
+		}
+	}
+	return updatedBlocks
+}
+
 // getVoxelCenters returns all voxel centers (global coordinates) in the Layer close to the surface.
 // Thread-safe.
 func (l *TsdfLayer) getVoxelCenters() ([]Point, []Color) {
