@@ -12,9 +12,18 @@ func convertTsdfLayerToTxtFile(layer *TsdfLayer, fileName string) {
 	// Create a new file
 	file, _ := os.Create(fileName)
 
-	voxelCenters := layer.getVoxelCenters()
-	for _, voxel := range voxelCenters {
+	voxelCenters, voxelColors := layer.getVoxelCenters()
+	for i, voxel := range voxelCenters {
 		// Write the voxel to the file
-		fmt.Fprintf(file, "%f %f %f\n", voxel[0], voxel[1], voxel[2])
+		fmt.Fprintf(
+			file,
+			"%f %f %f %d %d %d\n",
+			voxel[0],
+			voxel[1],
+			voxel[2],
+			voxelColors[i][0],
+			voxelColors[i][1],
+			voxelColors[i][2],
+		)
 	}
 }

@@ -30,15 +30,6 @@ func (w *SimulationWorld) AddObject(object Object) {
 	w.Objects = append(w.Objects, object)
 }
 
-func (w *SimulationWorld) AddGroundLevel(height float64) {
-	ground := Plane{
-		Center: Point{0.0, 0.0, height},
-		Normal: Point{0.0, 0.0, 1.0},
-		Color:  [3]uint8{},
-	}
-	w.Objects = append(w.Objects, &ground)
-}
-
 func (w *SimulationWorld) GetPointCloudFromViewpoint(
 	viewOrigin vec3.T,
 	viewDirection vec3.T,
@@ -55,6 +46,7 @@ func (w *SimulationWorld) GetPointCloudFromViewpoint(
 	// Create a slice to store the points
 	// TODO: Structured points
 	var points []Point
+	var colors []Color
 
 	// Iterate over all the pixels
 	for u := -cameraResolution[0] / 2; u < cameraResolution[0]/2; u++ {
@@ -76,6 +68,7 @@ func (w *SimulationWorld) GetPointCloudFromViewpoint(
 						rayValid = true
 						rayDistance = objectDistance
 						points = append(points, objectIntersect)
+						colors = append(colors, object.getColor())
 					}
 				}
 			}
@@ -85,6 +78,7 @@ func (w *SimulationWorld) GetPointCloudFromViewpoint(
 		Width:  int(cameraResolution[0]),
 		Height: int(cameraResolution[1]),
 		Points: points,
+		Colors: colors,
 	}
 }
 

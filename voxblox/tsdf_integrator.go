@@ -2,7 +2,6 @@ package voxblox
 
 import (
 	"math"
-	"math/rand"
 	"sync"
 	"time"
 
@@ -18,12 +17,12 @@ type TsdfIntegrator interface {
 }
 
 type SimpleTsdfIntegrator struct {
-	Config Config
+	Config TsdfConfig
 	Layer  *TsdfLayer
 }
 
 func NewSimpleTsdfIntegrator(
-	config Config,
+	config TsdfConfig,
 	layer *TsdfLayer,
 ) *SimpleTsdfIntegrator {
 	return &SimpleTsdfIntegrator{
@@ -78,7 +77,11 @@ func (i *SimpleTsdfIntegrator) updateTsdfVoxel(
 	// Calculate the new distance
 	newSdf := (sdf*updatedWeight + voxel.getDistance()*voxelWeight) / newWeight
 
-	// TODO: Color blending
+	// Blend colors
+	if math.Abs(sdf) < i.Config.TruncationDistance {
+		newColor := blendTwoColors(voxel.getColor(), voxelWeight, color, weight)
+		voxel.setColor(newColor)
+	}
 
 	var newDistance float64
 	if sdf > 0 {
@@ -102,9 +105,10 @@ func calculateWeight(pointC Point) float64 {
 func (i *SimpleTsdfIntegrator) integratePoints(
 	pose Transformation,
 	points []Point,
+	colors []Color,
 	wg *sync.WaitGroup,
 ) {
-	for _, point := range points {
+	for j, point := range points {
 		var ray Ray
 		if validateRay(&ray, point, i.Config.MinRange, i.Config.MaxRange, i.Config.AllowClearing) {
 			// Transform the point into the global frame.
@@ -126,12 +130,11 @@ func (i *SimpleTsdfIntegrator) integratePoints(
 				if !i.Config.ConstWeight {
 					weight = calculateWeight(point)
 				}
-				// TODO: Voxel color
 				i.updateTsdfVoxel(
 					ray.Origin,
 					ray.Point,
 					globalVoxelIdx,
-					Color{},
+					colors[j],
 					weight,
 					voxel,
 				)
@@ -141,16 +144,6 @@ func (i *SimpleTsdfIntegrator) integratePoints(
 	wg.Done()
 }
 
-// shufflePoints returns a shuffled slice of points.
-func shufflePoints(points []Point) []Point {
-	shuffled := make([]Point, len(points))
-	perm := rand.Perm(len(points))
-	for i, v := range perm {
-		shuffled[v] = points[i]
-	}
-	return shuffled
-}
-
 // integratePointCloud integrates a point cloud into the TSDF Layer.
 func (i *SimpleTsdfIntegrator) integratePointCloud(
 	pose Transformation,
@@ -158,21 +151,33 @@ func (i *SimpleTsdfIntegrator) integratePointCloud(
 ) {
 	defer timeTrack(time.Now(), "integratePointCloud")
 
-	// Shuffle points to minimize mutex contention.
-	// TODO: better way to do this?
-	points := shufflePoints(pointCloud.Points)
+	// Fill color buffer with white if empty
+	// TODO: This is a hack.
+	if len(pointCloud.Colors) == 0 {
+		pointCloud.Colors = make([]Color, len(pointCloud.Points))
+		for i := range pointCloud.Colors {
+			pointCloud.Colors[i] = ColorWhite
+		}
+	}
+
+	// TODO: Organise points to minimize mutex contention.
 
 	nThreads := i.Config.IntegratorThreads
 	wg := &sync.WaitGroup{}
-	nPointsPerThread := len(points) / nThreads
+	nPointsPerThread := len(pointCloud.Points) / nThreads
 	for threadIdx := 0; threadIdx < nThreads; threadIdx++ {
 		startIdx := threadIdx * nPointsPerThread
 		endIdx := (threadIdx + 1) * nPointsPerThread
 		if threadIdx == nThreads-1 {
-			endIdx = len(points)
+			endIdx = len(pointCloud.Points)
 		}
 		wg.Add(1)
-		go i.integratePoints(pose, points[startIdx:endIdx], wg)
+		go i.integratePoints(
+			pose,
+			pointCloud.Points[startIdx:endIdx],
+			pointCloud.Colors[startIdx:endIdx],
+			wg)
+
 	}
 	wg.Wait()
 }

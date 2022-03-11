@@ -37,8 +37,9 @@ func (l *TsdfLayer) getBlocks() map[IndexType]*Block {
 
 // getVoxelCenters returns all voxel centers (global coordinates) in the Layer close to the surface.
 // Thread-safe.
-func (l *TsdfLayer) getVoxelCenters() []Point {
+func (l *TsdfLayer) getVoxelCenters() ([]Point, []Color) {
 	var voxelCenters []Point
+	var voxelColors []Color
 	l.mutex.RLock()
 	defer l.mutex.RUnlock()
 	for _, block := range l.getBlocks() {
@@ -46,10 +47,12 @@ func (l *TsdfLayer) getVoxelCenters() []Point {
 			if math.Abs(voxel.getDistance()) < block.VoxelSize {
 				coordinates := block.computeCoordinatesFromVoxelIndex(voxel.Index)
 				voxelCenters = append(voxelCenters, coordinates)
+				color := voxel.getColor()
+				voxelColors = append(voxelColors, color)
 			}
 		}
 	}
-	return voxelCenters
+	return voxelCenters, voxelColors
 }
 
 // getNumberOfAllocatedBlocks returns the number of blocks allocated in the map

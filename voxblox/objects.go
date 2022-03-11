@@ -9,6 +9,7 @@ import (
 
 type Object interface {
 	RayIntersection(Point, Point, float64) (bool, Point, float64)
+	getColor() Color
 }
 
 type Cylinder struct {
@@ -16,6 +17,10 @@ type Cylinder struct {
 	Radius float64
 	Height float64
 	Color  Color
+}
+
+func (c Cylinder) getColor() Color {
+	return c.Color
 }
 
 func (c *Cylinder) RayIntersection(
@@ -122,18 +127,22 @@ type Plane struct {
 	Color  Color
 }
 
-func (plane *Plane) RayIntersection(
+func (p Plane) getColor() Color {
+	return p.Color
+}
+
+func (p *Plane) RayIntersection(
 	rayOrigin Point,
 	rayDirection vec3.T,
 	maxDistance float64,
 ) (bool, Point, float64) {
-	denominator := vec3.Dot(&plane.Normal, &rayDirection)
+	denominator := vec3.Dot(&p.Normal, &rayDirection)
 	if math.Abs(denominator) < kEpsilon {
 		return false, Point{}, 0.0
 	}
 
-	delta := vec3.Sub(&plane.Center, &rayOrigin)
-	distance := vec3.Dot(&delta, &plane.Normal) / denominator
+	delta := vec3.Sub(&p.Center, &rayOrigin)
+	distance := vec3.Dot(&delta, &p.Normal) / denominator
 	if distance < 0.0 || distance > maxDistance {
 		return false, Point{}, 0.0
 	}

@@ -36,5 +36,6 @@ func transformPointCloud(transformation Transformation, pointCloud PointCloud) P
 		Width:  pointCloud.Width,
 		Height: pointCloud.Height,
 		Points: transformedPoints,
+		Colors: pointCloud.Colors,
 	}
 }

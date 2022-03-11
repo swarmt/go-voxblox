@@ -1,6 +1,6 @@
 package voxblox
 
-type Config struct {
+type TsdfConfig struct {
 	VoxelSize          float64 `yaml:"voxel_size"`
 	BlockSize          int     `yaml:"block_size"`
 	MinRange           float64 `yaml:"min_range"`
@@ -11,4 +11,10 @@ type Config struct {
 	MaxWeight          float64 `yaml:"max_weight"`
 	ConstWeight        bool    `yaml:"const_weight"`
 	IntegratorThreads  int     `yaml:"integrator_threads"`
+}
+
+type MeshConfig struct {
+	UseColor          bool    `yaml:"use_color"`
+	MinWeight         float64 `yaml:"min_weight"`
+	IntegratorThreads int     `yaml:"integrator_threads"`
 }

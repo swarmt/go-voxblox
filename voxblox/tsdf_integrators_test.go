@@ -16,7 +16,7 @@ var (
 	cameraResolution vec2.T
 	fovHorizontal    float64
 	maxDistance      float64
-	config           Config
+	config           TsdfConfig
 )
 
 func init() {
@@ -25,7 +25,7 @@ func init() {
 	fovHorizontal = 150.0
 	maxDistance = 10.0
 
-	config = Config{
+	config = TsdfConfig{
 		VoxelSize:          0.1,
 		BlockSize:          16,
 		MinRange:           0.1,
@@ -47,9 +47,14 @@ func init() {
 		Center: Point{0.0, 0.0, 2.0},
 		Radius: 2.0,
 		Height: 4.0,
+		Color:  ColorRed,
 	}
 	world.Objects = append(world.Objects, &cylinder)
-	plane := Plane{Center: Point{0.0, 0.0, 0.0}, Normal: vec3.T{0.0, 0.0, 1.0}}
+	plane := Plane{
+		Center: Point{0.0, 0.0, 0.0},
+		Normal: vec3.T{0.0, 0.0, 1.0},
+		Color:  ColorWhite,
+	}
 	world.AddObject(&plane)
 
 	// Generate poses around the cylinder.
@@ -165,7 +170,7 @@ func TestTsdfIntegrators(t *testing.T) {
 		t.Errorf("Wrong block Origin: %v", origin)
 	}
 
-	// convertTsdfLayerToTxtFile(simpleLayer, "simple_layer.txt")
+	convertTsdfLayerToTxtFile(simpleLayer, "simple_layer.txt")
 }
 
 func TestGetVoxelWeight(t *testing.T) {
@@ -190,7 +195,7 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 	voxel := getVoxelFromGlobalIndex(layer, globalVoxelIndex)
 	weight := calculateWeight(pointC)
 
-	config = Config{
+	config = TsdfConfig{
 		VoxelSize:          0.1,
 		BlockSize:          10,
 		TruncationDistance: 0.4,
