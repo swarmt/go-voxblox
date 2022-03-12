@@ -30,7 +30,6 @@ func NewMeshIntegrator(
 }
 
 func (i *MeshIntegrator) generateMeshBlock(block *TsdfBlock) {
-	
 }
 
 func (i *MeshIntegrator) generateMesh() {
