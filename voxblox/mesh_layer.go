@@ -38,8 +38,7 @@ func (l *MeshLayer) getBlockByIndex(blockIndex IndexType) *MeshBlock {
 		return block
 	}
 	newBlock := NewMeshBlock(
-		l.VoxelsPerSide,
-		l.VoxelSize,
+		l,
 		blockIndex,
 		getOriginPointFromGridIndex(blockIndex, l.BlockSize),
 	)

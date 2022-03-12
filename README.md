@@ -4,6 +4,7 @@ go-voxblox
 A Go implementation of [Voxblox](https://github.com/ethz-asl/voxblox)
 
 Voxblox system diagram
+
 ![System Diagram](.readme/system-diagram.png)
 
 go-voxblox system diagram

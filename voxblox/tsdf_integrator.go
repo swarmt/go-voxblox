@@ -150,7 +150,7 @@ func (i *SimpleTsdfIntegrator) integratePointCloud(
 	defer timeTrack(time.Now(), "integratePointCloud")
 
 	// Fill color buffer with white if empty
-	// TODO: This is a hack.
+	// TODO: This is a hack. Handle empty color slice downstream.
 	if len(pointCloud.Colors) == 0 {
 		pointCloud.Colors = make([]Color, len(pointCloud.Points))
 		for i := range pointCloud.Colors {
@@ -160,8 +160,8 @@ func (i *SimpleTsdfIntegrator) integratePointCloud(
 
 	// TODO: Organise points to minimize mutex contention.
 
-	nThreads := i.Config.IntegratorThreads
-	wg := &sync.WaitGroup{}
+	nThreads := i.Config.Threads
+	wg := sync.WaitGroup{}
 	nPointsPerThread := len(pointCloud.Points) / nThreads
 	for threadIdx := 0; threadIdx < nThreads; threadIdx++ {
 		startIdx := threadIdx * nPointsPerThread
@@ -174,7 +174,7 @@ func (i *SimpleTsdfIntegrator) integratePointCloud(
 			pose,
 			pointCloud.Points[startIdx:endIdx],
 			pointCloud.Colors[startIdx:endIdx],
-			wg)
+			&wg)
 
 	}
 	wg.Wait()

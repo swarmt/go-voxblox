@@ -14,14 +14,15 @@ type MeshBlock struct {
 }
 
 // NewMeshBlock creates a new MeshBlock.
-func NewMeshBlock(voxelsPerSide int, voxelSize float64, index IndexType, origin Point) *MeshBlock {
+func NewMeshBlock(layer *MeshLayer, index IndexType, origin Point) *MeshBlock {
 	b := new(MeshBlock)
-	b.VoxelsPerSide = voxelsPerSide
-	b.VoxelSize = voxelSize
 	b.Origin = origin
 	b.Index = index
-	b.VoxelSizeInv = 1.0 / voxelSize
-	b.BlockSize = float64(voxelsPerSide) * voxelSize
-	b.BlockSizeInv = 1.0 / b.BlockSize
+	b.VoxelsPerSide = layer.VoxelsPerSide
+	b.VoxelSize = layer.VoxelSize
+	b.VoxelSizeInv = layer.VoxelSizeInv
+	b.BlockSize = layer.BlockSize
+	b.BlockSizeInv = layer.BlockSizeInv
+	b.mutex = sync.RWMutex{}
 	return b
 }

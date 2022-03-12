@@ -3,6 +3,4 @@
 
 .DS_Store
 
-voxblox/pointcloud.txt
-
-voxblox/simple_layer.txt
+/output/

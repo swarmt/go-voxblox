@@ -23,14 +23,15 @@ type TsdfBlock struct {
 // NewTsdfBlock creates a new TsdfBlock.
 func NewTsdfBlock(layer *TsdfLayer, index IndexType, origin Point) *TsdfBlock {
 	b := new(TsdfBlock)
-	b.VoxelsPerSide = layer.VoxelsPerSide
-	b.VoxelSize = layer.VoxelSize
 	b.Origin = origin
 	b.Index = index
-	b.updated = true
+	b.VoxelsPerSide = layer.VoxelsPerSide
+	b.VoxelSize = layer.VoxelSize
 	b.VoxelSizeInv = layer.VoxelSizeInv
 	b.BlockSize = layer.BlockSize
 	b.BlockSizeInv = layer.BlockSizeInv
+	b.mutex = sync.RWMutex{}
+	b.updated = true
 	b.voxels = make(map[IndexType]*TsdfVoxel)
 	return b
 }
@@ -62,7 +63,7 @@ func (b *TsdfBlock) getUpdated() bool {
 // setUpdated sets the updated flag.
 // Thread-safe.
 func (b *TsdfBlock) setUpdated() {
-	// Avoid getting a write lock if we don't need to.
+	// Avoid getting a mutex write lock if we don't need to.
 	if !b.getUpdated() {
 		b.mutex.Lock()
 		defer b.mutex.Unlock()
@@ -89,7 +90,6 @@ func (b *TsdfBlock) getVoxel(voxelIndex IndexType) *TsdfVoxel {
 
 // getVoxelPtrByCoordinates returns a reference to a voxel at the given coordinates.
 // Creates a new voxel if it does not exist.
-// Thread-safe.
 func (b *TsdfBlock) getVoxelPtrByCoordinates(point Point) *TsdfVoxel {
 	return b.getVoxel(getGridIndexFromPoint(point, b.VoxelSize))
 }

@@ -10,11 +10,11 @@ type TsdfConfig struct {
 	AllowClearing      bool    `yaml:"allow_clearing"`
 	MaxWeight          float64 `yaml:"max_weight"`
 	ConstWeight        bool    `yaml:"const_weight"`
-	IntegratorThreads  int     `yaml:"integrator_threads"`
+	Threads            int     `yaml:"integrator_threads"`
 }
 
 type MeshConfig struct {
-	UseColor          bool    `yaml:"use_color"`
-	MinWeight         float64 `yaml:"min_weight"`
-	IntegratorThreads int     `yaml:"integrator_threads"`
+	UseColor  bool    `yaml:"use_color"`
+	MinWeight float64 `yaml:"min_weight"`
+	Threads   int     `yaml:"integrator_threads"`
 }

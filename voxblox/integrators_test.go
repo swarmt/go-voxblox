@@ -36,13 +36,13 @@ func init() {
 		AllowCarving:       true,
 		ConstWeight:        false,
 		MaxWeight:          10000.0,
-		IntegratorThreads:  runtime.NumCPU(),
+		Threads:            runtime.NumCPU(),
 	}
 
 	meshConfig = MeshConfig{
-		UseColor:          true,
-		MinWeight:         1000.0,
-		IntegratorThreads: runtime.NumCPU(),
+		UseColor:  true,
+		MinWeight: 1000.0,
+		Threads:   runtime.NumCPU(),
 	}
 
 	// Create a test environment.
@@ -185,7 +185,7 @@ func TestTsdfIntegrators(t *testing.T) {
 		t.Errorf("Wrong block Origin: %v", origin)
 	}
 
-	convertTsdfLayerToTxtFile(simpleLayer, "simple_layer.txt")
+	convertTsdfLayerToTxtFile(simpleLayer, "../output/simple_layer.txt")
 }
 
 func TestGetVoxelWeight(t *testing.T) {
