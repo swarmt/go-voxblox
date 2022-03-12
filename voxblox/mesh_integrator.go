@@ -24,18 +24,20 @@ func NewMeshIntegrator(
 ) *MeshIntegrator {
 	i := MeshIntegrator{}
 	i.Config = config
-	i.VoxelSize = tsdfLayer.VoxelSize
-	i.BlockSize = tsdfLayer.BlockSize
-	i.VoxelsPerSide = tsdfLayer.VoxelsPerSide
-	i.VoxelSizeInv = 1.0 / i.VoxelSize
-	i.BlockSizeInv = 1.0 / i.BlockSize
-	i.VoxelsPerSideInv = 1.0 / float64(i.VoxelsPerSide)
 	i.TsdfLayer = tsdfLayer
 	i.MeshLayer = meshLayer
 	return &i
 }
 
+func (i *MeshIntegrator) generateMeshBlock(block *TsdfBlock) {
+	
+}
+
 func (i *MeshIntegrator) generateMesh() {
 	updatedBlocks := i.TsdfLayer.getUpdatedBlocks()
-	_ = updatedBlocks
+
+	// TODO: parallelize
+	for _, block := range updatedBlocks {
+		i.generateMeshBlock(block)
+	}
 }

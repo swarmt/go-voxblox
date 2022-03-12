@@ -34,7 +34,6 @@ func NewSimpleTsdfIntegrator(
 func computeDistance(origin, pointG, voxelCenter Point) float64 {
 	vVoxelOrigin := voxelCenter.Sub(&origin)
 	vPointOrigin := pointG.Sub(&origin)
-
 	distG := vPointOrigin.Length()
 	distGv := vec3.Dot(vPointOrigin, vVoxelOrigin) / distG
 	sdf := distG - distGv
@@ -49,15 +48,13 @@ func (i *SimpleTsdfIntegrator) updateTsdfVoxel(
 	weight float64,
 	voxel *TsdfVoxel,
 ) {
-	voxelSize := i.Layer.VoxelSize
-
-	voxelCenter := getCenterPointFromGridIndex(globalVoxelIndex, voxelSize)
+	voxelCenter := getCenterPointFromGridIndex(globalVoxelIndex, i.Layer.VoxelSize)
 	sdf := computeDistance(origin, pointG, voxelCenter)
 
 	updatedWeight := weight
 
 	// Weight drop-off
-	dropOffEpsilon := voxelSize
+	dropOffEpsilon := i.Layer.VoxelSize
 	if i.Config.ConstWeight && sdf < -dropOffEpsilon {
 		updatedWeight = weight * (i.Config.TruncationDistance + sdf) /
 			(i.Config.TruncationDistance - dropOffEpsilon)
@@ -125,7 +122,7 @@ func (i *SimpleTsdfIntegrator) integratePoints(
 			)
 			var globalVoxelIdx IndexType
 			for rayCaster.nextRayIndex(&globalVoxelIdx) {
-				voxel := getVoxelFromGlobalIndex(i.Layer, globalVoxelIdx)
+				block, voxel := getBlockAndVoxelFromGlobalVoxelIndex(i.Layer, globalVoxelIdx)
 				weight := 1.0
 				if !i.Config.ConstWeight {
 					weight = calculateWeight(point)
@@ -138,6 +135,7 @@ func (i *SimpleTsdfIntegrator) integratePoints(
 					weight,
 					voxel,
 				)
+				block.setUpdated()
 			}
 		}
 	}

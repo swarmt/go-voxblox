@@ -94,6 +94,10 @@ func getGridIndexFromPoint(point Point, blockSizeInv float64) IndexType {
 	}
 }
 
+func getBlockIndexFromCoordinates(point Point, blockSizeInv float64) IndexType {
+	return getGridIndexFromPoint(point, blockSizeInv)
+}
+
 func getGridIndexFromOriginPoint(point Point, blockSizeInv float64) IndexType {
 	return IndexType{
 		int(math.Round(point[0] * blockSizeInv)),
@@ -138,18 +142,6 @@ func getLocalFromGlobalVoxelIndex(
 		globalVoxelIndex[0] - blockIndex[0]*voxelsPerSide,
 		globalVoxelIndex[1] - blockIndex[1]*voxelsPerSide,
 		globalVoxelIndex[2] - blockIndex[2]*voxelsPerSide,
-	}
-}
-
-func getGlobalVoxelIndexFromBlockAndVoxelIndex(
-	blockIndex IndexType,
-	voxelIndex IndexType,
-	voxelsPerSide int,
-) IndexType {
-	return IndexType{
-		blockIndex[0]*voxelsPerSide + voxelIndex[0],
-		blockIndex[1]*voxelsPerSide + voxelIndex[1],
-		blockIndex[2]*voxelsPerSide + voxelIndex[2],
 	}
 }
 

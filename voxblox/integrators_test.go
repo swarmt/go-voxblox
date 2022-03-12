@@ -16,7 +16,8 @@ var (
 	cameraResolution vec2.T
 	fovHorizontal    float64
 	maxDistance      float64
-	config           TsdfConfig
+	tsdfConfig       TsdfConfig
+	meshConfig       MeshConfig
 )
 
 func init() {
@@ -25,7 +26,7 @@ func init() {
 	fovHorizontal = 150.0
 	maxDistance = 10.0
 
-	config = TsdfConfig{
+	tsdfConfig = TsdfConfig{
 		VoxelSize:          0.1,
 		BlockSize:          16,
 		MinRange:           0.1,
@@ -38,11 +39,17 @@ func init() {
 		IntegratorThreads:  runtime.NumCPU(),
 	}
 
+	meshConfig = MeshConfig{
+		UseColor:          true,
+		MinWeight:         1000.0,
+		IntegratorThreads: runtime.NumCPU(),
+	}
+
 	// Create a test environment.
-	// It consists of a 10x10x7 m environment with a cylinder in the middle.
+	// It consists of a 10x10x7m environment with a cylinder in the middle.
 	minBound := Point{-5.0, -5.0, -1.0}
 	maxBound := Point{5.0, 5.0, 6.0}
-	world = NewSimulationWorld(config.VoxelSize, minBound, maxBound)
+	world = NewSimulationWorld(tsdfConfig.VoxelSize, minBound, maxBound)
 	cylinder := Cylinder{
 		Center: Point{0.0, 0.0, 2.0},
 		Radius: 2.0,
@@ -86,10 +93,10 @@ func init() {
 	}
 }
 
-func TestSimpleTsdfIntegratorSingleCloud(t *testing.T) {
+func TestSimpleIntegratorSingleCloud(t *testing.T) {
 	// Simple integrator
-	simpleLayer := NewTsdfLayer(config.VoxelSize, config.BlockSize)
-	simpleTsdfIntegrator := NewSimpleTsdfIntegrator(config, simpleLayer)
+	tsdfLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.BlockSize)
+	simpleTsdfIntegrator := NewSimpleTsdfIntegrator(tsdfConfig, tsdfLayer)
 
 	pointCloud := world.GetPointCloudFromTransform(
 		&poses[0],
@@ -115,11 +122,14 @@ func TestSimpleTsdfIntegratorSingleCloud(t *testing.T) {
 
 	simpleTsdfIntegrator.integratePointCloud(poses[0], transformedPointCloud)
 
-	if simpleLayer.getNumberOfAllocatedBlocks() != 62 {
+	if tsdfLayer.getBlockCount() != 62 {
 		t.Errorf("Number of allocated blocks is not correct")
 	}
 
-	voxel := getVoxelFromGlobalIndex(simpleTsdfIntegrator.Layer, IndexType{0, 60, 20})
+	_, voxel := getBlockAndVoxelFromGlobalVoxelIndex(
+		simpleTsdfIntegrator.Layer,
+		IndexType{0, 60, 20},
+	)
 	if !almostEqual(voxel.getDistance(), 0.4, kEpsilon) {
 		t.Errorf("Wrong distance: %v", voxel.getDistance())
 	}
@@ -127,19 +137,24 @@ func TestSimpleTsdfIntegratorSingleCloud(t *testing.T) {
 		t.Errorf("Wrong weight: %v", voxel.getWeight())
 	}
 
-	voxel = simpleLayer.getBlock(IndexType{-1, 0, 2}).getVoxel(IndexType{4, 15, 0})
+	voxel = tsdfLayer.getBlockByIndex(IndexType{-1, 0, 2}).getVoxel(IndexType{4, 15, 0})
 	if !almostEqual(voxel.getDistance(), -0.122520447, 0.001) {
 		t.Errorf("Wrong distance: %v", voxel.getDistance())
 	}
 	if !almostEqual(voxel.getWeight(), 0.531333983, 0.1) {
 		t.Errorf("Wrong weight: %v", voxel.getWeight())
 	}
+
+	// Generate mesh.
+	meshLayer := NewMeshLayer(tsdfLayer)
+	meshIntegrator := NewMeshIntegrator(meshConfig, tsdfLayer, meshLayer)
+	meshIntegrator.generateMesh()
 }
 
 func TestTsdfIntegrators(t *testing.T) {
 	// Simple integrator
-	simpleLayer := NewTsdfLayer(config.VoxelSize, config.BlockSize)
-	simpleTsdfIntegrator := NewSimpleTsdfIntegrator(config, simpleLayer)
+	simpleLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.BlockSize)
+	simpleTsdfIntegrator := NewSimpleTsdfIntegrator(tsdfConfig, simpleLayer)
 
 	// TODO: Merged integrator
 
@@ -159,12 +174,12 @@ func TestTsdfIntegrators(t *testing.T) {
 	}
 
 	// Check the number of blocks in the layers
-	if simpleLayer.getNumberOfAllocatedBlocks() == 0 {
+	if simpleLayer.getBlockCount() == 0 {
 		t.Errorf("No blocks in simple Layer")
 	}
 
 	// Check a block Origin
-	block01Neg1 := simpleLayer.getBlock(IndexType{0, 1, -1})
+	block01Neg1 := simpleLayer.getBlockByIndex(IndexType{0, 1, -1})
 	origin := block01Neg1.Origin
 	if origin[0] != 0.0 || origin[1] != 1.6 || origin[2] != -1.6 {
 		t.Errorf("Wrong block Origin: %v", origin)
@@ -187,15 +202,15 @@ func TestGetVoxelWeight(t *testing.T) {
 }
 
 func TestUpdateTsdfVoxel(t *testing.T) {
-	layer := NewTsdfLayer(config.VoxelSize, config.BlockSize)
+	layer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.BlockSize)
 	origin := Point{0.0, 6.0, 2.0}
 	pointC := Point{0.714538097, -2.8530097, -1.72378588}
 	pointG := Point{-2.66666508, 5.2854619, 1.1920929e-07}
 	globalVoxelIndex := IndexType{0, 60, 20}
-	voxel := getVoxelFromGlobalIndex(layer, globalVoxelIndex)
+	_, voxel := getBlockAndVoxelFromGlobalVoxelIndex(layer, globalVoxelIndex)
 	weight := calculateWeight(pointC)
 
-	config = TsdfConfig{
+	tsdfConfig = TsdfConfig{
 		VoxelSize:          0.1,
 		BlockSize:          10,
 		TruncationDistance: 0.4,
@@ -203,7 +218,7 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 		ConstWeight:        false,
 	}
 
-	simpleTsdfIntegrator := NewSimpleTsdfIntegrator(config, layer)
+	simpleTsdfIntegrator := NewSimpleTsdfIntegrator(tsdfConfig, layer)
 
 	simpleTsdfIntegrator.updateTsdfVoxel(
 		origin,

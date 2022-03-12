@@ -8,8 +8,6 @@ import (
 	"github.com/ungerik/go3d/float64/vec3"
 )
 
-type ShapeType int
-
 type SimulationWorld struct {
 	VoxelSize float64
 	MinBound  Point
