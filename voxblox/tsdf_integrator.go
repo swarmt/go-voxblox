@@ -63,8 +63,11 @@ func (i *SimpleTsdfIntegrator) updateTsdfVoxel(
 
 	// TODO: Sparsity compensation
 
-	// Calculate the new weight
+	// Get voxel attributes
 	voxelWeight := voxel.getWeight()
+	voxelDistance := voxel.getDistance()
+
+	// Calculate the new weight
 	newWeight := voxelWeight + weight
 	if newWeight < kEpsilon {
 		return
@@ -72,7 +75,7 @@ func (i *SimpleTsdfIntegrator) updateTsdfVoxel(
 	newWeight = math.Min(newWeight, i.Config.MaxWeight)
 
 	// Calculate the new distance
-	newSdf := (sdf*updatedWeight + voxel.getDistance()*voxelWeight) / newWeight
+	newSdf := (sdf*updatedWeight + voxelDistance*voxelWeight) / newWeight
 
 	// Blend colors
 	if math.Abs(sdf) < i.Config.TruncationDistance {

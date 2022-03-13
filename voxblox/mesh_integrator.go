@@ -1,7 +1,5 @@
 package voxblox
 
-import "fmt"
-
 type Mesh struct {
 	Vertices []Point
 	Indices  []uint32
@@ -63,7 +61,7 @@ func extractMeshInsideBlock(
 
 func (i *MeshIntegrator) generateMeshBlock(block *TsdfBlock) {
 	meshBlock := i.MeshLayer.getBlockByIndex(block.Index)
-	fmt.Println("Generating mesh for block", meshBlock.Index)
+	_ = meshBlock
 
 	vps := i.TsdfLayer.VoxelsPerSide
 	// nextMeshIndex := 0
