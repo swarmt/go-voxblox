@@ -15,9 +15,9 @@ type TsdfBlock struct {
 	VoxelSizeInv  float64
 	BlockSize     float64
 	BlockSizeInv  float64
-	mutex         sync.RWMutex
-	updated       bool
-	voxels        map[IndexType]*TsdfVoxel
+	sync.RWMutex
+	updated bool
+	voxels  map[IndexType]*TsdfVoxel
 }
 
 // NewTsdfBlock creates a new TsdfBlock.
@@ -30,7 +30,6 @@ func NewTsdfBlock(layer *TsdfLayer, index IndexType, origin Point) *TsdfBlock {
 	b.VoxelSizeInv = layer.VoxelSizeInv
 	b.BlockSize = layer.BlockSize
 	b.BlockSizeInv = layer.BlockSizeInv
-	b.mutex = sync.RWMutex{}
 	b.updated = true
 	b.voxels = make(map[IndexType]*TsdfVoxel)
 	return b
@@ -39,24 +38,24 @@ func NewTsdfBlock(layer *TsdfLayer, index IndexType, origin Point) *TsdfBlock {
 // getVoxels returns a copy of the map of voxels.
 // Thread-safe.
 func (b *TsdfBlock) getVoxels() map[IndexType]*TsdfVoxel {
-	b.mutex.RLock()
-	defer b.mutex.RUnlock()
+	b.RLock()
+	defer b.RUnlock()
 	return b.voxels
 }
 
 // addVoxel adds a voxel to the block.
 // Thread-safe.
 func (b *TsdfBlock) addVoxel(voxel *TsdfVoxel) {
-	b.mutex.Lock()
-	defer b.mutex.Unlock()
+	b.Lock()
+	defer b.Unlock()
 	b.voxels[voxel.Index] = voxel
 }
 
 // getUpdated gets the updated flag.
 // Thread-safe.
 func (b *TsdfBlock) getUpdated() bool {
-	b.mutex.RLock()
-	defer b.mutex.RUnlock()
+	b.RLock()
+	defer b.RUnlock()
 	return b.updated
 }
 
@@ -65,8 +64,8 @@ func (b *TsdfBlock) getUpdated() bool {
 func (b *TsdfBlock) setUpdated() {
 	// Avoid getting a mutex write lock if we don't need to.
 	if !b.getUpdated() {
-		b.mutex.Lock()
-		defer b.mutex.Unlock()
+		b.Lock()
+		defer b.Unlock()
 		b.updated = true
 	}
 }
@@ -76,9 +75,9 @@ func (b *TsdfBlock) setUpdated() {
 // Thread-safe.
 func (b *TsdfBlock) getVoxel(voxelIndex IndexType) *TsdfVoxel {
 	// Test if voxel already exists
-	b.mutex.RLock()
+	b.RLock()
 	voxel, ok := b.voxels[voxelIndex]
-	b.mutex.RUnlock()
+	b.RUnlock()
 	if ok {
 		return voxel
 	}

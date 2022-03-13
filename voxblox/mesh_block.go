@@ -10,7 +10,7 @@ type MeshBlock struct {
 	VoxelSizeInv  float64
 	BlockSize     float64
 	BlockSizeInv  float64
-	mutex         sync.RWMutex
+	sync.RWMutex
 }
 
 // NewMeshBlock creates a new MeshBlock.
@@ -23,6 +23,5 @@ func NewMeshBlock(layer *MeshLayer, index IndexType, origin Point) *MeshBlock {
 	b.VoxelSizeInv = layer.VoxelSizeInv
 	b.BlockSize = layer.BlockSize
 	b.BlockSizeInv = layer.BlockSizeInv
-	b.mutex = sync.RWMutex{}
 	return b
 }

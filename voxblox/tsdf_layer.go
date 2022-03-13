@@ -12,8 +12,8 @@ type TsdfLayer struct {
 	VoxelsPerSideInv float64
 	BlockSize        float64
 	BlockSizeInv     float64
-	blocks           map[IndexType]*TsdfBlock
-	mutex            sync.RWMutex
+	sync.RWMutex
+	blocks map[IndexType]*TsdfBlock
 }
 
 func NewTsdfLayer(voxelSize float64, voxelsPerSide int) *TsdfLayer {
@@ -30,15 +30,15 @@ func NewTsdfLayer(voxelSize float64, voxelsPerSide int) *TsdfLayer {
 
 // getBlocks returns a copy of the map of blocks
 func (l *TsdfLayer) getBlocks() map[IndexType]*TsdfBlock {
-	l.mutex.RLock()
-	defer l.mutex.RUnlock()
+	l.RLock()
+	defer l.RUnlock()
 	return l.blocks
 }
 
 // getUpdatedBlocks returns a map of references to blocks that have been updated
 func (l *TsdfLayer) getUpdatedBlocks() map[IndexType]*TsdfBlock {
-	l.mutex.RLock()
-	defer l.mutex.RUnlock()
+	l.RLock()
+	defer l.RUnlock()
 	updatedBlocks := make(map[IndexType]*TsdfBlock)
 	for index, block := range l.blocks {
 		if block.getUpdated() {
@@ -53,8 +53,8 @@ func (l *TsdfLayer) getUpdatedBlocks() map[IndexType]*TsdfBlock {
 func (l *TsdfLayer) getVoxelCenters() ([]Point, []Color) {
 	var voxelCenters []Point
 	var voxelColors []Color
-	l.mutex.RLock()
-	defer l.mutex.RUnlock()
+	l.RLock()
+	defer l.RUnlock()
 	for _, block := range l.getBlocks() {
 		for _, voxel := range block.getVoxels() {
 			if math.Abs(voxel.getDistance()) < block.VoxelSize {
@@ -70,17 +70,17 @@ func (l *TsdfLayer) getVoxelCenters() ([]Point, []Color) {
 
 // getBlockCount returns the number of blocks allocated in the map
 func (l *TsdfLayer) getBlockCount() int {
-	l.mutex.RLock()
-	defer l.mutex.RUnlock()
+	l.RLock()
+	defer l.RUnlock()
 	return len(l.blocks)
 }
 
 // getBlockByIndex allocates a new block in the map or returns an existing one
 func (l *TsdfLayer) getBlockByIndex(blockIndex IndexType) *TsdfBlock {
 	// Test if block already exists
-	l.mutex.RLock()
+	l.RLock()
 	block, ok := l.blocks[blockIndex]
-	l.mutex.RUnlock()
+	l.RUnlock()
 	if ok {
 		return block
 	}
@@ -89,9 +89,9 @@ func (l *TsdfLayer) getBlockByIndex(blockIndex IndexType) *TsdfBlock {
 		blockIndex,
 		getOriginPointFromGridIndex(blockIndex, l.BlockSize),
 	)
-	l.mutex.Lock()
+	l.Lock()
 	l.blocks[blockIndex] = newBlock
-	l.mutex.Unlock()
+	l.Unlock()
 	return newBlock
 }
 
