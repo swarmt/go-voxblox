@@ -63,24 +63,23 @@ func (i *SimpleTsdfIntegrator) updateTsdfVoxel(
 
 	// TODO: Sparsity compensation
 
-	// Get voxel attributes
-	voxelWeight := voxel.getWeight()
-	voxelDistance := voxel.getDistance()
-
 	// Calculate the new weight
+	voxelWeight := voxel.weight
 	newWeight := voxelWeight + weight
 	if newWeight < kEpsilon {
 		return
 	}
 	newWeight = math.Min(newWeight, i.Config.MaxWeight)
+	voxel.weight = newWeight
 
 	// Calculate the new distance
+	voxelDistance := voxel.distance
 	newSdf := (sdf*updatedWeight + voxelDistance*voxelWeight) / newWeight
 
 	// Blend colors
 	if math.Abs(sdf) < i.Config.TruncationDistance {
-		newColor := blendTwoColors(voxel.getColor(), voxelWeight, color, weight)
-		voxel.setColor(newColor)
+		newColor := blendTwoColors(voxel.color, voxelWeight, color, weight)
+		voxel.color = newColor
 	}
 
 	var newDistance float64
@@ -90,8 +89,7 @@ func (i *SimpleTsdfIntegrator) updateTsdfVoxel(
 		newDistance = math.Max(-i.Config.TruncationDistance, newSdf)
 	}
 
-	voxel.setDistance(newDistance)
-	voxel.setWeight(newWeight)
+	voxel.distance = newDistance
 }
 
 func calculateWeight(pointC Point) float64 {
@@ -130,6 +128,8 @@ func (i *SimpleTsdfIntegrator) integratePoints(
 				if !i.Config.ConstWeight {
 					weight = calculateWeight(point)
 				}
+				// Need to lock the voxel here to avoid other threads using out of date data.
+				voxel.Lock()
 				i.updateTsdfVoxel(
 					ray.Origin,
 					ray.Point,
@@ -138,6 +138,7 @@ func (i *SimpleTsdfIntegrator) integratePoints(
 					weight,
 					voxel,
 				)
+				voxel.Unlock()
 				block.setUpdated()
 			}
 		}

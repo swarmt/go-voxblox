@@ -141,7 +141,7 @@ func TestSimpleIntegratorSingleCloud(t *testing.T) {
 	if !almostEqual(voxel.getDistance(), -0.122520447, 0.001) {
 		t.Errorf("Wrong distance: %v", voxel.getDistance())
 	}
-	if !almostEqual(voxel.getWeight(), 0.531333983, 0.1) {
+	if !almostEqual(voxel.getWeight(), 0.531333983, 0.05) {
 		t.Errorf("Wrong weight: %v", voxel.getWeight())
 	}
 
@@ -185,7 +185,7 @@ func TestTsdfIntegrators(t *testing.T) {
 		t.Errorf("Wrong block Origin: %v", origin)
 	}
 
-	convertTsdfLayerToTxtFile(simpleLayer, "../output/simple_layer.txt")
+	//convertTsdfLayerToTxtFile(simpleLayer, "../output/simple_layer.txt")
 }
 
 func TestGetVoxelWeight(t *testing.T) {
