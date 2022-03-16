@@ -5,11 +5,6 @@ import (
 	"gonum.org/v1/gonum/mat"
 )
 
-type Mesh struct {
-	Vertices []Point
-	Indices  []uint32
-}
-
 type MeshIntegrator struct {
 	Config                  MeshConfig
 	CubeIndexOffsetsInt     []int
@@ -42,46 +37,68 @@ func NewMeshIntegrator(
 	return &i
 }
 
-func extractMeshInsideBlock(
-	block MeshBlock,
+func (i *MeshIntegrator) extractMeshInsideBlock(
+	tsdfBlock *TsdfBlock,
+	meshBlock *MeshBlock,
 	voxelIndex IndexType,
-	point Point,
-	nextMeshIndex *IndexType,
-	mesh *Mesh,
+	vertexIndex *int,
 ) {
-}
+	coords := tsdfBlock.computeCoordinatesFromVoxelIndex(voxelIndex)
+	coordsMat := mat.NewDense(3, 1, coords.Slice())
 
-func (i *MeshIntegrator) extractMeshInsideBlock(block *MeshBlock,
-	voxelIndex IndexType, coords Point,
-	vertexIndex *IndexType, mesh *Mesh) {
-	cubeCoordOffsets := mat.NewDense(3, 8, i.CubeIndexOffsetsFloat64)
+	cubeIndexOffsets := mat.NewDense(3, 8, i.CubeIndexOffsetsFloat64) // TODO: init in constructor
+	cubeCoordOffsets := mat.NewDense(3, 8, i.CubeIndexOffsetsFloat64) // TODO: init in constructor
 	cubeCoordOffsets.Scale(
 		i.TsdfLayer.VoxelSize,
 		cubeCoordOffsets,
 	)
-	fmt.Println(cubeCoordOffsets)
+	cornerCoords := mat.NewDense(3, 8, nil)
+	cornerSdfs := mat.NewDense(8, 1, nil)
+
+	allNeighborsObserved := true
+
+	for j := 0; j < 8; j++ {
+		indexOffset := cubeIndexOffsets.ColView(j)
+		var cornerIndex mat.Dense
+		cornerIndex.Add(indexOffset, IndexToMatrix(voxelIndex))
+		voxel := tsdfBlock.getVoxelIfExists(MatrixToIndex(&cornerIndex))
+		if voxel == nil {
+			allNeighborsObserved = false
+			continue
+		} else if voxel.getWeight() < i.Config.MinWeight {
+			allNeighborsObserved = false
+			continue
+		}
+		var cornerCoord mat.Dense
+		cornerCoord.Add(
+			cubeCoordOffsets.ColView(j),
+			coordsMat,
+		)
+		cornerCoords.SetCol(j, cornerCoord.RawMatrix().Data)
+		cornerSdfs.Set(j, 0, voxel.getWeight())
+	}
+	if allNeighborsObserved {
+		// TODO: Marching Cubes
+		fmt.Println("Marching Cubes")
+	}
 }
 
-func (i *MeshIntegrator) generateMeshBlock(block *TsdfBlock) {
-	meshBlock := i.MeshLayer.getBlockByIndex(block.Index)
-	_ = meshBlock
+func (i *MeshIntegrator) updateMeshForBlock(tsdfBlock *TsdfBlock) {
+	meshBlock := i.MeshLayer.getBlockByIndex(tsdfBlock.Index)
 
 	vps := i.TsdfLayer.VoxelsPerSide
-	// nextMeshIndex := 0
+	nextMeshIndex := 0
 
 	voxelIndex := IndexType{}
 	for voxelIndex[0] = 0; voxelIndex[0] < vps; voxelIndex[0]++ {
 		for voxelIndex[1] = 0; voxelIndex[1] < vps; voxelIndex[1]++ {
 			for voxelIndex[2] = 0; voxelIndex[2] < vps; voxelIndex[2]++ {
-				coords := block.computeCoordinatesFromVoxelIndex(voxelIndex)
-				_ = coords
-				//extractMeshInsideBlock(
-				//	meshBlock,
-				//	voxelIndex,
-				//	coords,
-				//	&nextMeshIndex,
-				//	&mesh,
-				//)
+				i.extractMeshInsideBlock(
+					tsdfBlock,
+					meshBlock,
+					voxelIndex,
+					&nextMeshIndex,
+				)
 			}
 		}
 	}
@@ -92,6 +109,6 @@ func (i *MeshIntegrator) generateMesh() {
 
 	// TODO: parallelize
 	for _, block := range updatedBlocks {
-		i.generateMeshBlock(block)
+		i.updateMeshForBlock(block)
 	}
 }

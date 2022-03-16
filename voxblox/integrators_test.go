@@ -239,3 +239,22 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 		t.Errorf("Expected 1 block, got %d", len(layer.blocks))
 	}
 }
+
+func TestMeshIntegrator(t *testing.T) {
+	// Create a mesh layer.
+	meshLayer := NewMeshLayer(tsdfLayer)
+	meshConfig := MeshConfig{
+		UseColor:  true,
+		MinWeight: 1000,
+		Threads:   1,
+	}
+	meshIntegrator := NewMeshIntegrator(meshConfig, tsdfLayer, meshLayer)
+
+	nextMeshIndex := 0
+
+	// Extract mesh inside block.
+	tsdfBlock := tsdfLayer.getBlockByIndex(IndexType{0, 0, 0})
+	tsdfVoxel := tsdfBlock.getVoxel(IndexType{6, 9, 12})
+	meshBlock := meshLayer.getBlockByIndex(IndexType{0, 0, 0})
+	meshIntegrator.extractMeshInsideBlock(tsdfBlock, meshBlock, tsdfVoxel.Index, &nextMeshIndex)
+}

@@ -9,8 +9,8 @@ type MeshLayer struct {
 	VoxelsPerSideInv float64
 	BlockSize        float64
 	BlockSizeInv     float64
-	blocks           map[IndexType]*MeshBlock
-	mutex            sync.RWMutex
+	sync.RWMutex
+	blocks map[IndexType]*MeshBlock
 }
 
 func NewMeshLayer(tsdfLayer *TsdfLayer) *MeshLayer {
@@ -21,7 +21,6 @@ func NewMeshLayer(tsdfLayer *TsdfLayer) *MeshLayer {
 		VoxelsPerSideInv: tsdfLayer.VoxelsPerSideInv,
 		BlockSize:        tsdfLayer.BlockSize,
 		BlockSizeInv:     tsdfLayer.BlockSizeInv,
-		mutex:            sync.RWMutex{},
 		blocks:           make(map[IndexType]*MeshBlock),
 	}
 	return &meshLayer
@@ -31,9 +30,9 @@ func NewMeshLayer(tsdfLayer *TsdfLayer) *MeshLayer {
 // TODO: Would this be better as an interface shared by TsdfLayer?
 func (l *MeshLayer) getBlockByIndex(blockIndex IndexType) *MeshBlock {
 	// Test if block already exists
-	l.mutex.RLock()
+	l.RLock()
 	block, ok := l.blocks[blockIndex]
-	l.mutex.RUnlock()
+	l.RUnlock()
 	if ok {
 		return block
 	}
@@ -42,9 +41,9 @@ func (l *MeshLayer) getBlockByIndex(blockIndex IndexType) *MeshBlock {
 		blockIndex,
 		getOriginPointFromGridIndex(blockIndex, l.BlockSize),
 	)
-	l.mutex.Lock()
+	l.Lock()
 	l.blocks[blockIndex] = newBlock
-	l.mutex.Unlock()
+	l.Unlock()
 	return newBlock
 }
 

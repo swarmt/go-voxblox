@@ -1,6 +1,7 @@
 package voxblox
 
 import (
+	"gonum.org/v1/gonum/mat"
 	"log"
 	"math"
 	"time"
@@ -33,6 +34,22 @@ type PointCloud struct {
 // Point is 3x1 vector
 // X, Y, Z are the coordinates
 type Point = vec3.T
+
+func IndexToMatrix(index IndexType) *mat.Dense {
+	return mat.NewDense(3, 1, []float64{
+		float64(index[0]),
+		float64(index[1]),
+		float64(index[2]),
+	})
+}
+
+func MatrixToIndex(matrix *mat.Dense) IndexType {
+	return IndexType{
+		int(matrix.At(0, 0)),
+		int(matrix.At(1, 0)),
+		int(matrix.At(2, 0)),
+	}
+}
 
 func SubIndex(a, b IndexType) IndexType {
 	return IndexType{a[0] - b[0], a[1] - b[1], a[2] - b[2]}

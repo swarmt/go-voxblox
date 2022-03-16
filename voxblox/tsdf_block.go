@@ -87,6 +87,19 @@ func (b *TsdfBlock) getVoxel(voxelIndex IndexType) *TsdfVoxel {
 	return newVoxel
 }
 
+// getVoxelIfExists returns a reference to a voxel at the given Index if exists.
+// Does not create a new voxel.
+// Thread-safe.
+func (b *TsdfBlock) getVoxelIfExists(voxelIndex IndexType) *TsdfVoxel {
+	b.RLock()
+	voxel, ok := b.voxels[voxelIndex]
+	b.RUnlock()
+	if ok {
+		return voxel
+	}
+	return nil
+}
+
 // getVoxelPtrByCoordinates returns a reference to a voxel at the given coordinates.
 // Creates a new voxel if it does not exist.
 func (b *TsdfBlock) getVoxelPtrByCoordinates(point Point) *TsdfVoxel {
