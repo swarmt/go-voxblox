@@ -185,7 +185,7 @@ func TestTsdfIntegrators(t *testing.T) {
 		t.Errorf("Wrong block Origin: %v", origin)
 	}
 
-	//convertTsdfLayerToTxtFile(simpleLayer, "../output/simple_layer.txt")
+	// convertTsdfLayerToTxtFile(simpleLayer, "../output/simple_layer.txt")
 }
 
 func TestGetVoxelWeight(t *testing.T) {
