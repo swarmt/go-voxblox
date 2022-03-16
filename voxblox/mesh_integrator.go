@@ -2,6 +2,7 @@ package voxblox
 
 import (
 	"fmt"
+
 	"gonum.org/v1/gonum/mat"
 )
 

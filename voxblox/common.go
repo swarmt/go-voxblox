@@ -1,10 +1,11 @@
 package voxblox
 
 import (
-	"gonum.org/v1/gonum/mat"
 	"log"
 	"math"
 	"time"
+
+	"gonum.org/v1/gonum/mat"
 
 	"github.com/ungerik/go3d/float64/vec3"
 )
