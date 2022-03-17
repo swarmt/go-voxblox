@@ -290,7 +290,7 @@ func calculateVertexConfiguration(vertexSdf *[8]float64) int {
 
 // interpolateEdge performs linear interpolation on two cube corners to find the approximate
 // zero crossing (surface) value.
-func interpolateEdge(vertex1 Point, vertex2 Point, sdf1 float64, sdf2 float64) *Point {
+func interpolateEdge(vertex1, vertex2 Point, sdf1, sdf2 float64) *Point {
 	kMinSdfDifference := 1e-6
 	sdfDifference := sdf1 - sdf2
 
