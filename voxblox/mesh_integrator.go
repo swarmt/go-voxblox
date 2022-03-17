@@ -76,6 +76,15 @@ func (i *MeshIntegrator) extractMeshInsideBlock(
 	}
 }
 
+func (i *MeshIntegrator) extractMeshOnBorder(
+	tsdfBlock *TsdfBlock,
+	meshBlock *MeshBlock,
+	voxelIndex IndexType,
+	vertexIndex *int,
+) {
+	// TODO
+}
+
 func (i *MeshIntegrator) updateMeshForBlock(tsdfBlock *TsdfBlock) {
 	meshBlock := i.MeshLayer.getBlockByIndex(tsdfBlock.Index)
 
@@ -83,6 +92,8 @@ func (i *MeshIntegrator) updateMeshForBlock(tsdfBlock *TsdfBlock) {
 	nextMeshIndex := 0
 
 	voxelIndex := IndexType{}
+
+	// Inside block
 	for voxelIndex[0] = 0; voxelIndex[0] < vps; voxelIndex[0]++ {
 		for voxelIndex[1] = 0; voxelIndex[1] < vps; voxelIndex[1]++ {
 			for voxelIndex[2] = 0; voxelIndex[2] < vps; voxelIndex[2]++ {
@@ -93,6 +104,21 @@ func (i *MeshIntegrator) updateMeshForBlock(tsdfBlock *TsdfBlock) {
 					&nextMeshIndex,
 				)
 			}
+		}
+	}
+
+	// Max X plane
+	// takes care of edge (x_max, y_max, z),
+	// takes care of edge (x_max, y, z_max).
+	voxelIndex[0] = vps - 1
+	for voxelIndex[2] = 0; voxelIndex[2] < vps; voxelIndex[2]++ {
+		for voxelIndex[1] = 0; voxelIndex[1] < vps; voxelIndex[1]++ {
+			i.extractMeshOnBorder(
+				tsdfBlock,
+				meshBlock,
+				voxelIndex,
+				&nextMeshIndex,
+			)
 		}
 	}
 }

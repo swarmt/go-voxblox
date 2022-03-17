@@ -4,7 +4,7 @@ import "sync"
 
 type Mesh struct {
 	Vertices []Point
-	Indices  []uint32
+	Indices  []int
 }
 
 type MeshBlock struct {

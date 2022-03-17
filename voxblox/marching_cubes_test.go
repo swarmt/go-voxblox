@@ -81,21 +81,49 @@ func TestInterpolateEdgeVertices(t *testing.T) {
 
 func TestMeshCube(t *testing.T) {
 	vertexCoords := [8][3]float64{
-		{-15.6499996, -0.549999952, 1.95000005},
-		{-15.5499992, -0.549999952, 1.95000005},
-		{-15.5499992, -0.449999958, 1.95000005},
-		{-15.6499996, -0.449999958, 1.95000005},
-		{-15.6499996, -0.549999952, 2.04999995},
-		{-15.5499992, -0.549999952, 2.04999995},
-		{-15.5499992, -0.449999958, 2.04999995},
-		{-15.6499996, -0.449999958, 2.04999995},
+		{-1.85000002, -4.55000019, 1.45000005},
+		{-1.75, -4.55000019, 1.45000005},
+		{-1.75, -4.45000029, 1.45000005},
+		{-1.85000002, -4.45000029, 1.45000005},
+		{-1.85000002, -4.55000019, 1.55000007},
+		{-1.75, -4.55000019, 1.55000007},
+		{-1.75, -4.45000029, 1.55000007},
+		{-1.85000002, -4.45000029, 1.55000007},
 	}
 	vertexSdf := [8]float64{
-		0.393717766, 0.361241013, -0.0142535316, 0.305908412,
-		-0.0258927029, -0.0836802125, -0.177394032, -0.167008847,
+		0.360097408,
+		0.311582834,
+		0.21046859,
+		0.279508501,
+		0.17869179,
+		0.320180953,
+		0.150982603,
+		-0.177825138,
 	}
-	vertexIndex := 489
+	vertexIndex := 0
 	mesh := Mesh{}
 
 	meshCube(&vertexCoords, &vertexSdf, &vertexIndex, &mesh)
+
+	if vertexIndex != 3 {
+		t.Errorf("Expected 3, got %d", vertexIndex)
+	}
+
+	if !almostEqual(mesh.Vertices[0][0], -1.85000002, kEpsilon) ||
+		!almostEqual(mesh.Vertices[0][1], -4.45000029, kEpsilon) ||
+		!almostEqual(mesh.Vertices[0][2], 1.5111171, kEpsilon) {
+		t.Errorf("Incorrect coordinates")
+	}
+
+	if !almostEqual(mesh.Vertices[1][0], -1.79591823, kEpsilon) ||
+		!almostEqual(mesh.Vertices[1][1], -4.45000029, kEpsilon) ||
+		!almostEqual(mesh.Vertices[1][2], 1.55000007, kEpsilon) {
+		t.Errorf("Incorrect coordinates")
+	}
+
+	if !almostEqual(mesh.Vertices[2][0], -1.85000002, kEpsilon) ||
+		!almostEqual(mesh.Vertices[2][1], -4.49987888, kEpsilon) ||
+		!almostEqual(mesh.Vertices[2][2], 1.55000007, kEpsilon) {
+		t.Errorf("Incorrect coordinates")
+	}
 }
