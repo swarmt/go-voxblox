@@ -241,6 +241,8 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 }
 
 func TestMeshIntegrator(t *testing.T) {
+	tsdfLayer := NewTsdfLayer(0.1, 8)
+
 	// Create a mesh layer.
 	meshLayer := NewMeshLayer(tsdfLayer)
 	meshConfig := MeshConfig{

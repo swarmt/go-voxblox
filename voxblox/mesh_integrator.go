@@ -1,17 +1,15 @@
 package voxblox
 
 import (
-	"fmt"
-
-	"gonum.org/v1/gonum/mat"
+	"github.com/ungerik/go3d/float64/vec3"
 )
 
 type MeshIntegrator struct {
-	Config                  MeshConfig
-	CubeIndexOffsetsInt     []int
-	CubeIndexOffsetsFloat64 []float64
-	TsdfLayer               *TsdfLayer
-	MeshLayer               *MeshLayer
+	Config           MeshConfig
+	CubeIndexOffsets []IndexType
+	CubeCoordOffsets []Point
+	TsdfLayer        *TsdfLayer
+	MeshLayer        *MeshLayer
 }
 
 func NewMeshIntegrator(
@@ -23,17 +21,20 @@ func NewMeshIntegrator(
 	i.Config = config
 	i.TsdfLayer = tsdfLayer
 	i.MeshLayer = meshLayer
-	i.CubeIndexOffsetsInt = []int{
-		0, 1, 1, 0, 0, 1,
-		1, 0, 0, 0, 1, 1,
-		0, 0, 1, 1, 0, 0,
-		0, 0, 1, 1, 1, 1,
+	i.CubeIndexOffsets = []IndexType{
+		{0, 1, 1},
+		{0, 0, 1},
+		{1, 0, 0},
+		{0, 1, 1},
+		{0, 0, 1},
+		{1, 0, 0},
+		{0, 0, 1},
+		{1, 1, 1},
 	}
-	i.CubeIndexOffsetsFloat64 = []float64{
-		0.0, 1.0, 1.0, 0.0, 0.0, 1.0,
-		1.0, 0.0, 0.0, 0.0, 1.0, 1.0,
-		0.0, 0.0, 1.0, 1.0, 0.0, 0.0,
-		0.0, 0.0, 1.0, 1.0, 1.0, 1.0,
+	i.CubeCoordOffsets = make([]Point, 8)
+	for j := 0; j < 8; j++ {
+		offset := IndexToPoint(i.CubeIndexOffsets[j])
+		i.CubeCoordOffsets[j] = offset.Scaled(i.TsdfLayer.VoxelSize)
 	}
 	return &i
 }
@@ -45,24 +46,16 @@ func (i *MeshIntegrator) extractMeshInsideBlock(
 	vertexIndex *int,
 ) {
 	coords := tsdfBlock.computeCoordinatesFromVoxelIndex(voxelIndex)
-	coordsMat := mat.NewDense(3, 1, coords.Slice())
 
-	cubeIndexOffsets := mat.NewDense(3, 8, i.CubeIndexOffsetsFloat64) // TODO: init in constructor
-	cubeCoordOffsets := mat.NewDense(3, 8, i.CubeIndexOffsetsFloat64) // TODO: init in constructor
-	cubeCoordOffsets.Scale(
-		i.TsdfLayer.VoxelSize,
-		cubeCoordOffsets,
-	)
-	cornerCoords := mat.NewDense(3, 8, nil)
-	cornerSdfs := mat.NewDense(8, 1, nil)
+	cornerCoords := [8][3]float64{}
+	cornerSdf := [8]float64{}
 
 	allNeighborsObserved := true
 
 	for j := 0; j < 8; j++ {
-		indexOffset := cubeIndexOffsets.ColView(j)
-		var cornerIndex mat.Dense
-		cornerIndex.Add(indexOffset, IndexToMatrix(voxelIndex))
-		voxel := tsdfBlock.getVoxelIfExists(MatrixToIndex(&cornerIndex))
+		indexOffset := i.CubeIndexOffsets[j]
+		cornerIndex := AddIndex(voxelIndex, indexOffset)
+		voxel := tsdfBlock.getVoxelIfExists(cornerIndex)
 		if voxel == nil {
 			allNeighborsObserved = false
 			continue
@@ -70,17 +63,16 @@ func (i *MeshIntegrator) extractMeshInsideBlock(
 			allNeighborsObserved = false
 			continue
 		}
-		var cornerCoord mat.Dense
-		cornerCoord.Add(
-			cubeCoordOffsets.ColView(j),
-			coordsMat,
-		)
-		cornerCoords.SetCol(j, cornerCoord.RawMatrix().Data)
-		cornerSdfs.Set(j, 0, voxel.getWeight())
+		cornerCoords[j] = vec3.Add(&i.CubeCoordOffsets[j], &coords)
+		cornerSdf[j] = voxel.getWeight()
 	}
 	if allNeighborsObserved {
-		// TODO: Marching Cubes
-		fmt.Println("Marching Cubes")
+		meshCube(
+			&cornerCoords,
+			&cornerSdf,
+			vertexIndex,
+			&meshBlock.mesh,
+		)
 	}
 }
 
@@ -106,10 +98,8 @@ func (i *MeshIntegrator) updateMeshForBlock(tsdfBlock *TsdfBlock) {
 }
 
 func (i *MeshIntegrator) generateMesh() {
-	updatedBlocks := i.TsdfLayer.getUpdatedBlocks()
-
 	// TODO: parallelize
-	for _, block := range updatedBlocks {
+	for _, block := range i.TsdfLayer.getUpdatedBlocks() {
 		i.updateMeshForBlock(block)
 	}
 }

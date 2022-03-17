@@ -4,19 +4,9 @@ import (
 	"testing"
 )
 
-var (
-	blockSize float64
-	tsdfLayer *TsdfLayer
-)
-
-func init() {
-	tsdfVoxelSize := 0.1
-	tsdfVoxelsPerSide := 8
-	blockSize = tsdfVoxelSize * float64(tsdfVoxelsPerSide)
-	tsdfLayer = NewTsdfLayer(tsdfVoxelSize, tsdfVoxelsPerSide)
-}
-
 func TestTsdfMapBlockAllocation(t *testing.T) {
+	tsdfLayer := NewTsdfLayer(0.1, 8)
+
 	// Layer should have no blocks by default
 	if tsdfLayer.getBlockCount() != 0 {
 		t.Errorf("Expected no blocks in Layer, got %d", tsdfLayer.getBlockCount())
@@ -36,6 +26,11 @@ func TestTsdfMapBlockAllocation(t *testing.T) {
 }
 
 func TestTsdfMapIndexLookups(t *testing.T) {
+	tsdfVoxelSize := 0.1
+	tsdfVoxelsPerSide := 8
+	blockSize := tsdfVoxelSize * float64(tsdfVoxelsPerSide)
+	tsdfLayer := NewTsdfLayer(tsdfVoxelSize, tsdfVoxelsPerSide)
+
 	// BLOCK 0 0 0 (coordinate at Origin)
 	pointIn000 := Point{0, 0, 0}
 	block000 := tsdfLayer.getBlockByCoordinates(pointIn000)
