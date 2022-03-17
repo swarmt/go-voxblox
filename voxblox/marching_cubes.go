@@ -341,13 +341,19 @@ func meshCube(
 	tableCol := 0
 
 	for tableRow[tableCol] != -1 {
-		mesh.Vertices = append(mesh.Vertices, edgeVertexCoordinates[tableRow[tableCol+2]])
-		mesh.Vertices = append(mesh.Vertices, edgeVertexCoordinates[tableRow[tableCol+1]])
-		mesh.Vertices = append(mesh.Vertices, edgeVertexCoordinates[tableRow[tableCol]])
+		mesh.Vertices = append(
+			mesh.Vertices,
+			edgeVertexCoordinates[tableRow[tableCol+2]],
+			edgeVertexCoordinates[tableRow[tableCol+1]],
+			edgeVertexCoordinates[tableRow[tableCol]],
+		)
 
-		mesh.Indices = append(mesh.Indices, *vertexIndex)
-		mesh.Indices = append(mesh.Indices, *vertexIndex+1)
-		mesh.Indices = append(mesh.Indices, *vertexIndex+2)
+		mesh.Indices = append(
+			mesh.Indices,
+			*vertexIndex,
+			*vertexIndex+1,
+			*vertexIndex+2,
+		)
 
 		// TODO: Normals
 
