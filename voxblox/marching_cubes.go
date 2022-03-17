@@ -76,5 +76,4 @@ func meshCube(
 	}
 
 	// edgeVertexCoordinates := mat.NewDense(3, 12, nil)
-
 }
