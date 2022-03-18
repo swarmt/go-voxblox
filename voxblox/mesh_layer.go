@@ -54,6 +54,18 @@ func (l *MeshLayer) getBlockByIndex(blockIndex IndexType) *MeshBlock {
 	return newBlock
 }
 
+// getBlockIfExists returns a pointer to the block if it exists
+// Thread-safe.
+func (l *MeshLayer) getBlockIfExists(index IndexType) *MeshBlock {
+	l.RLock()
+	defer l.RUnlock()
+	block, ok := l.blocks[index]
+	if ok {
+		return block
+	}
+	return nil
+}
+
 // getBlockByCoordinates returns a pointer to the block by coordinates
 func (l *MeshLayer) getBlockByCoordinates(point Point) *MeshBlock {
 	return l.getBlockByIndex(getBlockIndexFromCoordinates(point, l.BlockSizeInv))

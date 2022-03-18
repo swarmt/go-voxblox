@@ -140,3 +140,7 @@ func (b *TsdfBlock) isValidVoxelIndex(index IndexType) bool {
 	}
 	return true
 }
+
+func (b *TsdfBlock) computeVoxelIndexFromCoordinates(vertex Point) IndexType {
+	return getGridIndexFromPoint(vec3.Sub(&vertex, &b.Origin), b.VoxelSizeInv)
+}

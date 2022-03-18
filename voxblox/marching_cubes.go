@@ -340,25 +340,25 @@ func meshCube(
 	tableCol := 0
 
 	for tableRow[tableCol] != -1 {
-		meshBlock.Mesh.Vertices = append(
-			meshBlock.Mesh.Vertices,
+		meshBlock.Vertices = append(
+			meshBlock.Vertices,
 			edgeVertexCoordinates[tableRow[tableCol+2]],
 			edgeVertexCoordinates[tableRow[tableCol+1]],
 			edgeVertexCoordinates[tableRow[tableCol]],
 		)
 
-		meshBlock.Mesh.Triangles = append(
-			meshBlock.Mesh.Triangles,
+		meshBlock.Triangles = append(
+			meshBlock.Triangles,
 			[3]int{
-				meshBlock.Mesh.VertexCount,
-				meshBlock.Mesh.VertexCount + 1,
-				meshBlock.Mesh.VertexCount + 2,
+				meshBlock.VertexCount,
+				meshBlock.VertexCount + 1,
+				meshBlock.VertexCount + 2,
 			},
 		)
 
 		// TODO: Normals
 
-		meshBlock.Mesh.VertexCount += 3
+		meshBlock.VertexCount += 3
 		tableCol += 3
 	}
 }

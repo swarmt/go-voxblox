@@ -106,25 +106,25 @@ func TestMeshCube(t *testing.T) {
 
 	meshCube(&vertexCoords, &vertexSdf, meshBlock)
 
-	if meshBlock.Mesh.VertexCount != 3 {
-		t.Errorf("Expected 3, got %d", meshBlock.Mesh.VertexCount)
+	if meshBlock.VertexCount != 3 {
+		t.Errorf("Expected 3, got %d", meshBlock.VertexCount)
 	}
 
-	if !almostEqual(meshBlock.Mesh.Vertices[0][0], -1.85000002, kEpsilon) ||
-		!almostEqual(meshBlock.Mesh.Vertices[0][1], -4.45000029, kEpsilon) ||
-		!almostEqual(meshBlock.Mesh.Vertices[0][2], 1.5111171, kEpsilon) {
+	if !almostEqual(meshBlock.Vertices[0][0], -1.85000002, kEpsilon) ||
+		!almostEqual(meshBlock.Vertices[0][1], -4.45000029, kEpsilon) ||
+		!almostEqual(meshBlock.Vertices[0][2], 1.5111171, kEpsilon) {
 		t.Errorf("Incorrect coordinates")
 	}
 
-	if !almostEqual(meshBlock.Mesh.Vertices[1][0], -1.79591823, kEpsilon) ||
-		!almostEqual(meshBlock.Mesh.Vertices[1][1], -4.45000029, kEpsilon) ||
-		!almostEqual(meshBlock.Mesh.Vertices[1][2], 1.55000007, kEpsilon) {
+	if !almostEqual(meshBlock.Vertices[1][0], -1.79591823, kEpsilon) ||
+		!almostEqual(meshBlock.Vertices[1][1], -4.45000029, kEpsilon) ||
+		!almostEqual(meshBlock.Vertices[1][2], 1.55000007, kEpsilon) {
 		t.Errorf("Incorrect coordinates")
 	}
 
-	if !almostEqual(meshBlock.Mesh.Vertices[2][0], -1.85000002, kEpsilon) ||
-		!almostEqual(meshBlock.Mesh.Vertices[2][1], -4.49987888, kEpsilon) ||
-		!almostEqual(meshBlock.Mesh.Vertices[2][2], 1.55000007, kEpsilon) {
+	if !almostEqual(meshBlock.Vertices[2][0], -1.85000002, kEpsilon) ||
+		!almostEqual(meshBlock.Vertices[2][1], -4.49987888, kEpsilon) ||
+		!almostEqual(meshBlock.Vertices[2][2], 1.55000007, kEpsilon) {
 		t.Errorf("Incorrect coordinates")
 	}
 
@@ -151,25 +151,25 @@ func TestMeshCube(t *testing.T) {
 
 	meshCube(&vertexCoords, &vertexSdf, meshBlock)
 
-	if meshBlock.Mesh.VertexCount != 6 {
-		t.Errorf("Expected 6, got %d", meshBlock.Mesh.VertexCount)
+	if meshBlock.VertexCount != 6 {
+		t.Errorf("Expected 6, got %d", meshBlock.VertexCount)
 	}
 
-	if !almostEqual(meshBlock.Mesh.Vertices[3][0], -15.5500002, kEpsilon) ||
-		!almostEqual(meshBlock.Mesh.Vertices[3][1], -0.550000012, kEpsilon) ||
-		!almostEqual(meshBlock.Mesh.Vertices[3][2], 1.92335689, kEpsilon) {
+	if !almostEqual(meshBlock.Vertices[3][0], -15.5500002, kEpsilon) ||
+		!almostEqual(meshBlock.Vertices[3][1], -0.550000012, kEpsilon) ||
+		!almostEqual(meshBlock.Vertices[3][2], 1.92335689, kEpsilon) {
 		t.Errorf("Incorrect coordinates")
 	}
 
-	if !almostEqual(meshBlock.Mesh.Vertices[4][0], -15.5233574, kEpsilon) ||
-		!almostEqual(meshBlock.Mesh.Vertices[4][1], -0.550000012, kEpsilon) ||
-		!almostEqual(meshBlock.Mesh.Vertices[4][2], 1.95000005, kEpsilon) {
+	if !almostEqual(meshBlock.Vertices[4][0], -15.5233574, kEpsilon) ||
+		!almostEqual(meshBlock.Vertices[4][1], -0.550000012, kEpsilon) ||
+		!almostEqual(meshBlock.Vertices[4][2], 1.95000005, kEpsilon) {
 		t.Errorf("Incorrect coordinates")
 	}
 
-	if !almostEqual(meshBlock.Mesh.Vertices[5][0], -15.5500002, kEpsilon) ||
-		!almostEqual(meshBlock.Mesh.Vertices[5][1], -0.585834801, kEpsilon) ||
-		!almostEqual(meshBlock.Mesh.Vertices[5][2], 1.95000005, kEpsilon) {
+	if !almostEqual(meshBlock.Vertices[5][0], -15.5500002, kEpsilon) ||
+		!almostEqual(meshBlock.Vertices[5][1], -0.585834801, kEpsilon) ||
+		!almostEqual(meshBlock.Vertices[5][2], 1.95000005, kEpsilon) {
 		t.Errorf("Incorrect coordinates")
 	}
 }

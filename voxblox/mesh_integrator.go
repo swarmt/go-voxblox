@@ -153,7 +153,7 @@ func (i *MeshIntegrator) updateMeshForBlock(tsdfBlock *TsdfBlock) {
 
 	vps := i.TsdfLayer.VoxelsPerSide
 
-	meshBlock.Mesh.VertexCount = 0
+	meshBlock.VertexCount = 0
 
 	voxelIndex := IndexType{}
 
@@ -207,11 +207,44 @@ func (i *MeshIntegrator) updateMeshForBlock(tsdfBlock *TsdfBlock) {
 	}
 }
 
+func (i *MeshIntegrator) updateMeshColorForBlock(tsdfBlock *TsdfBlock) {
+	meshBlock := i.MeshLayer.getBlockIfExists(tsdfBlock.Index)
+	if meshBlock == nil {
+		return
+	}
+
+	meshBlock.Colors = make([]Color, meshBlock.VertexCount)
+
+	// Use nearest-neighbor search.
+	for j := 0; j < meshBlock.VertexCount; j++ {
+		vertex := meshBlock.Vertices[j]
+		voxelIndex := tsdfBlock.computeVoxelIndexFromCoordinates(vertex)
+		voxel := tsdfBlock.getVoxelIfExists(voxelIndex)
+		if voxel != nil {
+			if voxel.getWeight() > i.Config.MinWeight {
+				meshBlock.Colors[j] = voxel.getColor()
+			}
+		} else {
+			neighborBlock := i.TsdfLayer.getBlockByCoordinates(vertex)
+			voxelIndex := neighborBlock.computeVoxelIndexFromCoordinates(vertex)
+			voxel := neighborBlock.getVoxelIfExists(voxelIndex)
+			if voxel != nil {
+				if voxel.getWeight() > i.Config.MinWeight {
+					meshBlock.Colors[j] = voxel.getColor()
+				}
+			}
+		}
+	}
+}
+
 func (i *MeshIntegrator) integrateMesh() {
 	defer timeTrack(time.Now(), "integrateMesh")
 
 	// TODO: parallelize
 	for _, block := range i.TsdfLayer.getUpdatedBlocks() {
 		i.updateMeshForBlock(block)
+		if i.Config.UseColor {
+			i.updateMeshColorForBlock(block)
+		}
 	}
 }

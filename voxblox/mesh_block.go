@@ -2,12 +2,6 @@ package voxblox
 
 import "sync"
 
-type Mesh struct {
-	VertexCount int
-	Vertices    []Point
-	Triangles   [][3]int
-}
-
 type MeshBlock struct {
 	Index         IndexType
 	VoxelsPerSide int
@@ -17,7 +11,10 @@ type MeshBlock struct {
 	BlockSize     float64
 	BlockSizeInv  float64
 	sync.RWMutex
-	Mesh Mesh
+	VertexCount int
+	Vertices    []Point
+	Triangles   [][3]int
+	Colors      []Color
 }
 
 // NewMeshBlock creates a new MeshBlock.
