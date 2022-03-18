@@ -1,8 +1,9 @@
 package voxblox
 
 import (
-	"github.com/ungerik/go3d/float64/vec3"
 	"time"
+
+	"github.com/ungerik/go3d/float64/vec3"
 )
 
 type MeshIntegrator struct {

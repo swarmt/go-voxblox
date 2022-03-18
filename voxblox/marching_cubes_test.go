@@ -77,7 +77,6 @@ func TestInterpolateEdgeVertices(t *testing.T) {
 	if !almostEqual(edgeCoords[11][2], 1.70743394, kEpsilon) {
 		t.Errorf("Expected 1.70743394, got %f", edgeCoords[11][2])
 	}
-
 }
 
 func TestMeshCube(t *testing.T) {
