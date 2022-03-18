@@ -16,5 +16,4 @@ type TsdfConfig struct {
 type MeshConfig struct {
 	UseColor  bool    `yaml:"use_color"`
 	MinWeight float64 `yaml:"min_weight"`
-	Threads   int     `yaml:"integrator_threads"`
 }

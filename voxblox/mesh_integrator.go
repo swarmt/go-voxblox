@@ -1,6 +1,7 @@
 package voxblox
 
 import (
+	"sync"
 	"time"
 
 	"github.com/ungerik/go3d/float64/vec3"
@@ -148,7 +149,7 @@ func (i *MeshIntegrator) extractMeshOnBorder(
 	}
 }
 
-func (i *MeshIntegrator) updateMeshForBlock(tsdfBlock *TsdfBlock) {
+func (i *MeshIntegrator) updateMeshForBlock(tsdfBlock *TsdfBlock, wg *sync.WaitGroup) {
 	meshBlock := i.MeshLayer.getBlockByIndex(tsdfBlock.Index)
 
 	vps := i.TsdfLayer.VoxelsPerSide
@@ -205,6 +206,12 @@ func (i *MeshIntegrator) updateMeshForBlock(tsdfBlock *TsdfBlock) {
 			)
 		}
 	}
+
+	if i.Config.UseColor {
+		i.updateMeshColorForBlock(tsdfBlock)
+	}
+
+	wg.Done()
 }
 
 func (i *MeshIntegrator) updateMeshColorForBlock(tsdfBlock *TsdfBlock) {
@@ -240,11 +247,10 @@ func (i *MeshIntegrator) updateMeshColorForBlock(tsdfBlock *TsdfBlock) {
 func (i *MeshIntegrator) integrateMesh() {
 	defer timeTrack(time.Now(), "integrateMesh")
 
-	// TODO: parallelize
+	wg := sync.WaitGroup{}
 	for _, block := range i.TsdfLayer.getUpdatedBlocks() {
-		i.updateMeshForBlock(block)
-		if i.Config.UseColor {
-			i.updateMeshColorForBlock(block)
-		}
+		wg.Add(1)
+		go i.updateMeshForBlock(block, &wg)
 	}
+	wg.Wait()
 }

@@ -41,8 +41,7 @@ func init() {
 
 	meshConfig = MeshConfig{
 		UseColor:  true,
-		MinWeight: 0.0,
-		Threads:   runtime.NumCPU(),
+		MinWeight: 2.0,
 	}
 
 	// Create a test environment.
@@ -289,7 +288,6 @@ func TestMeshIntegrator(t *testing.T) {
 	meshConfig := MeshConfig{
 		UseColor:  true,
 		MinWeight: 1000,
-		Threads:   1,
 	}
 
 	meshIntegrator := NewMeshIntegrator(meshConfig, tsdfLayer, meshLayer)

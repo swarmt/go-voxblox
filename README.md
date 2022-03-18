@@ -24,6 +24,8 @@ graph LR
   meshLayer --> gRPC 
 ```
 
+![Unit Test Cylinder](.readme/cylinder-mesh.png)
+
 ## TODO
 
 * Mesh generation
