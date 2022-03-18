@@ -35,7 +35,7 @@ func (l *TsdfLayer) getBlocks() map[IndexType]*TsdfBlock {
 	return l.blocks
 }
 
-// getUpdatedBlocks returns a map of references to blocks that have been updated
+// getUpdatedBlocks returns a map of references to TsdfBlocks that have been updated
 func (l *TsdfLayer) getUpdatedBlocks() map[IndexType]*TsdfBlock {
 	l.RLock()
 	defer l.RUnlock()
@@ -57,7 +57,7 @@ func (l *TsdfLayer) getVoxelCenters() ([]Point, []Color) {
 	defer l.RUnlock()
 	for _, block := range l.getBlocks() {
 		for _, voxel := range block.getVoxels() {
-			if math.Abs(voxel.getDistance()) < block.VoxelSize {
+			if math.Abs(voxel.getDistance()) < block.VoxelSize*2 && voxel.getWeight() > 0 {
 				coordinates := block.computeCoordinatesFromVoxelIndex(voxel.Index)
 				voxelCenters = append(voxelCenters, coordinates)
 				color := voxel.getColor()
@@ -98,6 +98,18 @@ func (l *TsdfLayer) getBlockByIndex(blockIndex IndexType) *TsdfBlock {
 // getBlockByCoordinates returns a pointer to the block by coordinates
 func (l *TsdfLayer) getBlockByCoordinates(point Point) *TsdfBlock {
 	return l.getBlockByIndex(getBlockIndexFromCoordinates(point, l.BlockSizeInv))
+}
+
+// getBlockIfExists returns a pointer to the block if it exists
+// Thread-safe.
+func (l *TsdfLayer) getBlockIfExists(index IndexType) *TsdfBlock {
+	l.RLock()
+	defer l.RUnlock()
+	block, ok := l.blocks[index]
+	if ok {
+		return block
+	}
+	return nil
 }
 
 // getBlockAndVoxelFromGlobalVoxelIndex allocates a new block in the map and returns the block and voxel

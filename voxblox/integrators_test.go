@@ -41,7 +41,7 @@ func init() {
 
 	meshConfig = MeshConfig{
 		UseColor:  true,
-		MinWeight: 1000.0,
+		MinWeight: 0.0,
 		Threads:   runtime.NumCPU(),
 	}
 
@@ -145,10 +145,28 @@ func TestSimpleIntegratorSingleCloud(t *testing.T) {
 		t.Errorf("Wrong weight: %v", voxel.getWeight())
 	}
 
-	// Generate mesh.
+	// Check every voxel has color
+	for _, block := range tsdfLayer.getBlocks() {
+		for _, voxel := range block.getVoxels() {
+			if math.Abs(voxel.getDistance()) < tsdfLayer.VoxelSize {
+				color := voxel.getColor()
+				if color[0] == 0 && color[1] == 0 && color[2] == 0 {
+					t.Errorf("Wrong color: %v %v", block.Index, voxel.Index)
+				}
+			}
+		}
+	}
+
+	writeTsdfLayerToTxtFile(tsdfLayer, "../output/simple_layer_single.txt")
+
+	// Generate Mesh.
 	meshLayer := NewMeshLayer(tsdfLayer)
 	meshIntegrator := NewMeshIntegrator(meshConfig, tsdfLayer, meshLayer)
-	meshIntegrator.generateMesh()
+	meshIntegrator.integrateMesh()
+
+	if meshLayer.getBlockCount() != tsdfLayer.getBlockCount() {
+		t.Errorf("Number of allocated blocks is not correct")
+	}
 }
 
 func TestTsdfIntegrators(t *testing.T) {
@@ -185,7 +203,30 @@ func TestTsdfIntegrators(t *testing.T) {
 		t.Errorf("Wrong block Origin: %v", origin)
 	}
 
-	// convertTsdfLayerToTxtFile(simpleLayer, "../output/simple_layer.txt")
+	// Check every voxel has color
+	for _, block := range simpleLayer.getBlocks() {
+		for _, voxel := range block.getVoxels() {
+			if math.Abs(voxel.getDistance()) < simpleLayer.VoxelSize && voxel.getWeight() > 0.0 {
+				color := voxel.getColor()
+				if color[0] == 0 && color[1] == 0 && color[2] == 0 {
+					t.Errorf("Wrong color: %v %v", block.Index, voxel.Index)
+				}
+			}
+		}
+	}
+
+	writeTsdfLayerToTxtFile(simpleLayer, "../output/simple_layer.txt")
+
+	// Generate Mesh.
+	meshLayer := NewMeshLayer(simpleLayer)
+	meshIntegrator := NewMeshIntegrator(meshConfig, simpleLayer, meshLayer)
+	meshIntegrator.integrateMesh()
+
+	if meshLayer.getBlockCount() != simpleLayer.getBlockCount() {
+		t.Errorf("Number of allocated blocks is not correct")
+	}
+
+	writeMeshLayerToObjFile(meshLayer, "../output/mesh_layer")
 }
 
 func TestGetVoxelWeight(t *testing.T) {
@@ -243,20 +284,19 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 func TestMeshIntegrator(t *testing.T) {
 	tsdfLayer := NewTsdfLayer(0.1, 8)
 
-	// Create a mesh layer.
+	// Create a Mesh layer.
 	meshLayer := NewMeshLayer(tsdfLayer)
 	meshConfig := MeshConfig{
 		UseColor:  true,
 		MinWeight: 1000,
 		Threads:   1,
 	}
+
 	meshIntegrator := NewMeshIntegrator(meshConfig, tsdfLayer, meshLayer)
 
-	nextMeshIndex := 0
-
-	// Extract mesh inside block.
+	// Extract Mesh inside block.
 	tsdfBlock := tsdfLayer.getBlockByIndex(IndexType{0, 0, 0})
 	tsdfVoxel := tsdfBlock.getVoxel(IndexType{6, 9, 12})
 	meshBlock := meshLayer.getBlockByIndex(IndexType{0, 0, 0})
-	meshIntegrator.extractMeshInsideBlock(tsdfBlock, meshBlock, tsdfVoxel.Index, &nextMeshIndex)
+	meshIntegrator.extractMeshInsideBlock(tsdfBlock, meshBlock, tsdfVoxel.Index)
 }

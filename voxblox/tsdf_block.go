@@ -125,3 +125,18 @@ func (b *TsdfBlock) computeCoordinatesFromVoxelIndex(index IndexType) Point {
 	centerPoint := getCenterPointFromGridIndex(index, b.VoxelSize)
 	return vec3.Add(&b.Origin, &centerPoint)
 }
+
+// isValidVoxelIndex
+// Checks if the given voxel Index is valid.
+func (b *TsdfBlock) isValidVoxelIndex(index IndexType) bool {
+	if index[0] < 0 || index[0] >= b.VoxelsPerSide {
+		return false
+	}
+	if index[1] < 0 || index[1] >= b.VoxelsPerSide {
+		return false
+	}
+	if index[2] < 0 || index[2] >= b.VoxelsPerSide {
+		return false
+	}
+	return true
+}

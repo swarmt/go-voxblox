@@ -73,7 +73,7 @@ func Sgn(a float64) int {
 // timeTrack is a helper function for timing the execution of a function.
 func timeTrack(start time.Time, name string) {
 	elapsed := time.Since(start)
-	log.Printf("%s took %s", name, elapsed)
+	log.Printf("%s: %s", name, elapsed)
 }
 
 // IndexToPoint converts an Index to a point.

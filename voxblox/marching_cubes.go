@@ -326,8 +326,7 @@ func interpolateEdgeVertices(
 func meshCube(
 	vertexCoords *[8][3]float64,
 	vertexSdf *[8]float64,
-	vertexIndex *int,
-	mesh *Mesh,
+	meshBlock *MeshBlock,
 ) {
 	index := calculateVertexConfiguration(vertexSdf)
 	if index == 0 {
@@ -341,23 +340,25 @@ func meshCube(
 	tableCol := 0
 
 	for tableRow[tableCol] != -1 {
-		mesh.Vertices = append(
-			mesh.Vertices,
+		meshBlock.Mesh.Vertices = append(
+			meshBlock.Mesh.Vertices,
 			edgeVertexCoordinates[tableRow[tableCol+2]],
 			edgeVertexCoordinates[tableRow[tableCol+1]],
 			edgeVertexCoordinates[tableRow[tableCol]],
 		)
 
-		mesh.Indices = append(
-			mesh.Indices,
-			*vertexIndex,
-			*vertexIndex+1,
-			*vertexIndex+2,
+		meshBlock.Mesh.Triangles = append(
+			meshBlock.Mesh.Triangles,
+			[3]int{
+				meshBlock.Mesh.VertexCount,
+				meshBlock.Mesh.VertexCount + 1,
+				meshBlock.Mesh.VertexCount + 2,
+			},
 		)
 
 		// TODO: Normals
 
-		*vertexIndex += 3
+		meshBlock.Mesh.VertexCount += 3
 		tableCol += 3
 	}
 }

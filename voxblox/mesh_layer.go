@@ -26,6 +26,13 @@ func NewMeshLayer(tsdfLayer *TsdfLayer) *MeshLayer {
 	return &meshLayer
 }
 
+// getBlockCount returns the number of blocks allocated in the map
+func (l *MeshLayer) getBlockCount() int {
+	l.RLock()
+	defer l.RUnlock()
+	return len(l.blocks)
+}
+
 // getBlockByIndex allocates a new block in the map or returns an existing one
 // TODO: Would this be better as an interface shared by TsdfLayer?
 func (l *MeshLayer) getBlockByIndex(blockIndex IndexType) *MeshBlock {

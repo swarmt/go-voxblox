@@ -6,7 +6,7 @@ import (
 	"github.com/ungerik/go3d/float64/quaternion"
 )
 
-func TestGetRay(t *testing.T) {
+func TestValidateRay(t *testing.T) {
 	var ray Ray
 	valid := validateRay(&ray, Point{0, 0, 0}, 1, 15, true)
 	if valid == true {
