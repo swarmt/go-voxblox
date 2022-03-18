@@ -6,6 +6,19 @@ import (
 	"github.com/ungerik/go3d/float64/quaternion"
 )
 
+func TestGetVoxelWeight(t *testing.T) {
+	pointC := Point{0.714538097, -2.8530097, -1.72378588}
+	weight := calculateWeight(pointC)
+	if !almostEqual(weight, 0.336537421, kEpsilon) {
+		t.Errorf("Expected weight to be 0.336537421, got %f", weight)
+	}
+	pointC = Point{1.42907524, -5.14151907, -1.49416912}
+	weight = calculateWeight(pointC)
+	if !almostEqual(weight, 0.447920054, kEpsilon) {
+		t.Errorf("Expected weight to be 0.447920054, got %f", weight)
+	}
+}
+
 func TestValidateRay(t *testing.T) {
 	var ray Ray
 	valid := validateRay(&ray, Point{0, 0, 0}, 1, 15, true)

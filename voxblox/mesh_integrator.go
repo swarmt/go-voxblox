@@ -245,7 +245,7 @@ func (i *MeshIntegrator) updateMeshColorForBlock(tsdfBlock *TsdfBlock) {
 }
 
 func (i *MeshIntegrator) integrateMesh() {
-	defer timeTrack(time.Now(), "integrateMesh")
+	defer timeTrack(time.Now(), "Integrate Mesh")
 
 	wg := sync.WaitGroup{}
 	for _, block := range i.TsdfLayer.getUpdatedBlocks() {

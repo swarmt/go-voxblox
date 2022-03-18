@@ -156,8 +156,6 @@ func TestSimpleIntegratorSingleCloud(t *testing.T) {
 		}
 	}
 
-	writeTsdfLayerToTxtFile(tsdfLayer, "../output/simple_layer_single.txt")
-
 	// Generate Mesh.
 	meshLayer := NewMeshLayer(tsdfLayer)
 	meshIntegrator := NewMeshIntegrator(meshConfig, tsdfLayer, meshLayer)
@@ -173,7 +171,9 @@ func TestTsdfIntegrators(t *testing.T) {
 	simpleLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.BlockSize)
 	simpleTsdfIntegrator := NewSimpleTsdfIntegrator(tsdfConfig, simpleLayer)
 
-	// TODO: Merged integrator
+	// Merged integrator
+	mergedLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.BlockSize)
+	mergedTsdfIntegrator := NewMergedTsdfIntegrator(tsdfConfig, mergedLayer)
 
 	// TODO: Fast integrator
 
@@ -188,6 +188,7 @@ func TestTsdfIntegrators(t *testing.T) {
 		poseInverse := pose.Inverse()
 		transformedPointCloud := transformPointCloud(poseInverse, pointCloud)
 		simpleTsdfIntegrator.integratePointCloud(pose, transformedPointCloud)
+		mergedTsdfIntegrator.integratePointCloud(pose, transformedPointCloud)
 	}
 
 	// Check the number of blocks in the layers
@@ -216,29 +217,27 @@ func TestTsdfIntegrators(t *testing.T) {
 
 	writeTsdfLayerToTxtFile(simpleLayer, "../output/simple_layer.txt")
 
-	// Generate Mesh.
-	meshLayer := NewMeshLayer(simpleLayer)
-	meshIntegrator := NewMeshIntegrator(meshConfig, simpleLayer, meshLayer)
+	// Generate simple layer mesh.
+	simpleMeshLayer := NewMeshLayer(simpleLayer)
+	meshIntegrator := NewMeshIntegrator(meshConfig, simpleLayer, simpleMeshLayer)
 	meshIntegrator.integrateMesh()
 
-	if meshLayer.getBlockCount() != simpleLayer.getBlockCount() {
+	if simpleMeshLayer.getBlockCount() != simpleLayer.getBlockCount() {
 		t.Errorf("Number of allocated blocks is not correct")
 	}
 
-	writeMeshLayerToObjFile(meshLayer, "../output/mesh_layer")
-}
+	writeMeshLayerToObjFile(simpleMeshLayer, "../output/simple_mesh")
 
-func TestGetVoxelWeight(t *testing.T) {
-	pointC := Point{0.714538097, -2.8530097, -1.72378588}
-	weight := calculateWeight(pointC)
-	if !almostEqual(weight, 0.336537421, kEpsilon) {
-		t.Errorf("Expected weight to be 0.336537421, got %f", weight)
+	// Generate merged layer mesh.
+	mergedMeshLayer := NewMeshLayer(mergedLayer)
+	meshIntegrator = NewMeshIntegrator(meshConfig, mergedLayer, mergedMeshLayer)
+	meshIntegrator.integrateMesh()
+
+	if mergedMeshLayer.getBlockCount() != mergedLayer.getBlockCount() {
+		t.Errorf("Number of allocated blocks is not correct")
 	}
-	pointC = Point{1.42907524, -5.14151907, -1.49416912}
-	weight = calculateWeight(pointC)
-	if !almostEqual(weight, 0.447920054, kEpsilon) {
-		t.Errorf("Expected weight to be 0.447920054, got %f", weight)
-	}
+
+	writeMeshLayerToObjFile(mergedMeshLayer, "../output/merged_mesh")
 }
 
 func TestUpdateTsdfVoxel(t *testing.T) {
@@ -260,7 +259,9 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 
 	simpleTsdfIntegrator := NewSimpleTsdfIntegrator(tsdfConfig, layer)
 
-	simpleTsdfIntegrator.updateTsdfVoxel(
+	updateTsdfVoxel(
+		layer,
+		simpleTsdfIntegrator.Config,
 		origin,
 		pointG,
 		globalVoxelIndex,
@@ -278,23 +279,4 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 	if len(layer.blocks) != 1 {
 		t.Errorf("Expected 1 block, got %d", len(layer.blocks))
 	}
-}
-
-func TestMeshIntegrator(t *testing.T) {
-	tsdfLayer := NewTsdfLayer(0.1, 8)
-
-	// Create a Mesh layer.
-	meshLayer := NewMeshLayer(tsdfLayer)
-	meshConfig := MeshConfig{
-		UseColor:  true,
-		MinWeight: 1000,
-	}
-
-	meshIntegrator := NewMeshIntegrator(meshConfig, tsdfLayer, meshLayer)
-
-	// Extract Mesh inside block.
-	tsdfBlock := tsdfLayer.getBlockByIndex(IndexType{0, 0, 0})
-	tsdfVoxel := tsdfBlock.getVoxel(IndexType{6, 9, 12})
-	meshBlock := meshLayer.getBlockByIndex(IndexType{0, 0, 0})
-	meshIntegrator.extractMeshInsideBlock(tsdfBlock, meshBlock, tsdfVoxel.Index)
 }

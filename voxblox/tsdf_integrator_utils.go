@@ -2,6 +2,7 @@ package voxblox
 
 import (
 	"math"
+	"sync"
 
 	"github.com/ungerik/go3d/float64/vec3"
 )
@@ -26,6 +27,23 @@ type RayCaster struct {
 	tStepSize          Point
 	startScaled        Point
 	endScaled          Point
+}
+
+func calculateWeight(pointC Point) float64 {
+	distZ := math.Abs(pointC[2])
+	if distZ > kEpsilon {
+		return 1.0 / (distZ * distZ)
+	}
+	return 0.0
+}
+
+func computeDistance(origin, pointG, voxelCenter Point) float64 {
+	vVoxelOrigin := voxelCenter.Sub(&origin)
+	vPointOrigin := pointG.Sub(&origin)
+	distG := vPointOrigin.Length()
+	distGv := vec3.Dot(vPointOrigin, vVoxelOrigin) / distG
+	sdf := distG - distGv
+	return sdf
 }
 
 func (r *RayCaster) SetUp(startScaled, endScaled Point) {
@@ -156,7 +174,6 @@ func validateRay(
 	allowClearing bool,
 ) bool {
 	ray.Clearing = false
-
 	// Faster than checking the ray length for 0,0,0 points.
 	if point[0] == 0 && point[1] == 0 && point[2] == 0 {
 		return false
@@ -173,4 +190,143 @@ func validateRay(
 		}
 	}
 	return true
+}
+
+func updateTsdfVoxel(
+	layer *TsdfLayer,
+	config TsdfConfig,
+	origin Point,
+	pointG Point,
+	globalVoxelIndex IndexType,
+	color Color,
+	weight float64,
+	voxel *TsdfVoxel,
+) {
+	voxelCenter := getCenterPointFromGridIndex(globalVoxelIndex, layer.VoxelSize)
+	sdf := computeDistance(origin, pointG, voxelCenter)
+
+	updatedWeight := weight
+
+	// Weight drop-off
+	dropOffEpsilon := layer.VoxelSize
+	if config.ConstWeight && sdf < -dropOffEpsilon {
+		updatedWeight = weight * (config.TruncationDistance + sdf) /
+			(config.TruncationDistance - dropOffEpsilon)
+		updatedWeight = math.Max(updatedWeight, 0.0)
+	}
+
+	// TODO: Sparsity compensation
+
+	// Lock the mutex
+	voxel.Lock()
+	defer voxel.Unlock()
+
+	// Calculate the new weight
+	newWeight := voxel.weight + weight
+	if newWeight < kEpsilon {
+		return
+	}
+	newWeight = math.Min(newWeight, config.MaxWeight)
+	voxel.weight = newWeight
+
+	// Calculate the new distance
+	newSdf := (sdf*updatedWeight + voxel.distance*voxel.weight) / newWeight
+
+	// Blend colors
+	if math.Abs(sdf) < config.TruncationDistance {
+		newColor := blendTwoColors(voxel.color, voxel.weight, color, weight)
+		voxel.color = newColor
+	}
+
+	var newDistance float64
+	if sdf > 0 {
+		newDistance = math.Min(config.TruncationDistance, newSdf)
+	} else {
+		newDistance = math.Max(-config.TruncationDistance, newSdf)
+	}
+	voxel.distance = newDistance
+}
+
+func integratePoints(
+	layer *TsdfLayer,
+	config TsdfConfig,
+	pose Transformation,
+	points []Point,
+	colors []Color,
+	wg *sync.WaitGroup,
+) {
+	for j, point := range points {
+		var ray Ray
+		if validateRay(&ray, point, config.MinRange, config.MaxRange, config.AllowClearing) {
+			// Transform the point into the global frame.
+			ray.Origin = pose.Position
+			ray.Point = pose.transformPoint(point)
+
+			// Create a new Ray-caster.
+			rayCaster := NewRayCaster(
+				&ray,
+				layer.VoxelSizeInv,
+				config.TruncationDistance,
+				config.MaxRange,
+				config.AllowCarving,
+			)
+			var globalVoxelIdx IndexType
+			for rayCaster.nextRayIndex(&globalVoxelIdx) {
+				block, voxel := getBlockAndVoxelFromGlobalVoxelIndex(layer, globalVoxelIdx)
+				weight := 1.0
+				if !config.ConstWeight {
+					weight = calculateWeight(point)
+				}
+				updateTsdfVoxel(
+					layer,
+					config,
+					ray.Origin,
+					ray.Point,
+					globalVoxelIdx,
+					colors[j],
+					weight,
+					voxel,
+				)
+				block.setUpdated()
+			}
+		}
+	}
+	wg.Done()
+}
+
+func integratePointsParallel(
+	layer *TsdfLayer,
+	config TsdfConfig,
+	pose Transformation,
+	pointCloud PointCloud,
+) {
+	// Fill color buffer with white if empty
+	// TODO: This is a hack. Handle empty color slice downstream.
+	if len(pointCloud.Colors) == 0 {
+		pointCloud.Colors = make([]Color, len(pointCloud.Points))
+		for i := range pointCloud.Colors {
+			pointCloud.Colors[i] = ColorWhite
+		}
+	}
+
+	nThreads := config.Threads
+	wg := sync.WaitGroup{}
+	nPointsPerThread := len(pointCloud.Points) / nThreads
+	for threadIdx := 0; threadIdx < nThreads; threadIdx++ {
+		startIdx := threadIdx * nPointsPerThread
+		endIdx := (threadIdx + 1) * nPointsPerThread
+		if threadIdx == nThreads-1 {
+			endIdx = len(pointCloud.Points)
+		}
+		wg.Add(1)
+		go integratePoints(
+			layer,
+			config,
+			pose,
+			pointCloud.Points[startIdx:endIdx],
+			pointCloud.Colors[startIdx:endIdx],
+			&wg)
+
+	}
+	wg.Wait()
 }

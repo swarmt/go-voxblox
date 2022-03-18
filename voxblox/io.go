@@ -32,7 +32,7 @@ func writeTsdfLayerToTxtFile(layer *TsdfLayer, fileName string) {
 func writeMeshLayerToObjFile(layer *MeshLayer, folderName string) {
 	// Create folder if it doesn't exist
 	if _, err := os.Stat(folderName); os.IsNotExist(err) {
-		os.Mkdir(folderName, 0755)
+		os.Mkdir(folderName, 0o755)
 	}
 
 	for _, block := range layer.blocks {
