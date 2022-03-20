@@ -57,7 +57,7 @@ func (l *TsdfLayer) getVoxelCenters() ([]Point, []Color) {
 	defer l.RUnlock()
 	for _, block := range l.getBlocks() {
 		for _, voxel := range block.getVoxels() {
-			if math.Abs(voxel.getDistance()) < block.VoxelSize*2 && voxel.getWeight() > 0 {
+			if math.Abs(voxel.getDistance()) < block.VoxelSize && voxel.getWeight() > 2 {
 				coordinates := block.computeCoordinatesFromVoxelIndex(voxel.Index)
 				voxelCenters = append(voxelCenters, coordinates)
 				color := voxel.getColor()

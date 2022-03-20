@@ -4,24 +4,17 @@ import (
 	"time"
 )
 
+type TsdfIntegrator interface {
+	IntegratePointCloud(pose Transformation, cloud PointCloud)
+}
+
 type SimpleTsdfIntegrator struct {
 	Config TsdfConfig
 	Layer  *TsdfLayer
 }
 
-// NewSimpleTsdfIntegrator creates a new SimpleTsdfIntegrator.
-func NewSimpleTsdfIntegrator(
-	config TsdfConfig,
-	layer *TsdfLayer,
-) *SimpleTsdfIntegrator {
-	return &SimpleTsdfIntegrator{
-		Config: config,
-		Layer:  layer,
-	}
-}
-
-// integratePointCloud integrates a point cloud into the TSDF Layer.
-func (i *SimpleTsdfIntegrator) integratePointCloud(
+// IntegratePointCloud integrates a point cloud into the TSDF Layer.
+func (i *SimpleTsdfIntegrator) IntegratePointCloud(
 	pose Transformation,
 	pointCloud PointCloud,
 ) {
@@ -39,17 +32,6 @@ type MergedTsdfIntegrator struct {
 	Layer  *TsdfLayer
 }
 
-// NewMergedTsdfIntegrator creates a new MergedTsdfIntegrator.
-func NewMergedTsdfIntegrator(
-	config TsdfConfig,
-	layer *TsdfLayer,
-) *MergedTsdfIntegrator {
-	return &MergedTsdfIntegrator{
-		Config: config,
-		Layer:  layer,
-	}
-}
-
 // bundleRays decimates the point cloud by the voxel size.
 func bundleRays(voxelSizeInv float64, pointCloud PointCloud) map[IndexType]int {
 	voxelMap := make(map[IndexType]int)
@@ -60,8 +42,8 @@ func bundleRays(voxelSizeInv float64, pointCloud PointCloud) map[IndexType]int {
 	return voxelMap
 }
 
-// integratePointCloud integrates a point cloud into the TSDF Layer.
-func (i *MergedTsdfIntegrator) integratePointCloud(
+// IntegratePointCloud integrates a point cloud into the TSDF Layer.
+func (i *MergedTsdfIntegrator) IntegratePointCloud(
 	pose Transformation,
 	pointCloud PointCloud,
 ) {

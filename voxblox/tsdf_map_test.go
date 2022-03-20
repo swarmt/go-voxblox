@@ -96,7 +96,7 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 		t.Errorf("Expected block111.Index to be {1, 1, 1}, got %v", block111.Index)
 	}
 	if block111v2.BlockSize != blockSize {
-		t.Errorf("Expected block111.BlockSize to be %f, got %f", blockSize, block111v2.BlockSize)
+		t.Errorf("Expected block111.VoxelsPerSide to be %f, got %f", blockSize, block111v2.BlockSize)
 	}
 
 	// BLOCK -1 -1 -1 (coordinate at Origin)
@@ -115,7 +115,7 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 	}
 	if blockNeg111.BlockSize != blockSize {
 		t.Errorf(
-			"Expected blockNeg111.BlockSize to be %f, got %f",
+			"Expected blockNeg111.VoxelsPerSide to be %f, got %f",
 			blockSize,
 			blockNeg111.BlockSize,
 		)
@@ -139,7 +139,7 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 	}
 	if blockNeg111v2.BlockSize != blockSize {
 		t.Errorf(
-			"Expected blockNeg111.BlockSize to be %f, got %f",
+			"Expected blockNeg111.VoxelsPerSide to be %f, got %f",
 			blockSize,
 			blockNeg111v2.BlockSize,
 		)

@@ -22,13 +22,13 @@ var (
 
 func init() {
 	// Configuration
-	cameraResolution = vec2.T{320, 240}
+	cameraResolution = [2]float64{320, 240}
 	fovHorizontal = 150.0
 	maxDistance = 10.0
 
 	tsdfConfig = TsdfConfig{
 		VoxelSize:          0.1,
-		BlockSize:          16,
+		VoxelsPerSide:      16,
 		MinRange:           0.1,
 		MaxRange:           5.0,
 		TruncationDistance: 0.1 * 4.0,
@@ -94,8 +94,8 @@ func init() {
 
 func TestSimpleIntegratorSingleCloud(t *testing.T) {
 	// Simple integrator
-	tsdfLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.BlockSize)
-	simpleTsdfIntegrator := NewSimpleTsdfIntegrator(tsdfConfig, tsdfLayer)
+	tsdfLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
+	simpleTsdfIntegrator := SimpleTsdfIntegrator{tsdfConfig, tsdfLayer}
 
 	pointCloud := world.GetPointCloudFromTransform(
 		&poses[0],
@@ -119,7 +119,7 @@ func TestSimpleIntegratorSingleCloud(t *testing.T) {
 		t.Errorf("Transformed pointcloud is not correct")
 	}
 
-	simpleTsdfIntegrator.integratePointCloud(poses[0], transformedPointCloud)
+	simpleTsdfIntegrator.IntegratePointCloud(poses[0], transformedPointCloud)
 
 	if tsdfLayer.getBlockCount() != 62 {
 		t.Errorf("Number of allocated blocks is not correct")
@@ -156,6 +156,8 @@ func TestSimpleIntegratorSingleCloud(t *testing.T) {
 		}
 	}
 
+	writeTsdfLayerToTxtFile(tsdfLayer, "../output/simple_layer.txt")
+
 	// Generate Mesh.
 	meshLayer := NewMeshLayer(tsdfLayer)
 	meshIntegrator := NewMeshIntegrator(meshConfig, tsdfLayer, meshLayer)
@@ -168,12 +170,12 @@ func TestSimpleIntegratorSingleCloud(t *testing.T) {
 
 func TestTsdfIntegrators(t *testing.T) {
 	// Simple integrator
-	simpleLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.BlockSize)
-	simpleTsdfIntegrator := NewSimpleTsdfIntegrator(tsdfConfig, simpleLayer)
+	simpleLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
+	simpleTsdfIntegrator := SimpleTsdfIntegrator{tsdfConfig, simpleLayer}
 
 	// Merged integrator
-	mergedLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.BlockSize)
-	mergedTsdfIntegrator := NewMergedTsdfIntegrator(tsdfConfig, mergedLayer)
+	mergedLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
+	mergedTsdfIntegrator := MergedTsdfIntegrator{tsdfConfig, mergedLayer}
 
 	// TODO: Fast integrator
 
@@ -187,8 +189,8 @@ func TestTsdfIntegrators(t *testing.T) {
 		)
 		poseInverse := pose.Inverse()
 		transformedPointCloud := transformPointCloud(poseInverse, pointCloud)
-		simpleTsdfIntegrator.integratePointCloud(pose, transformedPointCloud)
-		mergedTsdfIntegrator.integratePointCloud(pose, transformedPointCloud)
+		simpleTsdfIntegrator.IntegratePointCloud(pose, transformedPointCloud)
+		mergedTsdfIntegrator.IntegratePointCloud(pose, transformedPointCloud)
 	}
 
 	// Check the number of blocks in the layers
@@ -241,7 +243,7 @@ func TestTsdfIntegrators(t *testing.T) {
 }
 
 func TestUpdateTsdfVoxel(t *testing.T) {
-	layer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.BlockSize)
+	layer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
 	origin := Point{0.0, 6.0, 2.0}
 	pointC := Point{0.714538097, -2.8530097, -1.72378588}
 	pointG := Point{-2.66666508, 5.2854619, 1.1920929e-07}
@@ -251,13 +253,13 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 
 	tsdfConfig = TsdfConfig{
 		VoxelSize:          0.1,
-		BlockSize:          10,
+		VoxelsPerSide:      10,
 		TruncationDistance: 0.4,
 		MaxWeight:          10000.0,
 		ConstWeight:        false,
 	}
 
-	simpleTsdfIntegrator := NewSimpleTsdfIntegrator(tsdfConfig, layer)
+	simpleTsdfIntegrator := SimpleTsdfIntegrator{tsdfConfig, layer}
 
 	updateTsdfVoxel(
 		layer,
