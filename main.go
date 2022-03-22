@@ -4,10 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/aler9/goroslib"
-	"github.com/aler9/goroslib/pkg/msgs/geometry_msgs"
-	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
-	"github.com/ungerik/go3d/float64/quaternion"
 	"go-voxblox/voxblox"
 	"math"
 	"os"
@@ -15,6 +11,11 @@ import (
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/aler9/goroslib"
+	"github.com/aler9/goroslib/pkg/msgs/geometry_msgs"
+	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
+	"github.com/ungerik/go3d/float64/quaternion"
 )
 
 var (
