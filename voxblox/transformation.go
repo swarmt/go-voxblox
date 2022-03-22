@@ -6,23 +6,23 @@ import (
 )
 
 type Transformation struct {
-	Position Point
-	Rotation quaternion.T
+	Translation Point
+	Rotation    quaternion.T
 }
 
 // transformPoint by rotation and translation.
 func (t Transformation) transformPoint(point Point) vec3.T {
 	rotatedPoint := t.Rotation.RotatedVec3(&point)
-	return vec3.Add(&rotatedPoint, &t.Position)
+	return vec3.Add(&rotatedPoint, &t.Translation)
 }
 
-// Inverse returns the inverse transformation.
-func (t Transformation) Inverse() Transformation {
+// inverse returns the inverse Transformation.
+func (t Transformation) inverse() Transformation {
 	rotationInverted := t.Rotation.Inverted()
-	pointRotated := rotationInverted.RotatedVec3(&t.Position)
+	pointRotated := rotationInverted.RotatedVec3(&t.Translation)
 	return Transformation{
-		Position: pointRotated.Inverted(),
-		Rotation: rotationInverted,
+		Translation: pointRotated.Inverted(),
+		Rotation:    rotationInverted,
 	}
 }
 

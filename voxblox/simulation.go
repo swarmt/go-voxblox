@@ -28,7 +28,7 @@ func (w *SimulationWorld) AddObject(object Object) {
 	w.Objects = append(w.Objects, object)
 }
 
-func (w *SimulationWorld) GetPointCloudFromViewpoint(
+func (w *SimulationWorld) getPointCloudFromViewpoint(
 	viewOrigin vec3.T,
 	viewDirection vec3.T,
 	cameraResolution vec2.T,
@@ -80,7 +80,7 @@ func (w *SimulationWorld) GetPointCloudFromViewpoint(
 	}
 }
 
-func (w *SimulationWorld) GetPointCloudFromTransform(
+func (w *SimulationWorld) getPointCloudFromTransform(
 	pose *Transformation,
 	cameraRes vec2.T,
 	fovH float64,
@@ -88,8 +88,8 @@ func (w *SimulationWorld) GetPointCloudFromTransform(
 ) PointCloud {
 	viewDirection := vec3.T{1.0, 0.0, 0.0}
 	pose.Rotation.RotateVec3(&viewDirection)
-	return w.GetPointCloudFromViewpoint(
-		pose.Position,
+	return w.getPointCloudFromViewpoint(
+		pose.Translation,
 		viewDirection,
 		cameraRes,
 		fovH,

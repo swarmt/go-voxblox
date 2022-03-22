@@ -51,7 +51,7 @@ func (r *RayCaster) SetUp(startScaled, endScaled Point) {
 	r.endScaled = endScaled
 	r.currentIndex = getGridIndexFromScaledPoint(startScaled)
 	r.endIndex = getGridIndexFromScaledPoint(endScaled)
-	diffIndex := SubIndex(r.endIndex, r.currentIndex)
+	diffIndex := subIndex(r.endIndex, r.currentIndex)
 
 	r.currentStep = 0
 
@@ -68,9 +68,9 @@ func (r *RayCaster) SetUp(startScaled, endScaled Point) {
 
 	// Get the signs of the components of the scaled ray.
 	r.stepSigns = IndexType{
-		Sgn(rayScaled[0]),
-		Sgn(rayScaled[1]),
-		Sgn(rayScaled[2]),
+		sgn(rayScaled[0]),
+		sgn(rayScaled[1]),
+		sgn(rayScaled[2]),
 	}
 	correctedStep := Point{
 		math.Max(0, float64(r.stepSigns[0])),
@@ -258,7 +258,7 @@ func integratePoints(
 		var ray Ray
 		if validateRay(&ray, point, config.MinRange, config.MaxRange, config.AllowClearing) {
 			// Transform the point into the global frame.
-			ray.Origin = pose.Position
+			ray.Origin = pose.Translation
 			ray.Point = pose.transformPoint(point)
 
 			// Create a new Ray-caster.

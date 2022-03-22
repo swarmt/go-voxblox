@@ -70,6 +70,14 @@ func (b *TsdfBlock) setUpdated() {
 	}
 }
 
+// setUnUpdated sets the updated flag to false.
+// Thread-safe.
+func (b *TsdfBlock) setUnUpdated() {
+	b.Lock()
+	defer b.Unlock()
+	b.updated = false
+}
+
 // getVoxel returns a reference to a voxel at the given Index .
 // Creates a new voxel if it doesn't exist.
 // Thread-safe.
@@ -112,9 +120,9 @@ func (b *TsdfBlock) computeTruncatedVoxelIndexFromCoordinates(point Point) Index
 	maxValue := b.VoxelsPerSide - 1
 	voxelIndex := getGridIndexFromPoint(vec3.Sub(&point, &b.Origin), b.VoxelSizeInv)
 	index := IndexType{
-		MaxInt(MinInt(voxelIndex[0], maxValue), 0.0),
-		MaxInt(MinInt(voxelIndex[1], maxValue), 0.0),
-		MaxInt(MinInt(voxelIndex[2], maxValue), 0.0),
+		maxInt(minInt(voxelIndex[0], maxValue), 0.0),
+		maxInt(minInt(voxelIndex[1], maxValue), 0.0),
+		maxInt(minInt(voxelIndex[2], maxValue), 0.0),
 	}
 	return b.getVoxel(index).Index
 }

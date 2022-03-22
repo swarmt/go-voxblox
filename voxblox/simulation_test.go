@@ -15,13 +15,13 @@ func TestGetPointCloudFromTransform(t *testing.T) {
 	plane := Plane{Center: Point{0.0, 0.0, 0.0}, Normal: vec3.T{0.0, 0.0, 1.0}}
 	world.AddObject(&plane)
 	transform := Transformation{
-		Position: vec3.T{0.0, 6.0, 2.0},
-		Rotation: quaternion.T{0.0353406072, -0.0353406072, -0.706223071, 0.706223071},
+		Translation: vec3.T{0.0, 6.0, 2.0},
+		Rotation:    quaternion.T{0.0353406072, -0.0353406072, -0.706223071, 0.706223071},
 	}
 	cameraResolution := vec2.T{320, 240}
 	fovHorizontal := 150.0
 	maxDistance := 100.0
-	pointCloud := world.GetPointCloudFromTransform(
+	pointCloud := world.getPointCloudFromTransform(
 		&transform,
 		cameraResolution,
 		fovHorizontal,

@@ -16,7 +16,7 @@ type IndexType = [3]int
 // Color RGBA
 type Color = [4]uint8
 
-// Colors
+// colors
 var (
 	ColorWhite = Color{255, 255, 255, 255}
 	ColorRed   = Color{255, 0, 0, 255}
@@ -34,22 +34,22 @@ type PointCloud struct {
 // X, Y, Z are the coordinates
 type Point = vec3.T
 
-func SubIndex(a, b IndexType) IndexType {
+func subIndex(a, b IndexType) IndexType {
 	return IndexType{a[0] - b[0], a[1] - b[1], a[2] - b[2]}
 }
 
-func AddIndex(a, b IndexType) IndexType {
+func addIndex(a, b IndexType) IndexType {
 	return IndexType{a[0] + b[0], a[1] + b[1], a[2] + b[2]}
 }
 
-func MaxInt(x, y int) int {
+func maxInt(x, y int) int {
 	if x < y {
 		return y
 	}
 	return x
 }
 
-func MinInt(x, y int) int {
+func minInt(x, y int) int {
 	if x > y {
 		return y
 	}
@@ -60,7 +60,7 @@ func almostEqual(a, b, e float64) bool {
 	return math.Abs(a-b) <= e+kEpsilon
 }
 
-func Sgn(a float64) int {
+func sgn(a float64) int {
 	switch {
 	case a < 0:
 		return -1

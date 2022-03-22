@@ -339,26 +339,31 @@ func meshCube(
 	tableRow := kTriangleTable[index]
 	tableCol := 0
 
+	meshBlock.Lock()
+	defer meshBlock.Unlock()
+
+	count := len(meshBlock.vertices)
+
 	for tableRow[tableCol] != -1 {
-		meshBlock.Vertices = append(
-			meshBlock.Vertices,
+		meshBlock.vertices = append(
+			meshBlock.vertices,
 			edgeVertexCoordinates[tableRow[tableCol+2]],
 			edgeVertexCoordinates[tableRow[tableCol+1]],
 			edgeVertexCoordinates[tableRow[tableCol]],
 		)
 
-		meshBlock.Triangles = append(
-			meshBlock.Triangles,
+		meshBlock.triangles = append(
+			meshBlock.triangles,
 			[3]int{
-				meshBlock.VertexCount,
-				meshBlock.VertexCount + 1,
-				meshBlock.VertexCount + 2,
+				count,
+				count + 1,
+				count + 2,
 			},
 		)
 
 		// TODO: Normals
 
-		meshBlock.VertexCount += 3
+		count += 3
 		tableCol += 3
 	}
 }

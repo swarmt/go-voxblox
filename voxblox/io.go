@@ -5,9 +5,9 @@ import (
 	"os"
 )
 
-// writeTsdfLayerToTxtFile writes a tsdf Layer to a text file.
+// WriteTsdfLayerToTxtFile writes a tsdf Layer to a text file.
 // TODO: This is a temporary function.
-func writeTsdfLayerToTxtFile(layer *TsdfLayer, fileName string) {
+func WriteTsdfLayerToTxtFile(layer *TsdfLayer, fileName string) {
 	// Create a new file
 	file, _ := os.Create(fileName)
 
@@ -27,16 +27,16 @@ func writeTsdfLayerToTxtFile(layer *TsdfLayer, fileName string) {
 	}
 }
 
-// writeMeshLayerToObjFile writes a Mesh Layer to an obj file.
+// WriteMeshLayerToObjFiles writes a Mesh Layer to an obj file.
 // TODO: This is a temporary function.
-func writeMeshLayerToObjFile(layer *MeshLayer, folderName string) {
+func WriteMeshLayerToObjFiles(layer *MeshLayer, folderName string) {
 	// Create folder if it doesn't exist
 	if _, err := os.Stat(folderName); os.IsNotExist(err) {
 		os.Mkdir(folderName, 0o755)
 	}
 
-	for _, block := range layer.blocks {
-		if len(block.Vertices) == 0 {
+	for _, block := range layer.getBlocks() {
+		if block.getVertexCount() == 0 {
 			continue
 		}
 
@@ -44,7 +44,8 @@ func writeMeshLayerToObjFile(layer *MeshLayer, folderName string) {
 		fileName := fmt.Sprintf("%s/%d.obj", folderName, block.Index)
 		file, _ := os.Create(fileName)
 
-		for i, vertex := range block.Vertices {
+		block.RLock()
+		for i, vertex := range block.vertices {
 			// Write the voxel to the file
 			fmt.Fprintf(
 				file,
@@ -52,12 +53,12 @@ func writeMeshLayerToObjFile(layer *MeshLayer, folderName string) {
 				vertex[0],
 				vertex[1],
 				vertex[2],
-				block.Colors[i][0],
-				block.Colors[i][1],
-				block.Colors[i][2],
+				block.colors[i][0],
+				block.colors[i][1],
+				block.colors[i][2],
 			)
 		}
-		for _, triangle := range block.Triangles {
+		for _, triangle := range block.triangles {
 			// Write the voxel to the file
 			fmt.Fprintf(
 				file,
@@ -67,5 +68,6 @@ func writeMeshLayerToObjFile(layer *MeshLayer, folderName string) {
 				triangle[2]+1,
 			)
 		}
+		block.RUnlock()
 	}
 }

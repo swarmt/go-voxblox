@@ -1,6 +1,7 @@
 package voxblox
 
 import (
+	"fmt"
 	"sync"
 	"time"
 
@@ -19,7 +20,7 @@ func NewMeshIntegrator(
 	config MeshConfig,
 	tsdfLayer *TsdfLayer,
 	meshLayer *MeshLayer,
-) *MeshIntegrator {
+) MeshIntegrator {
 	i := MeshIntegrator{}
 	i.Config = config
 	i.TsdfLayer = tsdfLayer
@@ -40,7 +41,7 @@ func NewMeshIntegrator(
 		offset := IndexToPoint(i.CubeIndexOffsets[j])
 		i.CubeCoordOffsets[j] = offset.Scaled(i.TsdfLayer.VoxelSize)
 	}
-	return &i
+	return i
 }
 
 func (i *MeshIntegrator) extractMeshInsideBlock(
@@ -56,7 +57,7 @@ func (i *MeshIntegrator) extractMeshInsideBlock(
 	allNeighborsObserved := true
 
 	for j := 0; j < 8; j++ {
-		cornerIndex := AddIndex(voxelIndex, i.CubeIndexOffsets[j])
+		cornerIndex := addIndex(voxelIndex, i.CubeIndexOffsets[j])
 		voxel := tsdfBlock.getVoxelIfExists(cornerIndex)
 		if voxel == nil {
 			allNeighborsObserved = false
@@ -91,7 +92,7 @@ func (i *MeshIntegrator) extractMeshOnBorder(
 	allNeighborsObserved := true
 
 	for j := 0; j < 8; j++ {
-		cornerIndex := AddIndex(voxelIndex, i.CubeIndexOffsets[j])
+		cornerIndex := addIndex(voxelIndex, i.CubeIndexOffsets[j])
 
 		if tsdfBlock.isValidVoxelIndex(cornerIndex) {
 			voxel := tsdfBlock.getVoxelIfExists(cornerIndex)
@@ -119,7 +120,7 @@ func (i *MeshIntegrator) extractMeshOnBorder(
 				}
 			}
 
-			neighborIndex := AddIndex(tsdfBlock.Index, blockOffset)
+			neighborIndex := addIndex(tsdfBlock.Index, blockOffset)
 			neighborBlock := i.TsdfLayer.getBlockIfExists(neighborIndex)
 
 			if neighborBlock == nil {
@@ -153,8 +154,6 @@ func (i *MeshIntegrator) updateMeshForBlock(tsdfBlock *TsdfBlock, wg *sync.WaitG
 	meshBlock := i.MeshLayer.getBlockByIndex(tsdfBlock.Index)
 
 	vps := i.TsdfLayer.VoxelsPerSide
-
-	meshBlock.VertexCount = 0
 
 	voxelIndex := IndexType{}
 
@@ -211,6 +210,8 @@ func (i *MeshIntegrator) updateMeshForBlock(tsdfBlock *TsdfBlock, wg *sync.WaitG
 		i.updateMeshColorForBlock(tsdfBlock)
 	}
 
+	tsdfBlock.setUnUpdated()
+
 	wg.Done()
 }
 
@@ -220,31 +221,36 @@ func (i *MeshIntegrator) updateMeshColorForBlock(tsdfBlock *TsdfBlock) {
 		return
 	}
 
-	meshBlock.Colors = make([]Color, meshBlock.VertexCount)
+	meshBlock.Lock()
+	defer meshBlock.Unlock()
+
+	vertexCount := len(meshBlock.vertices)
+
+	meshBlock.colors = make([]Color, vertexCount)
+
+	if len(meshBlock.vertices) != len(meshBlock.colors) {
+		fmt.Println("error")
+	}
 
 	// Use nearest-neighbor search.
-	for j := 0; j < meshBlock.VertexCount; j++ {
-		vertex := meshBlock.Vertices[j]
+	for j := 0; j < vertexCount; j++ {
+		vertex := meshBlock.vertices[j]
 		voxelIndex := tsdfBlock.computeVoxelIndexFromCoordinates(vertex)
 		voxel := tsdfBlock.getVoxelIfExists(voxelIndex)
 		if voxel != nil {
-			if voxel.getWeight() > i.Config.MinWeight {
-				meshBlock.Colors[j] = voxel.getColor()
-			}
+			meshBlock.colors[j] = voxel.getColor()
 		} else {
 			neighborBlock := i.TsdfLayer.getBlockByCoordinates(vertex)
 			voxelIndex := neighborBlock.computeVoxelIndexFromCoordinates(vertex)
 			voxel := neighborBlock.getVoxelIfExists(voxelIndex)
 			if voxel != nil {
-				if voxel.getWeight() > i.Config.MinWeight {
-					meshBlock.Colors[j] = voxel.getColor()
-				}
+				meshBlock.colors[j] = voxel.getColor()
 			}
 		}
 	}
 }
 
-func (i *MeshIntegrator) integrateMesh() {
+func (i *MeshIntegrator) IntegrateMesh() {
 	defer timeTrack(time.Now(), "Integrate Mesh")
 
 	wg := sync.WaitGroup{}

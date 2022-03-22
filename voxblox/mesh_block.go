@@ -11,10 +11,9 @@ type MeshBlock struct {
 	BlockSize     float64
 	BlockSizeInv  float64
 	sync.RWMutex
-	VertexCount int
-	Vertices    []Point
-	Triangles   [][3]int
-	Colors      []Color
+	vertices  []Point
+	triangles [][3]int
+	colors    []Color
 }
 
 // NewMeshBlock creates a new MeshBlock.
@@ -28,4 +27,20 @@ func NewMeshBlock(layer *MeshLayer, index IndexType, origin Point) *MeshBlock {
 	b.BlockSize = layer.BlockSize
 	b.BlockSizeInv = layer.BlockSizeInv
 	return b
+}
+
+// getVertexCount returns the number of vertices in the block.
+// Thread-safe.
+func (b *MeshBlock) getVertexCount() int {
+	b.RLock()
+	defer b.RUnlock()
+	return len(b.vertices)
+}
+
+// getVertices returns the vertices in the block.
+// Thread-safe.
+func (b *MeshBlock) getVertices() []Point {
+	b.RLock()
+	defer b.RUnlock()
+	return b.vertices
 }

@@ -85,8 +85,8 @@ func init() {
 		qZ := quaternion.FromZAxisAngle(desiredYaw)
 		q := quaternion.Mul(&qY, &qZ)
 		transform := Transformation{
-			Position: position,
-			Rotation: q,
+			Translation: position,
+			Rotation:    q,
 		}
 		poses = append(poses, transform)
 	}
@@ -97,14 +97,14 @@ func TestSimpleIntegratorSingleCloud(t *testing.T) {
 	tsdfLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
 	simpleTsdfIntegrator := SimpleTsdfIntegrator{tsdfConfig, tsdfLayer}
 
-	pointCloud := world.GetPointCloudFromTransform(
+	pointCloud := world.getPointCloudFromTransform(
 		&poses[0],
 		cameraResolution,
 		fovHorizontal,
 		maxDistance,
 	)
 
-	poseInverse := poses[0].Inverse()
+	poseInverse := poses[0].inverse()
 	transformedPointCloud := transformPointCloud(poseInverse, pointCloud)
 
 	// Check transformed point cloud.
@@ -156,12 +156,12 @@ func TestSimpleIntegratorSingleCloud(t *testing.T) {
 		}
 	}
 
-	writeTsdfLayerToTxtFile(tsdfLayer, "../output/simple_layer.txt")
+	WriteTsdfLayerToTxtFile(tsdfLayer, "../output/simple_layer.txt")
 
 	// Generate Mesh.
 	meshLayer := NewMeshLayer(tsdfLayer)
 	meshIntegrator := NewMeshIntegrator(meshConfig, tsdfLayer, meshLayer)
-	meshIntegrator.integrateMesh()
+	meshIntegrator.IntegrateMesh()
 
 	if meshLayer.getBlockCount() != tsdfLayer.getBlockCount() {
 		t.Errorf("Number of allocated blocks is not correct")
@@ -181,13 +181,13 @@ func TestTsdfIntegrators(t *testing.T) {
 
 	// Iterate over all poses and integrate.
 	for _, pose := range poses {
-		pointCloud := world.GetPointCloudFromTransform(
+		pointCloud := world.getPointCloudFromTransform(
 			&pose,
 			cameraResolution,
 			fovHorizontal,
 			maxDistance,
 		)
-		poseInverse := pose.Inverse()
+		poseInverse := pose.inverse()
 		transformedPointCloud := transformPointCloud(poseInverse, pointCloud)
 		simpleTsdfIntegrator.IntegratePointCloud(pose, transformedPointCloud)
 		mergedTsdfIntegrator.IntegratePointCloud(pose, transformedPointCloud)
@@ -217,29 +217,29 @@ func TestTsdfIntegrators(t *testing.T) {
 		}
 	}
 
-	writeTsdfLayerToTxtFile(simpleLayer, "../output/simple_layer.txt")
+	WriteTsdfLayerToTxtFile(simpleLayer, "../output/simple_layer.txt")
 
 	// Generate simple layer mesh.
 	simpleMeshLayer := NewMeshLayer(simpleLayer)
 	meshIntegrator := NewMeshIntegrator(meshConfig, simpleLayer, simpleMeshLayer)
-	meshIntegrator.integrateMesh()
+	meshIntegrator.IntegrateMesh()
 
 	if simpleMeshLayer.getBlockCount() != simpleLayer.getBlockCount() {
 		t.Errorf("Number of allocated blocks is not correct")
 	}
 
-	writeMeshLayerToObjFile(simpleMeshLayer, "../output/simple_mesh")
+	WriteMeshLayerToObjFiles(simpleMeshLayer, "../output/simple_mesh")
 
 	// Generate merged layer mesh.
 	mergedMeshLayer := NewMeshLayer(mergedLayer)
 	meshIntegrator = NewMeshIntegrator(meshConfig, mergedLayer, mergedMeshLayer)
-	meshIntegrator.integrateMesh()
+	meshIntegrator.IntegrateMesh()
 
 	if mergedMeshLayer.getBlockCount() != mergedLayer.getBlockCount() {
 		t.Errorf("Number of allocated blocks is not correct")
 	}
 
-	writeMeshLayerToObjFile(mergedMeshLayer, "../output/merged_mesh")
+	WriteMeshLayerToObjFiles(mergedMeshLayer, "../output/merged_mesh")
 }
 
 func TestUpdateTsdfVoxel(t *testing.T) {

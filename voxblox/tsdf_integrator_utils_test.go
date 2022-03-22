@@ -62,11 +62,11 @@ func TestRayCaster(t *testing.T) {
 	var ray Ray
 	validateRay(&ray, point, 0.1, 5, true)
 	pose := Transformation{
-		Position: Point{0, 6, 2},
-		Rotation: quaternion.T{0.0353406072, -0.0353406072, -0.706223071, 0.706223071},
+		Translation: Point{0, 6, 2},
+		Rotation:    quaternion.T{0.0353406072, -0.0353406072, -0.706223071, 0.706223071},
 	}
 	// Transform the point into the global frame.
-	ray.Origin = pose.Position
+	ray.Origin = pose.Translation
 	ray.Point = pose.transformPoint(point)
 	voxelSizeInv := 10.0
 	truncationDistance := 0.4

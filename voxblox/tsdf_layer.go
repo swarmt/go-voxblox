@@ -16,6 +16,8 @@ type TsdfLayer struct {
 	blocks map[IndexType]*TsdfBlock
 }
 
+// NewTsdfLayer creates a new TsdfLayer.
+// Computes inverse variables for faster access.
 func NewTsdfLayer(voxelSize float64, voxelsPerSide int) *TsdfLayer {
 	l := new(TsdfLayer)
 	l.VoxelSize = voxelSize
@@ -29,6 +31,7 @@ func NewTsdfLayer(voxelSize float64, voxelsPerSide int) *TsdfLayer {
 }
 
 // getBlocks returns a copy of the map of blocks
+// Thread-safe.
 func (l *TsdfLayer) getBlocks() map[IndexType]*TsdfBlock {
 	l.RLock()
 	defer l.RUnlock()
@@ -36,6 +39,7 @@ func (l *TsdfLayer) getBlocks() map[IndexType]*TsdfBlock {
 }
 
 // getUpdatedBlocks returns a map of references to TsdfBlocks that have been updated
+// Thread-safe.
 func (l *TsdfLayer) getUpdatedBlocks() map[IndexType]*TsdfBlock {
 	l.RLock()
 	defer l.RUnlock()
@@ -69,6 +73,7 @@ func (l *TsdfLayer) getVoxelCenters() ([]Point, []Color) {
 }
 
 // getBlockCount returns the number of blocks allocated in the map
+// Thread-safe.
 func (l *TsdfLayer) getBlockCount() int {
 	l.RLock()
 	defer l.RUnlock()
@@ -76,6 +81,7 @@ func (l *TsdfLayer) getBlockCount() int {
 }
 
 // getBlockByIndex allocates a new block in the map or returns an existing one
+// Thread-safe.
 func (l *TsdfLayer) getBlockByIndex(blockIndex IndexType) *TsdfBlock {
 	// Test if block already exists
 	l.RLock()
