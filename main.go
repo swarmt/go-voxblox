@@ -39,10 +39,10 @@ type XYZRGB struct {
 func float32ToRGB(f float32) voxblox.Color {
 	var r, g, b uint8
 	i := math.Float32bits(f)
-	r = uint8(i & 0x000000ff)
-	g = uint8((i & 0x0000ff00) >> 8)
-	b = uint8((i & 0x00ff0000) >> 16)
-	return voxblox.Color{r, g, b, 255}
+	r = uint8(i & 0x00FF0000 >> 16)
+	g = uint8((i & 0x0000FF00) >> 8)
+	b = uint8(i & 0x000000FF)
+	return voxblox.Color{r, g, b}
 }
 
 // pointCloud2ToPointCloud converts a goroslib PointCloud2 to a voxblox PointCloud
@@ -109,6 +109,11 @@ func interpolatePoints(p1, p2 voxblox.Point, f float64) voxblox.Point {
 func interpolateTransform(stamp time.Time, transform *voxblox.Transformation) bool {
 	transformsMutex.Lock()
 	defer transformsMutex.Unlock()
+
+	// If the stamp is before the first transform, return false.
+	if stamp.Before(transforms[0].Header.Stamp) {
+		return false
+	}
 
 	var i int
 	found := false
@@ -211,7 +216,7 @@ func main() {
 		VoxelsPerSide:      16,
 		MinRange:           0.1,
 		MaxRange:           10.0,
-		TruncationDistance: 0.1 * 4.0,
+		TruncationDistance: 0.05 * 4.0,
 		AllowClearing:      true,
 		AllowCarving:       true,
 		ConstWeight:        false,

@@ -14,12 +14,12 @@ const kEpsilon = 1e-6 // Used for coordinates
 type IndexType = [3]int
 
 // Color RGBA
-type Color = [4]uint8
+type Color = [3]uint8
 
 // colors
 var (
-	ColorWhite = Color{255, 255, 255, 255}
-	ColorRed   = Color{255, 0, 0, 255}
+	ColorWhite = Color{255, 255, 255}
+	ColorRed   = Color{255, 0, 0}
 )
 
 // PointCloud is a collection of points
@@ -159,10 +159,9 @@ func blendTwoColors(
 	firstWeight /= totalWeight
 	secondWeight /= totalWeight
 
-	newR := uint8(float64(firstColor[0])*firstWeight + float64(secondColor[0])*secondWeight)
-	newG := uint8(float64(firstColor[1])*firstWeight + float64(secondColor[1])*secondWeight)
-	newB := uint8(float64(firstColor[2])*firstWeight + float64(secondColor[2])*secondWeight)
-	newA := uint8(float64(firstColor[3])*firstWeight + float64(secondColor[3])*secondWeight)
+	newR := uint8(math.Round(float64(firstColor[0])*firstWeight + float64(secondColor[0])*secondWeight))
+	newG := uint8(math.Round(float64(firstColor[1])*firstWeight + float64(secondColor[1])*secondWeight))
+	newB := uint8(math.Round(float64(firstColor[2])*firstWeight + float64(secondColor[2])*secondWeight))
 
-	return Color{newR, newG, newB, newA}
+	return Color{newR, newG, newB}
 }

@@ -26,12 +26,15 @@ graph LR
 
 ![Unit Test Cylinder](.readme/cylinder-mesh.png)
 
+[Cow and Lady Dataset](https://projects.asl.ethz.ch/datasets/doku.php?id=iros2017/)
+
+
 ## TODO
 
-* Mesh generation
+* Merge duplicate vertices
+* Better unit tests
 * Remove distant blocks
 * Integrators
-    * Merged
     * Fast
 * ROS integration
 * gRPC mesh server
