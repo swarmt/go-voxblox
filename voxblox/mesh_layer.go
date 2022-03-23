@@ -62,6 +62,20 @@ func (l *MeshLayer) getBlockByIndex(blockIndex IndexType) *MeshBlock {
 	return newBlock
 }
 
+// getNewBlockByIndex allocates a new block in the map and returns it
+// Overwrites any existing block
+func (l *MeshLayer) getNewBlockByIndex(blockIndex IndexType) *MeshBlock {
+	l.Lock()
+	defer l.Unlock()
+	newBlock := NewMeshBlock(
+		l,
+		blockIndex,
+		getOriginPointFromGridIndex(blockIndex, l.BlockSize),
+	)
+	l.blocks[blockIndex] = newBlock
+	return newBlock
+}
+
 // getBlockIfExists returns a pointer to the block if it exists
 // Thread-safe.
 func (l *MeshLayer) getBlockIfExists(index IndexType) *MeshBlock {

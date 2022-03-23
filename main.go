@@ -146,6 +146,20 @@ func interpolateTransform(stamp time.Time, transform *voxblox.Transformation) bo
 	// Interpolate the translation.
 	transform.Translation = interpolatePoints(p0, p1, f)
 
+	// Static transform.
+	// TODO: Pull this out of a config file or switch to TF2.
+	staticTransform := voxblox.Transformation{
+		Rotation:    quaternion.T{0.0924132, 0.0976455, 0.0702949, 0.9884249},
+		Translation: voxblox.Point{0.00114049, 0.0450936, 0.0430765},
+	}
+
+	transform.Rotation = quaternion.Mul(&transform.Rotation, &staticTransform.Rotation)
+	transform.Translation = voxblox.Point{
+		transform.Translation[0] + staticTransform.Translation[0],
+		transform.Translation[1] + staticTransform.Translation[1],
+		transform.Translation[2] + staticTransform.Translation[2],
+	}
+
 	// TODO: Transforms in a queue to keep RAM usage down. Remove old transforms.
 
 	return true
@@ -193,7 +207,7 @@ func main() {
 
 	// TODO: Read from a config file
 	tsdfConfig = voxblox.TsdfConfig{
-		VoxelSize:          0.1,
+		VoxelSize:          0.05,
 		VoxelsPerSide:      16,
 		MinRange:           0.1,
 		MaxRange:           10.0,

@@ -151,7 +151,7 @@ func (i *MeshIntegrator) extractMeshOnBorder(
 }
 
 func (i *MeshIntegrator) updateMeshForBlock(tsdfBlock *TsdfBlock, wg *sync.WaitGroup) {
-	meshBlock := i.MeshLayer.getBlockByIndex(tsdfBlock.Index)
+	meshBlock := i.MeshLayer.getNewBlockByIndex(tsdfBlock.Index)
 
 	vps := i.TsdfLayer.VoxelsPerSide
 
