@@ -6,7 +6,7 @@ import (
 )
 
 func TestFloat32ToRGB(t *testing.T) {
-	var tests = []struct {
+	tests := []struct {
 		input  float32
 		output voxblox.Color
 	}{
