@@ -1,10 +1,8 @@
 package voxblox
 
 import (
-	"math"
-	"sync"
-
 	"github.com/ungerik/go3d/float64/vec3"
+	"math"
 )
 
 type Ray struct {
@@ -122,6 +120,7 @@ func (r *RayCaster) nextRayIndex(rayIndex *IndexType) bool {
 	return true
 }
 
+// NewRayCaster creates a new RayCaster.
 func NewRayCaster(
 	ray *Ray,
 	voxelSizeInv float64,
@@ -170,6 +169,8 @@ func NewRayCaster(
 	return rayCaster
 }
 
+// validateRay checks if the ray is valid.
+// Sets the clearing flag if longer than the max range.
 func validateRay(
 	ray *Ray,
 	point Point,
@@ -196,6 +197,7 @@ func validateRay(
 	return true
 }
 
+// updateTsdfVoxel updates the voxel SDF and weight.
 func updateTsdfVoxel(
 	layer *TsdfLayer,
 	config TsdfConfig,
@@ -251,87 +253,19 @@ func updateTsdfVoxel(
 	voxel.distance = newDistance
 }
 
-func integratePoints(
-	layer *TsdfLayer,
-	config TsdfConfig,
-	pose Transformation,
-	points []Point,
-	colors []Color,
-	wg *sync.WaitGroup,
-) {
-	for j, point := range points {
-		var ray Ray
-		if validateRay(&ray, point, config.MinRange, config.MaxRange, config.AllowClearing) {
-			// Transform the point into the global frame.
-			ray.Origin = pose.Translation
-			ray.Point = pose.transformPoint(point)
-
-			// Create a new Ray-caster.
-			rayCaster := NewRayCaster(
-				&ray,
-				layer.VoxelSizeInv,
-				config.TruncationDistance,
-				config.MaxRange,
-				config.AllowCarving,
-				true,
-			)
-			var globalVoxelIdx IndexType
-			for rayCaster.nextRayIndex(&globalVoxelIdx) {
-				block, voxel := getBlockAndVoxelFromGlobalVoxelIndex(layer, globalVoxelIdx)
-				weight := 1.0
-				if !config.WeightConstant {
-					weight = calculateWeight(point)
-				}
-				updateTsdfVoxel(
-					layer,
-					config,
-					ray.Origin,
-					ray.Point,
-					globalVoxelIdx,
-					colors[j],
-					weight,
-					voxel,
-				)
-				block.setUpdated()
-			}
+// splitPointCloud splits a PointCloud in to a slice of smaller PointClouds
+// divided by the chunk number.
+func splitPointCloud(
+	pointCloud *PointCloud,
+	chunkCount int,
+) []PointCloud {
+	chunkSize := len(pointCloud.Points) / chunkCount
+	chunks := make([]PointCloud, chunkCount)
+	for i := 0; i < chunkCount; i++ {
+		chunks[i] = PointCloud{
+			Points: pointCloud.Points[i*chunkSize : (i+1)*chunkSize],
+			Colors: pointCloud.Colors[i*chunkSize : (i+1)*chunkSize],
 		}
 	}
-	wg.Done()
-}
-
-func integratePointsParallel(
-	layer *TsdfLayer,
-	config TsdfConfig,
-	pose Transformation,
-	pointCloud PointCloud,
-) {
-	// Fill color buffer with white if empty
-	// TODO: This is a hack. Handle empty color slice downstream.
-	if len(pointCloud.Colors) == 0 {
-		pointCloud.Colors = make([]Color, len(pointCloud.Points))
-		for i := range pointCloud.Colors {
-			pointCloud.Colors[i] = ColorWhite
-		}
-	}
-
-	nThreads := config.Threads
-	wg := sync.WaitGroup{}
-	nPointsPerThread := len(pointCloud.Points) / nThreads
-	for threadIdx := 0; threadIdx < nThreads; threadIdx++ {
-		startIdx := threadIdx * nPointsPerThread
-		endIdx := (threadIdx + 1) * nPointsPerThread
-		if threadIdx == nThreads-1 {
-			endIdx = len(pointCloud.Points)
-		}
-		wg.Add(1)
-		go integratePoints(
-			layer,
-			config,
-			pose,
-			pointCloud.Points[startIdx:endIdx],
-			pointCloud.Colors[startIdx:endIdx],
-			&wg)
-
-	}
-	wg.Wait()
+	return chunks
 }

@@ -20,12 +20,58 @@ func (i *SimpleTsdfIntegrator) IntegratePointCloud(
 	pointCloud PointCloud,
 ) {
 	defer timeTrack(time.Now(), "Integrate Simple")
-	integratePointsParallel(
-		i.Layer,
-		i.Config,
-		pose,
-		pointCloud,
-	)
+
+	wg := sync.WaitGroup{}
+	for _, pC := range splitPointCloud(&pointCloud, i.Config.Threads) {
+		wg.Add(1)
+		go i.integratePoints(pose, pC, &wg)
+	}
+	wg.Wait()
+}
+
+func (i *SimpleTsdfIntegrator) integratePoints(
+	pose Transformation,
+	pointCloud PointCloud,
+	wg *sync.WaitGroup,
+) {
+	for j, point := range pointCloud.Points {
+		var ray Ray
+		if validateRay(&ray, point, i.Config.MinRange, i.Config.MaxRange, i.Config.AllowClearing) {
+			// Transform the point into the global frame.
+			ray.Origin = pose.Translation
+			ray.Point = pose.transformPoint(point)
+
+			// Create a new Ray-caster.
+			rayCaster := NewRayCaster(
+				&ray,
+				i.Layer.VoxelSizeInv,
+				i.Config.TruncationDistance,
+				i.Config.MaxRange,
+				i.Config.AllowCarving,
+				true,
+			)
+			var globalVoxelIdx IndexType
+			for rayCaster.nextRayIndex(&globalVoxelIdx) {
+				block, voxel := getBlockAndVoxelFromGlobalVoxelIndex(i.Layer, globalVoxelIdx)
+				weight := 1.0
+				if !i.Config.WeightConstant {
+					weight = calculateWeight(point)
+				}
+				updateTsdfVoxel(
+					i.Layer,
+					i.Config,
+					ray.Origin,
+					ray.Point,
+					globalVoxelIdx,
+					pointCloud.Colors[j],
+					weight,
+					voxel,
+				)
+				block.setUpdated()
+			}
+		}
+	}
+	wg.Done()
 }
 
 type MergedTsdfIntegrator struct {
@@ -68,14 +114,59 @@ func (i *MergedTsdfIntegrator) IntegratePointCloud(
 	pointCloud.Points = filteredPoints
 	pointCloud.Colors = filteredColors
 
-	// TODO: Merge weights
+	wg := sync.WaitGroup{}
+	for _, pC := range splitPointCloud(&pointCloud, i.Config.Threads) {
+		wg.Add(1)
+		go i.integratePoints(pose, pC, &wg)
+	}
+	wg.Wait()
+}
 
-	integratePointsParallel(
-		i.Layer,
-		i.Config,
-		pose,
-		pointCloud,
-	)
+func (i *MergedTsdfIntegrator) integratePoints(
+	pose Transformation,
+	pointCloud PointCloud,
+	wg *sync.WaitGroup,
+) {
+	for j, point := range pointCloud.Points {
+		var ray Ray
+		if validateRay(&ray, point, i.Config.MinRange, i.Config.MaxRange, i.Config.AllowClearing) {
+			// Transform the point into the global frame.
+			ray.Origin = pose.Translation
+			ray.Point = pose.transformPoint(point)
+
+			// TODO: Merge weights
+
+			// Create a new Ray-caster.
+			rayCaster := NewRayCaster(
+				&ray,
+				i.Layer.VoxelSizeInv,
+				i.Config.TruncationDistance,
+				i.Config.MaxRange,
+				i.Config.AllowCarving,
+				true,
+			)
+			var globalVoxelIdx IndexType
+			for rayCaster.nextRayIndex(&globalVoxelIdx) {
+				block, voxel := getBlockAndVoxelFromGlobalVoxelIndex(i.Layer, globalVoxelIdx)
+				weight := 1.0
+				if !i.Config.WeightConstant {
+					weight = calculateWeight(point)
+				}
+				updateTsdfVoxel(
+					i.Layer,
+					i.Config,
+					ray.Origin,
+					ray.Point,
+					globalVoxelIdx,
+					pointCloud.Colors[j],
+					weight,
+					voxel,
+				)
+				block.setUpdated()
+			}
+		}
+	}
+	wg.Done()
 }
 
 type FastTsdfIntegrator struct {
@@ -148,33 +239,20 @@ func (i *FastTsdfIntegrator) IntegratePointCloud(
 		i.clearObservedVoxelApproxSet()
 	}
 
-	nThreads := i.Config.Threads
 	wg := sync.WaitGroup{}
-	nPointsPerThread := len(pointCloud.Points) / nThreads
-	for threadIdx := 0; threadIdx < nThreads; threadIdx++ {
-		startIdx := threadIdx * nPointsPerThread
-		endIdx := (threadIdx + 1) * nPointsPerThread
-		if threadIdx == nThreads-1 {
-			endIdx = len(pointCloud.Points)
-		}
+	for _, pC := range splitPointCloud(&pointCloud, i.Config.Threads) {
 		wg.Add(1)
-		go i.integratePoints(
-			pose,
-			pointCloud.Points[startIdx:endIdx],
-			pointCloud.Colors[startIdx:endIdx],
-			&wg)
-
+		go i.integratePoints(pose, pC, &wg)
 	}
 	wg.Wait()
 }
 
 func (i *FastTsdfIntegrator) integratePoints(
 	pose Transformation,
-	points []Point,
-	colors []Color,
+	pointCloud PointCloud,
 	wg *sync.WaitGroup,
 ) {
-	for j, point := range points {
+	for j, point := range pointCloud.Points {
 		var ray Ray
 		if !validateRay(&ray, point, i.Config.MinRange, i.Config.MaxRange, i.Config.AllowClearing) {
 			continue
@@ -230,7 +308,7 @@ func (i *FastTsdfIntegrator) integratePoints(
 				ray.Origin,
 				ray.Point,
 				globalVoxelIndex,
-				colors[j],
+				pointCloud.Colors[j],
 				weight,
 				voxel,
 			)
