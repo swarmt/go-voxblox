@@ -28,7 +28,6 @@ func TestValidateRay(t *testing.T) {
 	if ray.Clearing != true {
 		t.Errorf("Ray should be clearing")
 	}
-
 }
 
 func TestRayCaster(t *testing.T) {
@@ -313,5 +312,4 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 	if !almostEqual(voxel.getWeight(), 0.128483981, kEpsilon) {
 		t.Errorf("Expected weight to be 0.128483981, got %f", voxel.getWeight())
 	}
-
 }
