@@ -186,7 +186,6 @@ func onPointCloud2(msg *sensor_msgs.PointCloud2) {
 
 		// Integrate
 		tsdfIntegrator.IntegratePointCloud(transform, voxbloxPointCloud)
-		meshIntegrator.IntegrateMesh()
 
 	} else {
 		fmt.Println("No transform")
@@ -219,7 +218,8 @@ func main() {
 		TruncationDistance: 0.05 * 4.0,
 		AllowClearing:      true,
 		AllowCarving:       true,
-		ConstWeight:        false,
+		WeightConstant:     false,
+		WeightDropOff:      true,
 		MaxWeight:          10000.0,
 		Threads:            runtime.NumCPU(),
 	}
@@ -263,5 +263,6 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	<-c
 
+	meshIntegrator.IntegrateMesh()
 	voxblox.WriteMeshLayerToObjFiles(meshLayer, "output/cow_lady")
 }

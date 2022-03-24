@@ -21,40 +21,14 @@ func TestGetVoxelWeight(t *testing.T) {
 
 func TestValidateRay(t *testing.T) {
 	var ray Ray
-	valid := validateRay(&ray, Point{0, 0, 0}, 1, 15, true)
-	if valid == true {
-		t.Errorf("Ray should not be valid")
-	}
-
-	if validateRay(&ray, Point{0, 0, 10}, 1, 15, true) == false {
-		t.Errorf("Ray should be valid")
-	}
-	if ray.Length != 10.0 {
-		t.Errorf("Ray length should be 10.0, got %f", ray.Length)
-	}
-	if ray.Clearing != false {
-		t.Errorf("Ray should not be clearing")
-	}
-
-	if validateRay(&ray, Point{0, 0, 10}, 1, 8, true) == false {
+	valid := validateRay(&ray, Point{3.42977858, -3.22447705, -1.68651485}, 0.01, 5.0, true)
+	if valid != true {
 		t.Errorf("Ray should be valid")
 	}
 	if ray.Clearing != true {
 		t.Errorf("Ray should be clearing")
 	}
 
-	if validateRay(&ray, Point{0, 0, 10}, 1, 8, false) == false {
-		t.Errorf("Ray should be valid")
-	}
-	if ray.Clearing == true {
-		t.Errorf("Ray should not be clearing")
-	}
-	if validateRay(&ray, Point{0.714538097, -2.8530097, -1.72378588}, 0.1, 5, true) == false {
-		t.Errorf("Ray should be valid")
-	}
-	if ray.Clearing == true {
-		t.Errorf("Ray should not be clearing")
-	}
 }
 
 func TestRayCaster(t *testing.T) {
@@ -172,4 +146,172 @@ func TestRayCaster(t *testing.T) {
 		!almostEqual(rayCaster.endScaled[2], 1.5998435, kEpsilon) {
 		t.Errorf("Raycaster start scaled incorrect")
 	}
+
+	ray = Ray{
+		Origin:   Point{0.0, 6.0, 2.0},
+		Point:    Point{-4.42253256, 4.79232979, 1.1920929e-07},
+		Length:   5.00172567,
+		Clearing: true,
+	}
+
+	rayCaster = NewRayCaster(
+		&ray,
+		10.0,
+		0.4,
+		5.0,
+		true,
+	)
+	if !almostEqual(rayCaster.startScaled[0], 0.0, kEpsilon) ||
+		!almostEqual(rayCaster.startScaled[1], 60.0, kEpsilon) ||
+		!almostEqual(rayCaster.startScaled[2], 20.0, kEpsilon) {
+		t.Errorf("Raycaster start scaled incorrect")
+	}
+	if !almostEqual(rayCaster.endScaled[0], -40.6885185, kEpsilon*2) ||
+		!almostEqual(rayCaster.endScaled[1], 48.8891029, kEpsilon*2) ||
+		!almostEqual(rayCaster.endScaled[2], 1.59945011, kEpsilon*2) {
+		t.Errorf("Raycaster end scaled incorrect")
+	}
+}
+
+func TestUpdateTsdfVoxel(t *testing.T) {
+	layer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
+
+	origin := Point{0.0, 6.0, 2.0}
+	pointG := Point{1.31130219e-06, 5.2854619, 1.1920929e-07}
+	weight := 0.252516776
+	globalVoxelIndex := IndexType{0, 60, 20}
+	_, voxel := getBlockAndVoxelFromGlobalVoxelIndex(layer, globalVoxelIndex)
+
+	updateTsdfVoxel(
+		layer,
+		tsdfConfig,
+		origin,
+		pointG,
+		globalVoxelIndex,
+		Color{},
+		weight,
+		voxel,
+	)
+
+	if !almostEqual(voxel.getDistance(), 0.4, kEpsilon) {
+		t.Errorf("Expected Tsdf to be 0.4, got %f", voxel.getDistance())
+	}
+	if !almostEqual(voxel.getWeight(), 0.252516776, kEpsilon) {
+		t.Errorf("Expected weight to be 0.252516776, got %f", voxel.getWeight())
+	}
+	if len(layer.blocks) != 1 {
+		t.Errorf("Expected 1 block, got %d", len(layer.blocks))
+	}
+
+	globalVoxelIndex = IndexType{0, 59, 20}
+	_, voxel = getBlockAndVoxelFromGlobalVoxelIndex(layer, globalVoxelIndex)
+
+	updateTsdfVoxel(
+		layer,
+		tsdfConfig,
+		origin,
+		pointG,
+		globalVoxelIndex,
+		Color{},
+		weight,
+		voxel,
+	)
+
+	if !almostEqual(voxel.getDistance(), 0.4, kEpsilon) {
+		t.Errorf("Expected Tsdf to be 0.4, got %f", voxel.getDistance())
+	}
+	if !almostEqual(voxel.getWeight(), 0.252516776, kEpsilon) {
+		t.Errorf("Expected weight to be 0.252516776, got %f", voxel.getWeight())
+	}
+	if len(layer.blocks) != 1 {
+		t.Errorf("Expected 1 block, got %d", len(layer.blocks))
+	}
+
+	globalVoxelIndex = IndexType{0, 54, 3}
+	_, voxel = getBlockAndVoxelFromGlobalVoxelIndex(layer, globalVoxelIndex)
+
+	updateTsdfVoxel(
+		layer,
+		tsdfConfig,
+		origin,
+		pointG,
+		globalVoxelIndex,
+		Color{},
+		weight,
+		voxel,
+	)
+
+	if !almostEqual(voxel.getDistance(), 0.384953856, kEpsilon) {
+		t.Errorf("Expected Tsdf to be 0.4, got %f", voxel.getDistance())
+	}
+	if !almostEqual(voxel.getWeight(), 0.252516776, kEpsilon) {
+		t.Errorf("Expected weight to be 0.252516776, got %f", voxel.getWeight())
+	}
+
+	globalVoxelIndex = IndexType{0, 52, -1}
+	_, voxel = getBlockAndVoxelFromGlobalVoxelIndex(layer, globalVoxelIndex)
+
+	updateTsdfVoxel(
+		layer,
+		tsdfConfig,
+		origin,
+		pointG,
+		globalVoxelIndex,
+		Color{},
+		weight,
+		voxel,
+	)
+
+	if !almostEqual(voxel.getDistance(), -0.0590159893, kEpsilon) {
+		t.Errorf("Expected Tsdf to be 0.4, got %f", voxel.getDistance())
+	}
+	if !almostEqual(voxel.getWeight(), 0.252516776, kEpsilon) {
+		t.Errorf("Expected weight to be 0.252516776, got %f", voxel.getWeight())
+	}
+
+	pointG = Point{-0.0166654587, 5.2854619, 1.1920929e-07}
+	weight = 0.252939552
+	globalVoxelIndex = IndexType{0, 60, 20}
+	_, voxel = getBlockAndVoxelFromGlobalVoxelIndex(layer, globalVoxelIndex)
+
+	updateTsdfVoxel(
+		layer,
+		tsdfConfig,
+		origin,
+		pointG,
+		globalVoxelIndex,
+		Color{},
+		weight,
+		voxel,
+	)
+
+	if !almostEqual(voxel.getDistance(), 0.4, kEpsilon) {
+		t.Errorf("Expected Tsdf to be 0.4, got %f", voxel.getDistance())
+	}
+	if !almostEqual(voxel.getWeight(), 0.505456328, kEpsilon) {
+		t.Errorf("Expected weight to be 0.505456328, got %f", voxel.getWeight())
+	}
+
+	weight = 0.252939552
+	globalVoxelIndex = IndexType{-1, 52, -3}
+	_, voxel = getBlockAndVoxelFromGlobalVoxelIndex(layer, globalVoxelIndex)
+
+	updateTsdfVoxel(
+		layer,
+		tsdfConfig,
+		origin,
+		pointG,
+		globalVoxelIndex,
+		Color{},
+		weight,
+		voxel,
+	)
+
+	if !almostEqual(voxel.getDistance(), -0.247611046, kEpsilon) {
+		t.Errorf("Expected Tsdf to be -0.247611046, got %f", voxel.getDistance())
+	}
+	if !almostEqual(voxel.getWeight(), 0.128483981, kEpsilon) {
+		t.Errorf("Expected weight to be 0.128483981, got %f", voxel.getWeight())
+	}
+
 }

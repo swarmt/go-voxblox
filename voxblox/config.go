@@ -9,7 +9,8 @@ type TsdfConfig struct {
 	AllowCarving       bool    `yaml:"allow_carving"`
 	AllowClearing      bool    `yaml:"allow_clearing"`
 	MaxWeight          float64 `yaml:"max_weight"`
-	ConstWeight        bool    `yaml:"const_weight"`
+	WeightConstant     bool    `yaml:"weight_constant"`
+	WeightDropOff      bool    `yaml:"weight_dropoff"`
 	Threads            int     `yaml:"integrator_threads"`
 }
 

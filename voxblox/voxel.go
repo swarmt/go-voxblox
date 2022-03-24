@@ -49,5 +49,6 @@ func (v *TsdfVoxel) setColor(color Color) {
 func NewVoxel(index IndexType) *TsdfVoxel {
 	return &TsdfVoxel{
 		Index: index,
+		color: Color{127, 127, 127},
 	}
 }

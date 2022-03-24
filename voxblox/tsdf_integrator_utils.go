@@ -208,7 +208,7 @@ func updateTsdfVoxel(
 
 	// Weight drop-off
 	dropOffEpsilon := layer.VoxelSize
-	if config.ConstWeight && sdf < -dropOffEpsilon {
+	if config.WeightDropOff && sdf < -dropOffEpsilon {
 		updatedWeight = weight * (config.TruncationDistance + sdf) /
 			(config.TruncationDistance - dropOffEpsilon)
 		updatedWeight = math.Max(updatedWeight, 0.0)
@@ -221,7 +221,7 @@ func updateTsdfVoxel(
 	defer voxel.Unlock()
 
 	// Calculate the new weight
-	newWeight := voxel.weight + weight
+	newWeight := voxel.weight + updatedWeight
 	if newWeight < kEpsilon {
 		return
 	}
@@ -273,7 +273,7 @@ func integratePoints(
 			for rayCaster.nextRayIndex(&globalVoxelIdx) {
 				block, voxel := getBlockAndVoxelFromGlobalVoxelIndex(layer, globalVoxelIdx)
 				weight := 1.0
-				if !config.ConstWeight {
+				if !config.WeightConstant {
 					weight = calculateWeight(point)
 				}
 				updateTsdfVoxel(

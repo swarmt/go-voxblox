@@ -3,6 +3,7 @@ package voxblox
 import (
 	"math"
 	"runtime"
+	"sync"
 	"testing"
 
 	"github.com/ungerik/go3d/float64/quaternion"
@@ -34,7 +35,8 @@ func init() {
 		TruncationDistance: 0.1 * 4.0,
 		AllowClearing:      true,
 		AllowCarving:       true,
-		ConstWeight:        false,
+		WeightConstant:     false,
+		WeightDropOff:      true,
 		MaxWeight:          10000.0,
 		Threads:            runtime.NumCPU(),
 	}
@@ -90,6 +92,28 @@ func init() {
 		}
 		poses = append(poses, transform)
 	}
+}
+
+func TestIntegratePoints(t *testing.T) {
+	// Simple integrator
+	tsdfLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
+
+	pointCloud := world.getPointCloudFromTransform(
+		&poses[0],
+		cameraResolution,
+		fovHorizontal,
+		maxDistance,
+	)
+
+	poseInverse := poses[0].inverse()
+	transformedPointCloud := transformPointCloud(poseInverse, pointCloud)
+
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+
+	integratePoints(tsdfLayer, tsdfConfig, poses[0], transformedPointCloud.Points, transformedPointCloud.Colors, &wg)
+
+	t.Errorf("Not implemented")
 }
 
 func TestSimpleIntegratorSingleCloud(t *testing.T) {
@@ -240,45 +264,4 @@ func TestTsdfIntegrators(t *testing.T) {
 	}
 
 	WriteMeshLayerToObjFiles(mergedMeshLayer, "../output/merged_mesh")
-}
-
-func TestUpdateTsdfVoxel(t *testing.T) {
-	layer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
-	origin := Point{0.0, 6.0, 2.0}
-	pointC := Point{0.714538097, -2.8530097, -1.72378588}
-	pointG := Point{-2.66666508, 5.2854619, 1.1920929e-07}
-	globalVoxelIndex := IndexType{0, 60, 20}
-	_, voxel := getBlockAndVoxelFromGlobalVoxelIndex(layer, globalVoxelIndex)
-	weight := calculateWeight(pointC)
-
-	tsdfConfig = TsdfConfig{
-		VoxelSize:          0.1,
-		VoxelsPerSide:      10,
-		TruncationDistance: 0.4,
-		MaxWeight:          10000.0,
-		ConstWeight:        false,
-	}
-
-	simpleTsdfIntegrator := SimpleTsdfIntegrator{tsdfConfig, layer}
-
-	updateTsdfVoxel(
-		layer,
-		simpleTsdfIntegrator.Config,
-		origin,
-		pointG,
-		globalVoxelIndex,
-		Color{},
-		weight,
-		voxel,
-	)
-
-	if !almostEqual(voxel.getDistance(), 0.4, kEpsilon) {
-		t.Errorf("Expected Tsdf to be 0.4, got %f", voxel.getDistance())
-	}
-	if !almostEqual(voxel.getWeight(), 0.336537421, kEpsilon) {
-		t.Errorf("Expected weight to be 0.336537421, got %f", voxel.getWeight())
-	}
-	if len(layer.blocks) != 1 {
-		t.Errorf("Expected 1 block, got %d", len(layer.blocks))
-	}
 }
