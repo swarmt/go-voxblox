@@ -1,8 +1,9 @@
 package voxblox
 
 import (
-	"github.com/ungerik/go3d/float64/vec3"
 	"math"
+
+	"github.com/ungerik/go3d/float64/vec3"
 )
 
 type Ray struct {
