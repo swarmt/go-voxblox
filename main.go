@@ -211,17 +211,20 @@ func main() {
 
 	// TODO: Read from a config file
 	tsdfConfig = voxblox.TsdfConfig{
-		VoxelSize:          0.05,
-		VoxelsPerSide:      16,
-		MinRange:           0.1,
-		MaxRange:           10.0,
-		TruncationDistance: 0.05 * 4.0,
-		AllowClearing:      true,
-		AllowCarving:       true,
-		WeightConstant:     false,
-		WeightDropOff:      true,
-		MaxWeight:          10000.0,
-		Threads:            runtime.NumCPU(),
+		VoxelSize:                   0.05,
+		VoxelsPerSide:               16,
+		MinRange:                    0.1,
+		MaxRange:                    10.0,
+		TruncationDistance:          0.05 * 4.0,
+		AllowClearing:               true,
+		AllowCarving:                true,
+		WeightConstant:              false,
+		WeightDropOff:               true,
+		MaxWeight:                   10000.0,
+		StartVoxelSubsamplingFactor: 2.0,
+		ClearChecksEveryNFrames:     1,
+		MaxConsecutiveRayCollisions: 2,
+		Threads:                     runtime.NumCPU(),
 	}
 
 	meshConfig = voxblox.MeshConfig{
@@ -231,7 +234,7 @@ func main() {
 
 	// Create integrators
 	tsdfLayer = voxblox.NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
-	tsdfIntegrator = &voxblox.MergedTsdfIntegrator{Config: tsdfConfig, Layer: tsdfLayer}
+	tsdfIntegrator = voxblox.NewFastTsdfIntegrator(tsdfConfig, tsdfLayer)
 
 	meshLayer = voxblox.NewMeshLayer(tsdfLayer)
 	meshIntegrator = voxblox.NewMeshIntegrator(meshConfig, tsdfLayer, meshLayer)

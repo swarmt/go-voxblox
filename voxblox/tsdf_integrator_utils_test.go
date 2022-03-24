@@ -45,7 +45,13 @@ func TestRayCaster(t *testing.T) {
 	truncationDistance := 0.4
 
 	// Create a ray caster.
-	rayCaster := NewRayCaster(&ray, voxelSizeInv, truncationDistance, 5, true)
+	rayCaster := NewRayCaster(
+		&ray,
+		voxelSizeInv,
+		truncationDistance,
+		5,
+		true,
+		true)
 	if rayCaster.currentIndex[0] != 0 ||
 		rayCaster.currentIndex[1] != 60 ||
 		rayCaster.currentIndex[2] != 20 {
@@ -134,6 +140,7 @@ func TestRayCaster(t *testing.T) {
 		0.4,
 		5.0,
 		true,
+		true,
 	)
 	if !almostEqual(rayCaster.startScaled[0], 0.0, kEpsilon) ||
 		!almostEqual(rayCaster.startScaled[1], 60.0, kEpsilon) ||
@@ -158,6 +165,7 @@ func TestRayCaster(t *testing.T) {
 		10.0,
 		0.4,
 		5.0,
+		true,
 		true,
 	)
 	if !almostEqual(rayCaster.startScaled[0], 0.0, kEpsilon) ||

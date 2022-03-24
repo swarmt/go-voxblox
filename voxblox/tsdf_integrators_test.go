@@ -3,7 +3,6 @@ package voxblox
 import (
 	"math"
 	"runtime"
-	"sync"
 	"testing"
 
 	"github.com/ungerik/go3d/float64/quaternion"
@@ -28,22 +27,25 @@ func init() {
 	maxDistance = 10.0
 
 	tsdfConfig = TsdfConfig{
-		VoxelSize:          0.1,
-		VoxelsPerSide:      16,
-		MinRange:           0.1,
-		MaxRange:           5.0,
-		TruncationDistance: 0.1 * 4.0,
-		AllowClearing:      true,
-		AllowCarving:       true,
-		WeightConstant:     false,
-		WeightDropOff:      true,
-		MaxWeight:          10000.0,
-		Threads:            runtime.NumCPU(),
+		VoxelSize:                   0.1,
+		VoxelsPerSide:               16,
+		MinRange:                    0.1,
+		MaxRange:                    5.0,
+		TruncationDistance:          0.1 * 4.0,
+		AllowClearing:               true,
+		AllowCarving:                true,
+		WeightConstant:              false,
+		WeightDropOff:               true,
+		MaxWeight:                   10000.0,
+		StartVoxelSubsamplingFactor: 2.0,
+		ClearChecksEveryNFrames:     1,
+		MaxConsecutiveRayCollisions: 2,
+		Threads:                     runtime.NumCPU(),
 	}
 
 	meshConfig = MeshConfig{
 		UseColor:  true,
-		MinWeight: 2.0,
+		MinWeight: 0.1,
 	}
 
 	// Create a test environment.
@@ -92,28 +94,6 @@ func init() {
 		}
 		poses = append(poses, transform)
 	}
-}
-
-func TestIntegratePoints(t *testing.T) {
-	// Simple integrator
-	tsdfLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
-
-	pointCloud := world.getPointCloudFromTransform(
-		&poses[0],
-		cameraResolution,
-		fovHorizontal,
-		maxDistance,
-	)
-
-	poseInverse := poses[0].inverse()
-	transformedPointCloud := transformPointCloud(poseInverse, pointCloud)
-
-	wg := sync.WaitGroup{}
-	wg.Add(1)
-
-	integratePoints(tsdfLayer, tsdfConfig, poses[0], transformedPointCloud.Points, transformedPointCloud.Colors, &wg)
-
-	t.Errorf("Not implemented")
 }
 
 func TestSimpleIntegratorSingleCloud(t *testing.T) {
@@ -201,7 +181,9 @@ func TestTsdfIntegrators(t *testing.T) {
 	mergedLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
 	mergedTsdfIntegrator := MergedTsdfIntegrator{tsdfConfig, mergedLayer}
 
-	// TODO: Fast integrator
+	// Fast integrator
+	fastLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
+	fastTsdfIntegrator := NewFastTsdfIntegrator(tsdfConfig, fastLayer)
 
 	// Iterate over all poses and integrate.
 	for _, pose := range poses {
@@ -215,6 +197,7 @@ func TestTsdfIntegrators(t *testing.T) {
 		transformedPointCloud := transformPointCloud(poseInverse, pointCloud)
 		simpleTsdfIntegrator.IntegratePointCloud(pose, transformedPointCloud)
 		mergedTsdfIntegrator.IntegratePointCloud(pose, transformedPointCloud)
+		fastTsdfIntegrator.IntegratePointCloud(pose, transformedPointCloud)
 	}
 
 	// Check the number of blocks in the layers
@@ -264,4 +247,15 @@ func TestTsdfIntegrators(t *testing.T) {
 	}
 
 	WriteMeshLayerToObjFiles(mergedMeshLayer, "../output/merged_mesh")
+
+	// Generate fast layer mesh.
+	fastMeshLayer := NewMeshLayer(fastLayer)
+	meshIntegrator = NewMeshIntegrator(meshConfig, fastLayer, fastMeshLayer)
+	meshIntegrator.IntegrateMesh()
+
+	if fastMeshLayer.getBlockCount() != fastLayer.getBlockCount() {
+		t.Errorf("Number of allocated blocks is not correct")
+	}
+
+	WriteMeshLayerToObjFiles(fastMeshLayer, "../output/fast_mesh")
 }

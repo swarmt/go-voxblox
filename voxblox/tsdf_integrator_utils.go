@@ -128,6 +128,7 @@ func NewRayCaster(
 	truncationDistance float64,
 	maxRange float64,
 	allowCarving bool,
+	castFromOrigin bool,
 ) *RayCaster {
 	rayCaster := &RayCaster{
 		TruncationDistance: truncationDistance,
@@ -160,7 +161,11 @@ func NewRayCaster(
 	endScaled := rayEnd.Scaled(voxelSizeInv)
 
 	// Set up the ray caster.
-	rayCaster.SetUp(startScaled, endScaled)
+	if castFromOrigin {
+		rayCaster.SetUp(startScaled, endScaled)
+	} else {
+		rayCaster.SetUp(endScaled, startScaled)
+	}
 
 	return rayCaster
 }
@@ -268,6 +273,7 @@ func integratePoints(
 				config.TruncationDistance,
 				config.MaxRange,
 				config.AllowCarving,
+				true,
 			)
 			var globalVoxelIdx IndexType
 			for rayCaster.nextRayIndex(&globalVoxelIdx) {

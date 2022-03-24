@@ -34,8 +34,6 @@ graph LR
 * Merge duplicate vertices
 * Better unit tests
 * Remove distant blocks
-* Integrators
-    * Fast
 * ROS integration
 * gRPC mesh server
 * Logging
