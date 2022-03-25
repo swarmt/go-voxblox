@@ -3,6 +3,8 @@ package voxblox
 import (
 	"sync"
 	"time"
+
+	"github.com/dustinxie/lockfree"
 )
 
 type TsdfIntegrator interface {
@@ -178,58 +180,51 @@ func (i *MergedTsdfIntegrator) integratePoints(
 }
 
 type FastTsdfIntegrator struct {
-	Config TsdfConfig
-	Layer  *TsdfLayer
-	sync.RWMutex
-	startVoxelApproxSet    map[IndexType]struct{}
-	voxelObservedApproxSet map[IndexType]struct{}
+	Config                 TsdfConfig
+	Layer                  *TsdfLayer
+	startVoxelApproxSet    lockfree.HashMap
+	voxelObservedApproxSet lockfree.HashMap
 }
 
 func NewFastTsdfIntegrator(config TsdfConfig, layer *TsdfLayer) *FastTsdfIntegrator {
 	return &FastTsdfIntegrator{
 		Config:                 config,
 		Layer:                  layer,
-		startVoxelApproxSet:    make(map[IndexType]struct{}),
-		voxelObservedApproxSet: make(map[IndexType]struct{}),
+		startVoxelApproxSet:    lockfree.NewHashMap(),
+		voxelObservedApproxSet: lockfree.NewHashMap(),
 	}
 }
 
 // voxelInStartApproxSet returns true if the voxel is in the approximate set.
 // Adds it to the approximate set if it is not already there.
 func (i *FastTsdfIntegrator) voxelInStartApproxSet(voxelIndex IndexType) bool {
-	i.Lock()
-	defer i.Unlock()
-	if _, ok := i.startVoxelApproxSet[voxelIndex]; ok {
+	voxelIndexString := indexToString(voxelIndex)
+	if _, ok := i.startVoxelApproxSet.Get(voxelIndexString); ok {
 		return true
 	}
-	i.startVoxelApproxSet[voxelIndex] = struct{}{}
+	i.startVoxelApproxSet.Set(voxelIndexString, struct{}{})
 	return false
 }
 
 // clearStartVoxelApproxSet clears the approximate set.
 func (i *FastTsdfIntegrator) clearStartVoxelApproxSet() {
-	i.Lock()
-	defer i.Unlock()
-	i.startVoxelApproxSet = make(map[IndexType]struct{})
+	i.startVoxelApproxSet = lockfree.NewHashMap()
 }
 
 // voxelInObservedApproxSet returns true if the voxel is in the approximate set.
 // Adds it to the approximate set if it is not already there.
 func (i *FastTsdfIntegrator) voxelInObservedApproxSet(voxelIndex IndexType) bool {
-	i.Lock()
-	defer i.Unlock()
-	if _, ok := i.voxelObservedApproxSet[voxelIndex]; ok {
+	voxelIndexString := indexToString(voxelIndex)
+	if _, ok := i.voxelObservedApproxSet.Get(voxelIndexString); ok {
 		return true
 	}
-	i.voxelObservedApproxSet[voxelIndex] = struct{}{}
+	i.voxelObservedApproxSet.Set(voxelIndexString, struct{}{})
 	return false
 }
 
 // clearObservedVoxelApproxSet clears the approximate set.
 func (i *FastTsdfIntegrator) clearObservedVoxelApproxSet() {
-	i.Lock()
-	defer i.Unlock()
-	i.voxelObservedApproxSet = make(map[IndexType]struct{})
+	i.voxelObservedApproxSet = lockfree.NewHashMap()
 }
 
 // IntegratePointCloud integrates a point cloud into the TSDF Layer.
