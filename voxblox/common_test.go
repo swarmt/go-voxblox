@@ -62,5 +62,4 @@ func TestBlendTwoColors(t *testing.T) {
 	if blendedColor != testColor {
 		t.Errorf("Expected blended color to be {255, 255, 255}, got %v", blendedColor)
 	}
-
 }

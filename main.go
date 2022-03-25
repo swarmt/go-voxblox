@@ -175,7 +175,6 @@ func interpolateTransform(stamp time.Time, transform *voxblox.Transformation) bo
 
 // onPointCloud2 is called when a PointCloud2 message is received.
 func onPointCloud2(msg *sensor_msgs.PointCloud2) {
-
 	// Convert goroslib transform to go3d transform
 	// TODO: Replace go3d with internal transform methods that work directly on messages?
 	if len(transforms) == 0 {
