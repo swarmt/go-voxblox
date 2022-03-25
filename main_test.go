@@ -1,7 +1,10 @@
 package main
 
 import (
+	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
+	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
 	"go-voxblox/voxblox"
+	"os"
 	"testing"
 )
 
@@ -20,5 +23,83 @@ func TestFloat32ToRGB(t *testing.T) {
 		if output != test.output {
 			t.Errorf("Expected %v, got %v", test.output, output)
 		}
+	}
+}
+
+func TestPointCloud2ToPointCloud(t *testing.T) {
+	pointCloud2 := sensor_msgs.PointCloud2{
+		Header:      std_msgs.Header{},
+		Height:      480,
+		Width:       640,
+		Fields:      nil,
+		IsBigendian: false,
+		PointStep:   32,
+		RowStep:     20480,
+		Data:        nil,
+		IsDense:     false,
+	}
+
+	// Read the PointCloud2 data from the test file
+	data, err := os.ReadFile("test_data/PointCloud2.bin")
+	if err != nil {
+		t.Errorf("Error reading test file: %v", err)
+	}
+	if len(data) != int(pointCloud2.RowStep*pointCloud2.Height) {
+		t.Errorf("Incorrect data length: %v", len(data))
+	}
+	pointCloud2.Data = data
+
+	// Convert the PointCloud2 to a PointCloud
+	pointCloud := pointCloud2ToPointCloud(&pointCloud2)
+
+	if len(pointCloud.Points) != 148284 {
+		t.Errorf("Incorrect number of points: %v", len(pointCloud.Points))
+	}
+	testPoint := voxblox.Point{-0.843722939491272, -0.6124486327171326, 1.499000072479248}
+	if pointCloud.Points[0] != testPoint {
+		t.Errorf("Incorrect point: %v", pointCloud.Points[0])
+	}
+	testColor := voxblox.Color{65, 69, 69}
+	if pointCloud.Colors[0] != testColor {
+		t.Errorf("Incorrect color: %v", pointCloud.Colors[0])
+	}
+}
+
+func TestPointCloud2ToPointCloudFast(t *testing.T) {
+	pointCloud2 := sensor_msgs.PointCloud2{
+		Header:      std_msgs.Header{},
+		Height:      480,
+		Width:       640,
+		Fields:      nil,
+		IsBigendian: false,
+		PointStep:   32,
+		RowStep:     20480,
+		Data:        nil,
+		IsDense:     false,
+	}
+
+	// Read the PointCloud2 data from the test file
+	data, err := os.ReadFile("test_data/PointCloud2.bin")
+	if err != nil {
+		t.Errorf("Error reading test file: %v", err)
+	}
+	if len(data) != int(pointCloud2.RowStep*pointCloud2.Height) {
+		t.Errorf("Incorrect data length: %v", len(data))
+	}
+	pointCloud2.Data = data
+
+	// Convert the PointCloud2 to a PointCloud
+	pointCloud := pointCloud2ToPointCloudFast(&pointCloud2)
+
+	if len(pointCloud.Points) != 148284 {
+		t.Errorf("Incorrect number of points: %v", len(pointCloud.Points))
+	}
+	testPoint := voxblox.Point{-0.843722939491272, -0.6124486327171326, 1.499000072479248}
+	if pointCloud.Points[0] != testPoint {
+		t.Errorf("Incorrect point: %v", pointCloud.Points[0])
+	}
+	testColor := voxblox.Color{65, 69, 69}
+	if pointCloud.Colors[0] != testColor {
+		t.Errorf("Incorrect color: %v", pointCloud.Colors[0])
 	}
 }

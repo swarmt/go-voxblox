@@ -24,18 +24,19 @@ graph LR
   meshLayer --> gRPC 
 ```
 
-![Unit Test Cylinder](.readme/cylinder-mesh.png)
+## Performance
 
 [Cow and Lady Dataset](https://projects.asl.ethz.ch/datasets/doku.php?id=iros2017/)
 
 Note: This needs to be decompressed to run real time with ```rosbag decompress```
+
 ![Cow and Lady Dataset](.readme/cow-and-lady.png)
 
 ## TODO
 
 * Merge duplicate vertices
 * Better unit tests
-* Remove distant blocks
+* Cache distant blocks with protobuf
 * ROS integration
 * gRPC mesh server
 * Logging
