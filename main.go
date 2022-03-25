@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
 	"go-voxblox/voxblox"
@@ -45,50 +44,14 @@ func float32ToRGB(f float32) voxblox.Color {
 	return voxblox.Color{r, g, b}
 }
 
-// pointCloud2ToPointCloud converts a goroslib PointCloud2 to a voxblox PointCloud
+// pointCloud2ToPointCloud converts a goroslib PointCloud2 to a voxblox PointCloud without reflection
 func pointCloud2ToPointCloud(msg *sensor_msgs.PointCloud2) voxblox.PointCloud {
 	defer voxblox.TimeTrack(time.Now(), "Convert PointCloud2")
 
 	// Unpacks a PointCloud2 message into a voxblox PointCloud.
 	pointcloud := voxblox.PointCloud{}
-
-	// Unpack the message.
-	buf := bytes.NewReader(msg.Data)
-
-	// TODO: Make this dynamic based on the message fields.
-	for v := 0; v < int(msg.Height); v++ {
-		offset := int(msg.RowStep) * v
-		for u := 0; u < int(msg.Width); u++ {
-			var p XYZRGB
-			buf.Seek(int64(offset), 0)
-			_ = binary.Read(buf, binary.LittleEndian, &p)
-
-			if !math.IsNaN(float64(p.X)) &&
-				!math.IsNaN(float64(p.Y)) &&
-				!math.IsNaN(float64(p.Z)) &&
-				!math.IsNaN(float64(p.RGB)) {
-				pointcloud.Points = append(pointcloud.Points, voxblox.Point{
-					float64(p.X),
-					float64(p.Y),
-					float64(p.Z),
-				})
-				pointcloud.Colors = append(pointcloud.Colors, float32ToRGB(p.RGB))
-			}
-			offset += int(msg.PointStep)
-		}
-	}
-	pointcloud.Width = int(msg.Width)
-	pointcloud.Height = int(msg.Height)
-
-	return pointcloud
-}
-
-// pointCloud2ToPointCloud converts a goroslib PointCloud2 to a voxblox PointCloud without reflection
-func pointCloud2ToPointCloudFast(msg *sensor_msgs.PointCloud2) voxblox.PointCloud {
-	defer voxblox.TimeTrack(time.Now(), "Convert PointCloud2")
-
-	// Unpacks a PointCloud2 message into a voxblox PointCloud.
-	pointcloud := voxblox.PointCloud{}
+	pointcloud.Points = make([]voxblox.Point, 0, int(msg.Width)*int(msg.Height))
+	pointcloud.Colors = make([]voxblox.Color, 0, int(msg.Width)*int(msg.Height))
 
 	// TODO: Make this dynamic based on the message fields.
 	for v := 0; v < int(msg.Height); v++ {
@@ -221,7 +184,7 @@ func onPointCloud2(msg *sensor_msgs.PointCloud2) {
 	if interpolateTransform(msg.Header.Stamp, &transform) {
 
 		// Convert goroslib point cloud to voxblox point cloud
-		voxbloxPointCloud := pointCloud2ToPointCloudFast(msg)
+		voxbloxPointCloud := pointCloud2ToPointCloud(msg)
 
 		// Integrate
 		tsdfIntegrator.IntegratePointCloud(transform, voxbloxPointCloud)
