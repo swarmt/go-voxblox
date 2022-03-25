@@ -209,7 +209,7 @@ func (i *MeshIntegrator) updateMeshForBlock(tsdfBlock *TsdfBlock, wg *sync.WaitG
 		i.updateMeshColorForBlock(tsdfBlock)
 	}
 
-	tsdfBlock.setUnUpdated()
+	tsdfBlock.setNotUpdated()
 
 	wg.Done()
 }

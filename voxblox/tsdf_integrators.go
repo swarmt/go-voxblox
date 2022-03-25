@@ -18,6 +18,7 @@ type SimpleTsdfIntegrator struct {
 
 // NewSimpleTsdfIntegrator creates a new SimpleTsdfIntegrator.
 func NewSimpleTsdfIntegrator(config TsdfConfig, layer *TsdfLayer) *SimpleTsdfIntegrator {
+	config.TruncationDistance = config.VoxelSize * 4
 	return &SimpleTsdfIntegrator{
 		Config: config,
 		Layer:  layer,
@@ -87,6 +88,15 @@ func (i *SimpleTsdfIntegrator) integratePoints(
 type MergedTsdfIntegrator struct {
 	Config TsdfConfig
 	Layer  *TsdfLayer
+}
+
+// NewMergedTsdfIntegrator creates a new MergedTsdfIntegrator.
+func NewMergedTsdfIntegrator(config TsdfConfig, layer *TsdfLayer) *MergedTsdfIntegrator {
+	config.TruncationDistance = config.VoxelSize * 4
+	return &MergedTsdfIntegrator{
+		Config: config,
+		Layer:  layer,
+	}
 }
 
 // bundleRays decimates the point cloud by the voxel size.
@@ -187,6 +197,7 @@ type FastTsdfIntegrator struct {
 }
 
 func NewFastTsdfIntegrator(config TsdfConfig, layer *TsdfLayer) *FastTsdfIntegrator {
+	config.TruncationDistance = config.VoxelSize * 4
 	return &FastTsdfIntegrator{
 		Config:                 config,
 		Layer:                  layer,

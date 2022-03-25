@@ -217,7 +217,6 @@ func main() {
 		VoxelsPerSide:               16,
 		MinRange:                    0.1,
 		MaxRange:                    5.0,
-		TruncationDistance:          0.05 * 4.0,
 		AllowClearing:               true,
 		AllowCarving:                true,
 		WeightConstant:              false,

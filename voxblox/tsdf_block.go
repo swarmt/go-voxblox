@@ -70,9 +70,9 @@ func (b *TsdfBlock) setUpdated() {
 	}
 }
 
-// setUnUpdated sets the updated flag to false.
+// setNotUpdated sets the updated flag to false.
 // Thread-safe.
-func (b *TsdfBlock) setUnUpdated() {
+func (b *TsdfBlock) setNotUpdated() {
 	b.Lock()
 	defer b.Unlock()
 	b.updated = false
