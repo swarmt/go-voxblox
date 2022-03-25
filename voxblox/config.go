@@ -12,7 +12,6 @@ type TsdfConfig struct {
 	WeightConstant              bool    `yaml:"weight_constant"`
 	WeightDropOff               bool    `yaml:"weight_dropoff"`
 	StartVoxelSubsamplingFactor float64 `yaml:"start_voxel_subsampling_factor"`
-	ClearChecksEveryNFrames     int     `yaml:"clear_checks_every_n_frames"`
 	MaxConsecutiveRayCollisions int     `yaml:"max_consecutive_ray_collisions"`
 	Threads                     int     `yaml:"integrator_threads"`
 }

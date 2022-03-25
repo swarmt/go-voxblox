@@ -3,8 +3,6 @@ package voxblox
 import (
 	"sync"
 	"time"
-
-	"github.com/dustinxie/lockfree"
 )
 
 type TsdfIntegrator interface {
@@ -190,52 +188,16 @@ func (i *MergedTsdfIntegrator) integratePoints(
 }
 
 type FastTsdfIntegrator struct {
-	Config                 TsdfConfig
-	Layer                  *TsdfLayer
-	startVoxelApproxSet    lockfree.HashMap
-	voxelObservedApproxSet lockfree.HashMap
+	Config TsdfConfig
+	Layer  *TsdfLayer
 }
 
 func NewFastTsdfIntegrator(config TsdfConfig, layer *TsdfLayer) *FastTsdfIntegrator {
 	config.TruncationDistance = config.VoxelSize * 4
 	return &FastTsdfIntegrator{
-		Config:                 config,
-		Layer:                  layer,
-		startVoxelApproxSet:    lockfree.NewHashMap(),
-		voxelObservedApproxSet: lockfree.NewHashMap(),
+		Config: config,
+		Layer:  layer,
 	}
-}
-
-// voxelInStartApproxSet returns true if the voxel is in the approximate set.
-// Adds it to the approximate set if it is not already there.
-func (i *FastTsdfIntegrator) voxelInStartApproxSet(voxelIndex IndexType) bool {
-	voxelIndexString := indexToString(voxelIndex)
-	if _, ok := i.startVoxelApproxSet.Get(voxelIndexString); ok {
-		return true
-	}
-	i.startVoxelApproxSet.Set(voxelIndexString, struct{}{})
-	return false
-}
-
-// clearStartVoxelApproxSet clears the approximate set.
-func (i *FastTsdfIntegrator) clearStartVoxelApproxSet() {
-	i.startVoxelApproxSet = lockfree.NewHashMap()
-}
-
-// voxelInObservedApproxSet returns true if the voxel is in the approximate set.
-// Adds it to the approximate set if it is not already there.
-func (i *FastTsdfIntegrator) voxelInObservedApproxSet(voxelIndex IndexType) bool {
-	voxelIndexString := indexToString(voxelIndex)
-	if _, ok := i.voxelObservedApproxSet.Get(voxelIndexString); ok {
-		return true
-	}
-	i.voxelObservedApproxSet.Set(voxelIndexString, struct{}{})
-	return false
-}
-
-// clearObservedVoxelApproxSet clears the approximate set.
-func (i *FastTsdfIntegrator) clearObservedVoxelApproxSet() {
-	i.voxelObservedApproxSet = lockfree.NewHashMap()
 }
 
 // IntegratePointCloud integrates a point cloud into the TSDF Layer.
@@ -244,14 +206,6 @@ func (i *FastTsdfIntegrator) IntegratePointCloud(
 	pointCloud PointCloud,
 ) {
 	defer TimeTrack(time.Now(), "Integrate Fast")
-
-	resetCounter := 0
-	resetCounter++
-	if resetCounter >= i.Config.ClearChecksEveryNFrames {
-		resetCounter = 0
-		i.clearStartVoxelApproxSet()
-		i.clearObservedVoxelApproxSet()
-	}
 
 	wg := sync.WaitGroup{}
 	for _, pC := range splitPointCloud(&pointCloud, i.Config.Threads) {
@@ -266,6 +220,10 @@ func (i *FastTsdfIntegrator) integratePoints(
 	pointCloud PointCloud,
 	wg *sync.WaitGroup,
 ) {
+
+	startVoxelApproxSet := map[IndexType]struct{}{}
+	observedVoxelApproxSet := map[IndexType]struct{}{}
+
 	for j, point := range pointCloud.Points {
 		var ray Ray
 		if !validateRay(&ray, point, i.Config.MinRange, i.Config.MaxRange, i.Config.AllowClearing) {
@@ -283,10 +241,11 @@ func (i *FastTsdfIntegrator) integratePoints(
 		// start_voxel_subsampling_factor times higher than the voxel size.
 		globalVoxelIndex := getGridIndexFromPoint(ray.Point, i.Config.StartVoxelSubsamplingFactor*i.Layer.VoxelSizeInv)
 
-		// Continue if the voxel is already in the set.
-		if i.voxelInStartApproxSet(globalVoxelIndex) {
+		// Continue if the voxel is already in the startVoxelApproxSet.
+		if _, ok := startVoxelApproxSet[globalVoxelIndex]; ok {
 			continue
 		}
+		startVoxelApproxSet[globalVoxelIndex] = struct{}{}
 
 		// Create a new Ray-caster.
 		rayCaster := NewRayCaster(
@@ -305,9 +264,10 @@ func (i *FastTsdfIntegrator) integratePoints(
 			// If it has increment the consecutive_ray_collisions counter, otherwise
 			// reset it. If the counter reaches a threshold we stop casting as the
 			// ray is deemed to be contributing too little new information.
-			if i.voxelInObservedApproxSet(globalVoxelIndex) {
+			if _, ok := observedVoxelApproxSet[globalVoxelIndex]; ok {
 				consecutiveRayCollisions++
 			}
+			observedVoxelApproxSet[globalVoxelIndex] = struct{}{}
 			if consecutiveRayCollisions >= i.Config.MaxConsecutiveRayCollisions {
 				break
 			}

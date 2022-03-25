@@ -223,7 +223,6 @@ func main() {
 		WeightDropOff:               true,
 		MaxWeight:                   10000.0,
 		StartVoxelSubsamplingFactor: 2.0,
-		ClearChecksEveryNFrames:     1,
 		MaxConsecutiveRayCollisions: 2,
 		Threads:                     runtime.NumCPU(),
 	}
