@@ -220,7 +220,6 @@ func (i *FastTsdfIntegrator) integratePoints(
 	pointCloud PointCloud,
 	wg *sync.WaitGroup,
 ) {
-
 	startVoxelApproxSet := map[IndexType]struct{}{}
 	observedVoxelApproxSet := map[IndexType]struct{}{}
 
