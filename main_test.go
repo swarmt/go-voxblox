@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
-	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
 	"go-voxblox/voxblox"
 	"os"
 	"testing"
+
+	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
+	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
 )
 
 func TestFloat32ToRGB(t *testing.T) {
