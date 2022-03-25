@@ -16,7 +16,7 @@ type IndexType = [3]int
 // Color RGBA
 type Color = [3]uint8
 
-// colors
+// Colors
 var (
 	ColorWhite = Color{255, 255, 255}
 	ColorRed   = Color{255, 0, 0}
@@ -70,8 +70,8 @@ func sgn(a float64) int {
 	return 0
 }
 
-// timeTrack is a helper function for timing the execution of a function.
-func timeTrack(start time.Time, name string) {
+// TimeTrack is a helper function for timing the execution of a function.
+func TimeTrack(start time.Time, name string) {
 	elapsed := time.Since(start)
 	log.Printf("%s: %s", name, elapsed)
 }

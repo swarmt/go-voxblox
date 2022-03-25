@@ -1,7 +1,6 @@
 package voxblox
 
 import (
-	"fmt"
 	"sync"
 	"time"
 
@@ -225,25 +224,20 @@ func (i *MeshIntegrator) updateMeshColorForBlock(tsdfBlock *TsdfBlock) {
 	defer meshBlock.Unlock()
 
 	vertexCount := len(meshBlock.vertices)
-
 	meshBlock.colors = make([]Color, vertexCount)
-
-	if len(meshBlock.vertices) != len(meshBlock.colors) {
-		fmt.Println("error")
-	}
 
 	// Use nearest-neighbor search.
 	for j := 0; j < vertexCount; j++ {
 		vertex := meshBlock.vertices[j]
 		voxelIndex := tsdfBlock.computeVoxelIndexFromCoordinates(vertex)
 		voxel := tsdfBlock.getVoxelIfExists(voxelIndex)
-		if voxel != nil {
+		if voxel != nil && voxel.getWeight() > i.Config.MinWeight {
 			meshBlock.colors[j] = voxel.getColor()
 		} else {
 			neighborBlock := i.TsdfLayer.getBlockByCoordinates(vertex)
 			voxelIndex := neighborBlock.computeVoxelIndexFromCoordinates(vertex)
 			voxel := neighborBlock.getVoxelIfExists(voxelIndex)
-			if voxel != nil {
+			if voxel != nil && voxel.getWeight() > i.Config.MinWeight {
 				meshBlock.colors[j] = voxel.getColor()
 			}
 		}
@@ -251,7 +245,7 @@ func (i *MeshIntegrator) updateMeshColorForBlock(tsdfBlock *TsdfBlock) {
 }
 
 func (i *MeshIntegrator) IntegrateMesh() {
-	defer timeTrack(time.Now(), "Integrate Mesh")
+	defer TimeTrack(time.Now(), "Integrate Mesh")
 
 	wg := sync.WaitGroup{}
 	for _, block := range i.TsdfLayer.getUpdatedBlocks() {

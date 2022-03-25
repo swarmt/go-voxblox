@@ -234,14 +234,13 @@ func updateTsdfVoxel(
 		return
 	}
 	newWeight = math.Min(newWeight, config.MaxWeight)
-	voxel.weight = newWeight
 
 	// Calculate the new distance
 	newSdf := (sdf*updatedWeight + voxel.distance*voxel.weight) / newWeight
 
 	// Blend colors
 	if math.Abs(sdf) < config.TruncationDistance {
-		newColor := blendTwoColors(voxel.color, voxel.weight, color, weight)
+		newColor := blendTwoColors(voxel.color, voxel.weight, color, updatedWeight)
 		voxel.color = newColor
 	}
 
@@ -251,6 +250,8 @@ func updateTsdfVoxel(
 	} else {
 		newDistance = math.Max(-config.TruncationDistance, newSdf)
 	}
+
+	voxel.weight = newWeight
 	voxel.distance = newDistance
 }
 

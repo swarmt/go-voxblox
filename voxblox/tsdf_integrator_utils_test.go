@@ -17,6 +17,21 @@ func TestGetVoxelWeight(t *testing.T) {
 	if !almostEqual(weight, 0.447920054, kEpsilon) {
 		t.Errorf("Expected weight to be 0.447920054, got %f", weight)
 	}
+	pointC = Point{0.7455977528518183, 2.0326033809822617, -2.2139824305115448}
+	weight = calculateWeight(pointC)
+	if !almostEqual(weight, 0.20401009577963028, kEpsilon) {
+		t.Errorf("Expected weight to be 0.20401009577963028, got %f", weight)
+	}
+}
+
+func TestComputeDistance(t *testing.T) {
+	origin := Point{0, 6, 2}
+	point := Point{2.2434782608695647, 5.254402247148182, 0}
+	voxelCenter := Point{2.55, 5.15, -0.25}
+	distance := computeDistance(origin, point, voxelCenter)
+	if !almostEqual(distance, -0.4086756820479831, kEpsilon) {
+		t.Errorf("Expected distance to be -0.4086756820479831, got %f", distance)
+	}
 }
 
 func TestValidateRay(t *testing.T) {

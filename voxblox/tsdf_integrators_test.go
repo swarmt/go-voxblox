@@ -172,6 +172,49 @@ func TestSimpleIntegratorSingleCloud(t *testing.T) {
 	}
 }
 
+func TestFastIntegratorSingleCloud(t *testing.T) {
+	// Simple integrator
+	tsdfLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
+	fastTsdfIntegrator := NewFastTsdfIntegrator(tsdfConfig, tsdfLayer)
+
+	pointCloud := world.getPointCloudFromTransform(
+		&poses[0],
+		cameraResolution,
+		fovHorizontal,
+		maxDistance,
+	)
+
+	poseInverse := poses[0].inverse()
+	transformedPointCloud := transformPointCloud(poseInverse, pointCloud)
+
+	fastTsdfIntegrator.IntegratePointCloud(poses[0], transformedPointCloud)
+
+	if tsdfLayer.getBlockCount() != 62 {
+		t.Errorf("Number of allocated blocks is not correct")
+	}
+
+	// Check every voxel has color
+	for _, block := range tsdfLayer.getBlocks() {
+		for _, voxel := range block.getVoxels() {
+			if math.Abs(voxel.getDistance()) < tsdfLayer.VoxelSize {
+				color := voxel.getColor()
+				if color[0] == 0 && color[1] == 0 && color[2] == 0 {
+					t.Errorf("Wrong color: %v %v", block.Index, voxel.Index)
+				}
+			}
+		}
+	}
+
+	// Generate Mesh.
+	meshLayer := NewMeshLayer(tsdfLayer)
+	meshIntegrator := NewMeshIntegrator(meshConfig, tsdfLayer, meshLayer)
+	meshIntegrator.IntegrateMesh()
+
+	if meshLayer.getBlockCount() != tsdfLayer.getBlockCount() {
+		t.Errorf("Number of allocated blocks is not correct")
+	}
+}
+
 func TestTsdfIntegrators(t *testing.T) {
 	// Simple integrator
 	simpleLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)

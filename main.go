@@ -47,6 +47,8 @@ func float32ToRGB(f float32) voxblox.Color {
 
 // pointCloud2ToPointCloud converts a goroslib PointCloud2 to a voxblox PointCloud
 func pointCloud2ToPointCloud(msg *sensor_msgs.PointCloud2) voxblox.PointCloud {
+	defer voxblox.TimeTrack(time.Now(), "Convert PointCloud2")
+
 	// Unpacks a PointCloud2 message into a voxblox PointCloud.
 	pointcloud := voxblox.PointCloud{}
 
@@ -54,6 +56,7 @@ func pointCloud2ToPointCloud(msg *sensor_msgs.PointCloud2) voxblox.PointCloud {
 	buf := bytes.NewReader(msg.Data)
 
 	// TODO: Make this dynamic based on the message fields.
+	// TODO: Parallelize this.
 	for v := 0; v < int(msg.Height); v++ {
 		offset := int(msg.RowStep) * v
 		for u := 0; u < int(msg.Width); u++ {
@@ -172,6 +175,7 @@ func interpolateTransform(stamp time.Time, transform *voxblox.Transformation) bo
 
 // onPointCloud2 is called when a PointCloud2 message is received.
 func onPointCloud2(msg *sensor_msgs.PointCloud2) {
+
 	// Convert goroslib transform to go3d transform
 	// TODO: Replace go3d with internal transform methods that work directly on messages?
 	if len(transforms) == 0 {
@@ -214,7 +218,7 @@ func main() {
 		VoxelSize:                   0.05,
 		VoxelsPerSide:               16,
 		MinRange:                    0.1,
-		MaxRange:                    10.0,
+		MaxRange:                    5.0,
 		TruncationDistance:          0.05 * 4.0,
 		AllowClearing:               true,
 		AllowCarving:                true,

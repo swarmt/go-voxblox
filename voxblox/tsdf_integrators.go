@@ -14,12 +14,20 @@ type SimpleTsdfIntegrator struct {
 	Layer  *TsdfLayer
 }
 
+// NewSimpleTsdfIntegrator creates a new SimpleTsdfIntegrator.
+func NewSimpleTsdfIntegrator(config TsdfConfig, layer *TsdfLayer) *SimpleTsdfIntegrator {
+	return &SimpleTsdfIntegrator{
+		Config: config,
+		Layer:  layer,
+	}
+}
+
 // IntegratePointCloud integrates a point cloud into the TSDF Layer.
 func (i *SimpleTsdfIntegrator) IntegratePointCloud(
 	pose Transformation,
 	pointCloud PointCloud,
 ) {
-	defer timeTrack(time.Now(), "Integrate Simple")
+	defer TimeTrack(time.Now(), "Integrate Simple")
 
 	wg := sync.WaitGroup{}
 	for _, pC := range splitPointCloud(&pointCloud, i.Config.Threads) {
@@ -94,7 +102,7 @@ func (i *MergedTsdfIntegrator) IntegratePointCloud(
 	pose Transformation,
 	pointCloud PointCloud,
 ) {
-	defer timeTrack(time.Now(), "Integrate Merged")
+	defer TimeTrack(time.Now(), "Integrate Merged")
 
 	voxelMap := bundleRays(i.Layer.VoxelSizeInv, pointCloud)
 
@@ -229,7 +237,7 @@ func (i *FastTsdfIntegrator) IntegratePointCloud(
 	pose Transformation,
 	pointCloud PointCloud,
 ) {
-	defer timeTrack(time.Now(), "Integrate Fast")
+	defer TimeTrack(time.Now(), "Integrate Fast")
 
 	resetCounter := 0
 	resetCounter++
@@ -268,6 +276,7 @@ func (i *FastTsdfIntegrator) integratePoints(
 		// the point into a set of voxels. This voxel set has a resolution
 		// start_voxel_subsampling_factor times higher than the voxel size.
 		globalVoxelIndex := getGridIndexFromPoint(ray.Point, i.Config.StartVoxelSubsamplingFactor*i.Layer.VoxelSizeInv)
+
 		// Continue if the voxel is already in the set.
 		if i.voxelInStartApproxSet(globalVoxelIndex) {
 			continue
