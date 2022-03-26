@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/aler9/goroslib"
-	"github.com/aler9/goroslib/pkg/msgs/geometry_msgs"
-	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
-	"github.com/ungerik/go3d/float64/quaternion"
 	"go-voxblox/voxblox"
 	"os"
 	"os/signal"
 	"runtime"
+
+	"github.com/aler9/goroslib"
+	"github.com/aler9/goroslib/pkg/msgs/geometry_msgs"
+	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
+	"github.com/ungerik/go3d/float64/quaternion"
 )
 
 // onPointCloud2 is called when a PointCloud2 message is received.

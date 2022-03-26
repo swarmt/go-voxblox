@@ -2,14 +2,15 @@ package main
 
 import (
 	"encoding/binary"
-	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
-	"github.com/ungerik/go3d/float64/quaternion"
+	"go-voxblox/voxblox"
 	"math"
 	"sync"
 	"time"
 
+	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
+	"github.com/ungerik/go3d/float64/quaternion"
+
 	"github.com/aler9/goroslib/pkg/msgs/geometry_msgs"
-	"go-voxblox/voxblox"
 )
 
 // transformToQuaternion converts a goroslib TransformStamped to a voxblox Quaternion
