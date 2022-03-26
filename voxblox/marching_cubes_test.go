@@ -173,3 +173,26 @@ func TestMeshCube(t *testing.T) {
 		t.Errorf("Incorrect coordinates")
 	}
 }
+
+func TestVertexIndex(t *testing.T) {
+	meshBlock := new(MeshBlock)
+	i0 := vertexIndex(meshBlock, Point{0, 0, 0})
+	if i0 != 0 {
+		t.Errorf("Incorrect index")
+	}
+	i0 = vertexIndex(meshBlock, Point{0, 0, 0})
+	if i0 != 0 {
+		t.Errorf("Incorrect index")
+	}
+	i1 := vertexIndex(meshBlock, Point{1, 1, 1})
+	if i1 != 1 {
+		t.Errorf("Incorrect index")
+	}
+	i0 = vertexIndex(meshBlock, Point{0, 0, 0})
+	if i0 != 0 {
+		t.Errorf("Incorrect index")
+	}
+	if len(meshBlock.vertices) != 2 {
+		t.Errorf("Incorrect vertex count")
+	}
+}

@@ -323,6 +323,19 @@ func interpolateEdgeVertices(
 	}
 }
 
+// vertexIndex returns the index of a vertex if it exists
+// Else adds it and returns the new index
+func vertexIndex(block *MeshBlock, vertex Point) int {
+	// Reverse search is significantly faster since we return earlier
+	for i := len(block.vertices) - 1; i >= 0; i-- {
+		if vertex == block.vertices[i] {
+			return i
+		}
+	}
+	block.vertices = append(block.vertices, vertex)
+	return len(block.vertices) - 1
+}
+
 func meshCube(
 	vertexCoords *[8][3]float64,
 	vertexSdf *[8]float64,
@@ -342,28 +355,22 @@ func meshCube(
 	meshBlock.Lock()
 	defer meshBlock.Unlock()
 
-	count := len(meshBlock.vertices)
-
 	for tableRow[tableCol] != -1 {
-		meshBlock.vertices = append(
-			meshBlock.vertices,
-			edgeVertexCoordinates[tableRow[tableCol+2]],
-			edgeVertexCoordinates[tableRow[tableCol+1]],
-			edgeVertexCoordinates[tableRow[tableCol]],
-		)
+		v0 := edgeVertexCoordinates[tableRow[tableCol+2]]
+		v1 := edgeVertexCoordinates[tableRow[tableCol+1]]
+		v2 := edgeVertexCoordinates[tableRow[tableCol]]
 
-		meshBlock.triangles = append(
-			meshBlock.triangles,
-			[3]int{
-				count,
-				count + 1,
-				count + 2,
-			},
-		)
+		// Insert or append to eliminate duplicate vertices
+		i0 := vertexIndex(meshBlock, v0)
+		i1 := vertexIndex(meshBlock, v1)
+		i2 := vertexIndex(meshBlock, v2)
+
+		triangle := [3]int{i0, i1, i2}
+
+		meshBlock.triangles = append(meshBlock.triangles, triangle)
 
 		// TODO: Normals
 
-		count += 3
 		tableCol += 3
 	}
 }
