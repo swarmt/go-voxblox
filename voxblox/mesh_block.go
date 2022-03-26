@@ -1,6 +1,9 @@
 package voxblox
 
-import "sync"
+import (
+	"fmt"
+	"sync"
+)
 
 type MeshBlock struct {
 	Index         IndexType
@@ -27,6 +30,11 @@ func NewMeshBlock(layer *MeshLayer, index IndexType, origin Point) *MeshBlock {
 	b.BlockSize = layer.BlockSize
 	b.BlockSizeInv = layer.BlockSizeInv
 	return b
+}
+
+// String returns a string representation of the MeshBlock.
+func (b *MeshBlock) String() string {
+	return fmt.Sprintf("%d_%d_%d", b.Index[0], b.Index[1], b.Index[2])
 }
 
 // getVertexCount returns the number of vertices in the block.

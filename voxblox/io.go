@@ -41,7 +41,7 @@ func WriteMeshLayerToObjFiles(layer *MeshLayer, folderName string) {
 		}
 
 		// Create a new file with the block index as the name
-		fileName := fmt.Sprintf("%s/%d.obj", folderName, block.Index)
+		fileName := fmt.Sprintf("%s/%s.obj", folderName, block)
 		file, _ := os.Create(fileName)
 
 		block.RLock()

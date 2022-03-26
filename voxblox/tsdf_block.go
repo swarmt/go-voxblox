@@ -1,6 +1,7 @@
 package voxblox
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/ungerik/go3d/float64/vec3"
@@ -33,6 +34,11 @@ func NewTsdfBlock(layer *TsdfLayer, index IndexType, origin Point) *TsdfBlock {
 	b.updated = true
 	b.voxels = make(map[IndexType]*TsdfVoxel)
 	return b
+}
+
+// String returns a string representation of the TsdfBlock.
+func (b *TsdfBlock) String() string {
+	return fmt.Sprintf("%d_%d_%d", b.Index[0], b.Index[1], b.Index[2])
 }
 
 // getVoxels returns a copy of the map of voxels.
