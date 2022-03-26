@@ -20,7 +20,7 @@ func NewMeshIntegrator(
 	tsdfLayer *TsdfLayer,
 	meshLayer *MeshLayer,
 ) MeshIntegrator {
-	i := MeshIntegrator{}
+	i := new(MeshIntegrator)
 	i.Config = config
 	i.TsdfLayer = tsdfLayer
 	i.MeshLayer = meshLayer
@@ -40,7 +40,7 @@ func NewMeshIntegrator(
 		offset := IndexToPoint(i.CubeIndexOffsets[j])
 		i.CubeCoordOffsets[j] = offset.Scaled(i.TsdfLayer.VoxelSize)
 	}
-	return i
+	return *i
 }
 
 func (i *MeshIntegrator) extractMeshInsideBlock(

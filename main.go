@@ -71,7 +71,7 @@ func main() {
 		Rotation:    quaternion.T{0.0924132, 0.0976455, 0.0702949, 0.9884249},
 		Translation: voxblox.Point{0.00114049, 0.0450936, 0.0430765},
 	}
-	tf := NewTF(staticTransform)
+	tf := NewTransformQueue(staticTransform)
 
 	// Create integrators
 	tsdfLayer := voxblox.NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)

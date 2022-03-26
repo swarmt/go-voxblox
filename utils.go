@@ -23,10 +23,12 @@ func transformToQuaternion(msg *geometry_msgs.TransformStamped) quaternion.T {
 	}
 }
 
+// vector3ToPoint converts a goroslib Vector3 to a voxblox Point
 func vector3ToPoint(msg *geometry_msgs.Vector3) voxblox.Point {
 	return voxblox.Point{msg.X, msg.Y, msg.Z}
 }
 
+// interpolatePoints interpolates between two Points
 func interpolatePoints(p1, p2 voxblox.Point, f float64) voxblox.Point {
 	return voxblox.Point{
 		p1[0] + (p2[0]-p1[0])*f,
@@ -35,14 +37,15 @@ func interpolatePoints(p1, p2 voxblox.Point, f float64) voxblox.Point {
 	}
 }
 
+// transformQueue is a queue of goroslib TransformStamped messages
 type transformQueue struct {
 	StaticTransform voxblox.Transformation
 	sync.Mutex
 	transforms []*geometry_msgs.TransformStamped
 }
 
-// NewTF returns a new transformQueue.
-func NewTF(staticTransform voxblox.Transformation) *transformQueue {
+// NewTransformQueue returns a new transformQueue.
+func NewTransformQueue(staticTransform voxblox.Transformation) *transformQueue {
 	return &transformQueue{
 		StaticTransform: staticTransform,
 	}
