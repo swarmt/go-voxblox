@@ -1,12 +1,11 @@
 package main
 
 import (
+	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
+	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
 	"go-voxblox/voxblox"
 	"os"
 	"testing"
-
-	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
-	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
 )
 
 func TestFloat32ToRGB(t *testing.T) {
@@ -27,7 +26,7 @@ func TestFloat32ToRGB(t *testing.T) {
 	}
 }
 
-func TestPointCloud2ToPointCloudFast(t *testing.T) {
+func TestPointCloud2ToPointCloud(t *testing.T) {
 	pointCloud2 := sensor_msgs.PointCloud2{
 		Header:      std_msgs.Header{},
 		Height:      480,
@@ -38,6 +37,33 @@ func TestPointCloud2ToPointCloudFast(t *testing.T) {
 		RowStep:     20480,
 		Data:        nil,
 		IsDense:     false,
+	}
+
+	pointCloud2.Fields = []sensor_msgs.PointField{
+		{
+			Name:     "x",
+			Offset:   0,
+			Datatype: 7,
+			Count:    1,
+		},
+		{
+			Name:     "y",
+			Offset:   4,
+			Datatype: 7,
+			Count:    1,
+		},
+		{
+			Name:     "z",
+			Offset:   8,
+			Datatype: 7,
+			Count:    1,
+		},
+		{
+			Name:     "rgb",
+			Offset:   16,
+			Datatype: 7,
+			Count:    1,
+		},
 	}
 
 	// Read the PointCloud2 data from the test file

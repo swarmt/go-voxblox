@@ -38,7 +38,6 @@ func init() {
 		WeightDropOff:               true,
 		MaxWeight:                   10000.0,
 		StartVoxelSubsamplingFactor: 2.0,
-		ClearChecksEveryNFrames:     1,
 		MaxConsecutiveRayCollisions: 2,
 		Threads:                     runtime.NumCPU(),
 	}
@@ -160,8 +159,6 @@ func TestSimpleIntegratorSingleCloud(t *testing.T) {
 		}
 	}
 
-	WriteTsdfLayerToTxtFile(tsdfLayer, "../output/simple_layer.txt")
-
 	// Generate Mesh.
 	meshLayer := NewMeshLayer(tsdfLayer)
 	meshIntegrator := NewMeshIntegrator(meshConfig, tsdfLayer, meshLayer)
@@ -266,8 +263,6 @@ func TestTsdfIntegrators(t *testing.T) {
 			}
 		}
 	}
-
-	WriteTsdfLayerToTxtFile(simpleLayer, "../output/simple_layer.txt")
 
 	// Generate simple layer mesh.
 	simpleMeshLayer := NewMeshLayer(simpleLayer)

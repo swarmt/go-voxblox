@@ -39,3 +39,12 @@ func transformPointCloud(transformation Transformation, pointCloud PointCloud) P
 		Colors: pointCloud.Colors,
 	}
 }
+
+func CombineTransformations(t1, t2 *Transformation) Transformation {
+	rotation := quaternion.Mul(&t1.Rotation, &t2.Rotation)
+	translation := vec3.Add(&t1.Translation, &t2.Translation)
+	return Transformation{
+		Translation: translation,
+		Rotation:    rotation,
+	}
+}
