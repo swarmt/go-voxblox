@@ -206,7 +206,7 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 
 	updateTsdfVoxel(
 		layer,
-		tsdfConfig,
+		&tsdfConfig,
 		origin,
 		pointG,
 		globalVoxelIndex,
@@ -230,7 +230,7 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 
 	updateTsdfVoxel(
 		layer,
-		tsdfConfig,
+		&tsdfConfig,
 		origin,
 		pointG,
 		globalVoxelIndex,
@@ -254,7 +254,7 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 
 	updateTsdfVoxel(
 		layer,
-		tsdfConfig,
+		&tsdfConfig,
 		origin,
 		pointG,
 		globalVoxelIndex,
@@ -275,7 +275,7 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 
 	updateTsdfVoxel(
 		layer,
-		tsdfConfig,
+		&tsdfConfig,
 		origin,
 		pointG,
 		globalVoxelIndex,
@@ -298,7 +298,7 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 
 	updateTsdfVoxel(
 		layer,
-		tsdfConfig,
+		&tsdfConfig,
 		origin,
 		pointG,
 		globalVoxelIndex,
@@ -320,7 +320,7 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 
 	updateTsdfVoxel(
 		layer,
-		tsdfConfig,
+		&tsdfConfig,
 		origin,
 		pointG,
 		globalVoxelIndex,

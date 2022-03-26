@@ -98,7 +98,7 @@ func init() {
 func TestSimpleIntegratorSingleCloud(t *testing.T) {
 	// Simple integrator
 	tsdfLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
-	simpleTsdfIntegrator := SimpleTsdfIntegrator{tsdfConfig, tsdfLayer}
+	simpleTsdfIntegrator := SimpleTsdfIntegrator{&tsdfConfig, tsdfLayer}
 
 	pointCloud := world.getPointCloudFromTransform(
 		&poses[0],
@@ -172,7 +172,7 @@ func TestSimpleIntegratorSingleCloud(t *testing.T) {
 func TestFastIntegratorSingleCloud(t *testing.T) {
 	// Simple integrator
 	tsdfLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
-	fastTsdfIntegrator := NewFastTsdfIntegrator(tsdfConfig, tsdfLayer)
+	fastTsdfIntegrator := NewFastTsdfIntegrator(&tsdfConfig, tsdfLayer)
 
 	pointCloud := world.getPointCloudFromTransform(
 		&poses[0],
@@ -215,15 +215,15 @@ func TestFastIntegratorSingleCloud(t *testing.T) {
 func TestTsdfIntegrators(t *testing.T) {
 	// Simple integrator
 	simpleLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
-	simpleTsdfIntegrator := SimpleTsdfIntegrator{tsdfConfig, simpleLayer}
+	simpleTsdfIntegrator := SimpleTsdfIntegrator{&tsdfConfig, simpleLayer}
 
 	// Merged integrator
 	mergedLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
-	mergedTsdfIntegrator := MergedTsdfIntegrator{tsdfConfig, mergedLayer}
+	mergedTsdfIntegrator := MergedTsdfIntegrator{&tsdfConfig, mergedLayer}
 
 	// Fast integrator
 	fastLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
-	fastTsdfIntegrator := NewFastTsdfIntegrator(tsdfConfig, fastLayer)
+	fastTsdfIntegrator := NewFastTsdfIntegrator(&tsdfConfig, fastLayer)
 
 	// Iterate over all poses and integrate.
 	for _, pose := range poses {

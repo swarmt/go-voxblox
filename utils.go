@@ -37,29 +37,29 @@ func interpolatePoints(p1, p2 voxblox.Point, f float64) voxblox.Point {
 	}
 }
 
-// transformQueue is a queue of goroslib TransformStamped messages
-type transformQueue struct {
+// TransformQueue is a queue of goroslib TransformStamped messages
+type TransformQueue struct {
 	StaticTransform voxblox.Transformation
 	sync.Mutex
 	transforms []*geometry_msgs.TransformStamped
 }
 
-// NewTransformQueue returns a new transformQueue.
-func NewTransformQueue(staticTransform voxblox.Transformation) *transformQueue {
-	return &transformQueue{
+// NewTransformQueue returns a new TransformQueue.
+func NewTransformQueue(staticTransform voxblox.Transformation) *TransformQueue {
+	return &TransformQueue{
 		StaticTransform: staticTransform,
 	}
 }
 
-// addTransform adds a transform to the transformQueue.
-func (t *transformQueue) addTransform(transform *geometry_msgs.TransformStamped) {
+// addTransform adds a transform to the TransformQueue.
+func (t *TransformQueue) addTransform(transform *geometry_msgs.TransformStamped) {
 	t.Lock()
 	defer t.Unlock()
 	t.transforms = append(t.transforms, transform)
 }
 
-// interpolateTransform interpolates a transform from the transformQueue given a timestamp.
-func (t *transformQueue) interpolateTransform(
+// interpolateTransform interpolates a transform from the TransformQueue given a timestamp.
+func (t *TransformQueue) interpolateTransform(
 	timeStamp time.Time,
 ) *voxblox.Transformation {
 	t.Lock()

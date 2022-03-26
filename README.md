@@ -34,13 +34,14 @@ Note: This needs to be decompressed to run real time with ```rosbag decompress``
 
 ## TODO
 
-* Merge duplicate vertices
-* Better unit tests
+* Merged integrator weights and speed
+* Better / more unit tests
 * Cache distant blocks with protobuf
 * ROS integration
 * gRPC mesh server
 * Logging
 * System tests
+* Stress test / map size
 * ICP?
 * Linear indexing on voxels?
 * CUDA?

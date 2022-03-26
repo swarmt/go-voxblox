@@ -17,7 +17,7 @@ import (
 func onPointCloud2(
 	msg *sensor_msgs.PointCloud2,
 	tsdfIntegrator voxblox.TsdfIntegrator,
-	tf *transformQueue,
+	tf *TransformQueue,
 ) {
 	transform := tf.interpolateTransform(msg.Header.Stamp)
 	if transform == nil {
@@ -75,7 +75,7 @@ func main() {
 
 	// Create integrators
 	tsdfLayer := voxblox.NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
-	tsdfIntegrator := voxblox.NewFastTsdfIntegrator(tsdfConfig, tsdfLayer)
+	tsdfIntegrator := voxblox.NewFastTsdfIntegrator(&tsdfConfig, tsdfLayer)
 
 	meshLayer := voxblox.NewMeshLayer(tsdfLayer)
 	meshIntegrator := voxblox.NewMeshIntegrator(meshConfig, tsdfLayer, meshLayer)

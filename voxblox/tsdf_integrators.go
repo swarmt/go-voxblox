@@ -5,17 +5,19 @@ import (
 	"time"
 )
 
+// TsdfIntegrator is an interface for the TSDF integrator types.
 type TsdfIntegrator interface {
 	IntegratePointCloud(pose Transformation, cloud PointCloud)
 }
 
+// SimpleTsdfIntegrator is a slow but accurate TSDF integrator.
 type SimpleTsdfIntegrator struct {
-	Config TsdfConfig
+	Config *TsdfConfig
 	Layer  *TsdfLayer
 }
 
 // NewSimpleTsdfIntegrator creates a new SimpleTsdfIntegrator.
-func NewSimpleTsdfIntegrator(config TsdfConfig, layer *TsdfLayer) *SimpleTsdfIntegrator {
+func NewSimpleTsdfIntegrator(config *TsdfConfig, layer *TsdfLayer) *SimpleTsdfIntegrator {
 	config.TruncationDistance = config.VoxelSize * 4
 	return &SimpleTsdfIntegrator{
 		Config: config,
@@ -84,12 +86,12 @@ func (i *SimpleTsdfIntegrator) integratePoints(
 }
 
 type MergedTsdfIntegrator struct {
-	Config TsdfConfig
+	Config *TsdfConfig
 	Layer  *TsdfLayer
 }
 
 // NewMergedTsdfIntegrator creates a new MergedTsdfIntegrator.
-func NewMergedTsdfIntegrator(config TsdfConfig, layer *TsdfLayer) *MergedTsdfIntegrator {
+func NewMergedTsdfIntegrator(config *TsdfConfig, layer *TsdfLayer) *MergedTsdfIntegrator {
 	config.TruncationDistance = config.VoxelSize * 4
 	return &MergedTsdfIntegrator{
 		Config: config,
@@ -188,11 +190,11 @@ func (i *MergedTsdfIntegrator) integratePoints(
 }
 
 type FastTsdfIntegrator struct {
-	Config TsdfConfig
+	Config *TsdfConfig
 	Layer  *TsdfLayer
 }
 
-func NewFastTsdfIntegrator(config TsdfConfig, layer *TsdfLayer) *FastTsdfIntegrator {
+func NewFastTsdfIntegrator(config *TsdfConfig, layer *TsdfLayer) *FastTsdfIntegrator {
 	config.TruncationDistance = config.VoxelSize * 4
 	return &FastTsdfIntegrator{
 		Config: config,
