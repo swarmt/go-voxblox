@@ -19,5 +19,4 @@ func TestReadConfig(t *testing.T) {
 	if config.MaxRange != 5.0 {
 		t.Errorf("Max range should be 5.0, but is %f", config.MaxRange)
 	}
-
 }

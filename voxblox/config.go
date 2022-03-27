@@ -1,9 +1,10 @@
 package voxblox
 
 import (
+	"io/ioutil"
+
 	"github.com/ungerik/go3d/float64/quaternion"
 	"gopkg.in/yaml.v3"
-	"io/ioutil"
 )
 
 type Config struct {
