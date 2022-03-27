@@ -196,7 +196,7 @@ func TestRayCaster(t *testing.T) {
 }
 
 func TestUpdateTsdfVoxel(t *testing.T) {
-	layer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
+	layer := NewTsdfLayer(config.VoxelSize, config.VoxelsPerSide)
 
 	origin := Point{0.0, 6.0, 2.0}
 	pointG := Point{1.31130219e-06, 5.2854619, 1.1920929e-07}
@@ -206,7 +206,7 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 
 	updateTsdfVoxel(
 		layer,
-		&tsdfConfig,
+		&config,
 		origin,
 		pointG,
 		globalVoxelIndex,
@@ -230,7 +230,7 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 
 	updateTsdfVoxel(
 		layer,
-		&tsdfConfig,
+		&config,
 		origin,
 		pointG,
 		globalVoxelIndex,
@@ -254,7 +254,7 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 
 	updateTsdfVoxel(
 		layer,
-		&tsdfConfig,
+		&config,
 		origin,
 		pointG,
 		globalVoxelIndex,
@@ -275,7 +275,7 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 
 	updateTsdfVoxel(
 		layer,
-		&tsdfConfig,
+		&config,
 		origin,
 		pointG,
 		globalVoxelIndex,
@@ -298,7 +298,7 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 
 	updateTsdfVoxel(
 		layer,
-		&tsdfConfig,
+		&config,
 		origin,
 		pointG,
 		globalVoxelIndex,
@@ -320,7 +320,7 @@ func TestUpdateTsdfVoxel(t *testing.T) {
 
 	updateTsdfVoxel(
 		layer,
-		&tsdfConfig,
+		&config,
 		origin,
 		pointG,
 		globalVoxelIndex,

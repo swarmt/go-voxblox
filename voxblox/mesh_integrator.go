@@ -8,7 +8,7 @@ import (
 )
 
 type MeshIntegrator struct {
-	Config           MeshConfig
+	Config           Config
 	CubeIndexOffsets []IndexType
 	CubeCoordOffsets []Point
 	TsdfLayer        *TsdfLayer
@@ -16,7 +16,7 @@ type MeshIntegrator struct {
 }
 
 func NewMeshIntegrator(
-	config MeshConfig,
+	config Config,
 	tsdfLayer *TsdfLayer,
 	meshLayer *MeshLayer,
 ) MeshIntegrator {

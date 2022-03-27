@@ -1,6 +1,7 @@
 package voxblox
 
-type TsdfConfig struct {
+type Config struct {
+	// TSDF configuration.
 	VoxelSize                   float64 `yaml:"voxel_size"`
 	VoxelsPerSide               int     `yaml:"block_size"`
 	MinRange                    float64 `yaml:"min_range"`
@@ -14,9 +15,8 @@ type TsdfConfig struct {
 	StartVoxelSubsamplingFactor float64 `yaml:"start_voxel_subsampling_factor"`
 	MaxConsecutiveRayCollisions int     `yaml:"max_consecutive_ray_collisions"`
 	Threads                     int     `yaml:"integrator_threads"`
-}
 
-type MeshConfig struct {
+	// Mesh configuration.
 	UseColor  bool    `yaml:"use_color"`
 	MinWeight float64 `yaml:"min_weight"`
 }

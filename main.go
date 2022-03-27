@@ -44,7 +44,7 @@ func main() {
 	defer n.Close()
 
 	// TODO: Read from a config file
-	tsdfConfig := voxblox.TsdfConfig{
+	config := voxblox.Config{
 		VoxelSize:                   0.05,
 		VoxelsPerSide:               16,
 		MinRange:                    0.1,
@@ -57,11 +57,8 @@ func main() {
 		StartVoxelSubsamplingFactor: 1.0,
 		MaxConsecutiveRayCollisions: 2,
 		Threads:                     runtime.NumCPU(),
-	}
-
-	meshConfig := voxblox.MeshConfig{
-		UseColor:  true,
-		MinWeight: 0.5,
+		UseColor:                    true,
+		MinWeight:                   0.2,
 	}
 
 	// Transformer.
@@ -74,11 +71,11 @@ func main() {
 	tf := NewTransformQueue(staticTransform)
 
 	// Create integrators
-	tsdfLayer := voxblox.NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
-	tsdfIntegrator := voxblox.NewFastTsdfIntegrator(&tsdfConfig, tsdfLayer)
+	tsdfLayer := voxblox.NewTsdfLayer(config.VoxelSize, config.VoxelsPerSide)
+	tsdfIntegrator := voxblox.NewFastTsdfIntegrator(&config, tsdfLayer)
 
 	meshLayer := voxblox.NewMeshLayer(tsdfLayer)
-	meshIntegrator := voxblox.NewMeshIntegrator(meshConfig, tsdfLayer, meshLayer)
+	meshIntegrator := voxblox.NewMeshIntegrator(config, tsdfLayer, meshLayer)
 
 	// Create a PointCloud2 subscriber
 	// TODO: Topic name should be configurable

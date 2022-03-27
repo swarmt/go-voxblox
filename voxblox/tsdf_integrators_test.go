@@ -16,8 +16,7 @@ var (
 	cameraResolution vec2.T
 	fovHorizontal    float64
 	maxDistance      float64
-	tsdfConfig       TsdfConfig
-	meshConfig       MeshConfig
+	config           Config
 )
 
 func init() {
@@ -26,7 +25,7 @@ func init() {
 	fovHorizontal = 150.0
 	maxDistance = 10.0
 
-	tsdfConfig = TsdfConfig{
+	config = Config{
 		VoxelSize:                   0.1,
 		VoxelsPerSide:               16,
 		MinRange:                    0.1,
@@ -40,18 +39,15 @@ func init() {
 		StartVoxelSubsamplingFactor: 2.0,
 		MaxConsecutiveRayCollisions: 2,
 		Threads:                     runtime.NumCPU(),
-	}
-
-	meshConfig = MeshConfig{
-		UseColor:  true,
-		MinWeight: 0.1,
+		UseColor:                    true,
+		MinWeight:                   0.1,
 	}
 
 	// Create a test environment.
 	// It consists of a 10x10x7m environment with a cylinder in the middle.
 	minBound := Point{-5.0, -5.0, -1.0}
 	maxBound := Point{5.0, 5.0, 6.0}
-	world = NewSimulationWorld(tsdfConfig.VoxelSize, minBound, maxBound)
+	world = NewSimulationWorld(config.VoxelSize, minBound, maxBound)
 	cylinder := Cylinder{
 		Center: Point{0.0, 0.0, 2.0},
 		Radius: 2.0,
@@ -97,8 +93,8 @@ func init() {
 
 func TestSimpleIntegratorSingleCloud(t *testing.T) {
 	// Simple integrator
-	tsdfLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
-	simpleTsdfIntegrator := SimpleTsdfIntegrator{&tsdfConfig, tsdfLayer}
+	tsdfLayer := NewTsdfLayer(config.VoxelSize, config.VoxelsPerSide)
+	simpleTsdfIntegrator := SimpleTsdfIntegrator{&config, tsdfLayer}
 
 	pointCloud := world.getPointCloudFromTransform(
 		&poses[0],
@@ -161,7 +157,7 @@ func TestSimpleIntegratorSingleCloud(t *testing.T) {
 
 	// Generate Mesh.
 	meshLayer := NewMeshLayer(tsdfLayer)
-	meshIntegrator := NewMeshIntegrator(meshConfig, tsdfLayer, meshLayer)
+	meshIntegrator := NewMeshIntegrator(config, tsdfLayer, meshLayer)
 	meshIntegrator.IntegrateMesh()
 
 	if meshLayer.getBlockCount() != tsdfLayer.getBlockCount() {
@@ -171,8 +167,8 @@ func TestSimpleIntegratorSingleCloud(t *testing.T) {
 
 func TestFastIntegratorSingleCloud(t *testing.T) {
 	// Simple integrator
-	tsdfLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
-	fastTsdfIntegrator := NewFastTsdfIntegrator(&tsdfConfig, tsdfLayer)
+	tsdfLayer := NewTsdfLayer(config.VoxelSize, config.VoxelsPerSide)
+	fastTsdfIntegrator := NewFastTsdfIntegrator(&config, tsdfLayer)
 
 	pointCloud := world.getPointCloudFromTransform(
 		&poses[0],
@@ -204,7 +200,7 @@ func TestFastIntegratorSingleCloud(t *testing.T) {
 
 	// Generate Mesh.
 	meshLayer := NewMeshLayer(tsdfLayer)
-	meshIntegrator := NewMeshIntegrator(meshConfig, tsdfLayer, meshLayer)
+	meshIntegrator := NewMeshIntegrator(config, tsdfLayer, meshLayer)
 	meshIntegrator.IntegrateMesh()
 
 	if meshLayer.getBlockCount() != tsdfLayer.getBlockCount() {
@@ -214,16 +210,16 @@ func TestFastIntegratorSingleCloud(t *testing.T) {
 
 func TestTsdfIntegrators(t *testing.T) {
 	// Simple integrator
-	simpleLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
-	simpleTsdfIntegrator := SimpleTsdfIntegrator{&tsdfConfig, simpleLayer}
+	simpleLayer := NewTsdfLayer(config.VoxelSize, config.VoxelsPerSide)
+	simpleTsdfIntegrator := SimpleTsdfIntegrator{&config, simpleLayer}
 
 	// Merged integrator
-	mergedLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
-	mergedTsdfIntegrator := MergedTsdfIntegrator{&tsdfConfig, mergedLayer}
+	mergedLayer := NewTsdfLayer(config.VoxelSize, config.VoxelsPerSide)
+	mergedTsdfIntegrator := MergedTsdfIntegrator{&config, mergedLayer}
 
 	// Fast integrator
-	fastLayer := NewTsdfLayer(tsdfConfig.VoxelSize, tsdfConfig.VoxelsPerSide)
-	fastTsdfIntegrator := NewFastTsdfIntegrator(&tsdfConfig, fastLayer)
+	fastLayer := NewTsdfLayer(config.VoxelSize, config.VoxelsPerSide)
+	fastTsdfIntegrator := NewFastTsdfIntegrator(&config, fastLayer)
 
 	// Iterate over all poses and integrate.
 	for _, pose := range poses {
@@ -266,7 +262,7 @@ func TestTsdfIntegrators(t *testing.T) {
 
 	// Generate simple layer mesh.
 	simpleMeshLayer := NewMeshLayer(simpleLayer)
-	meshIntegrator := NewMeshIntegrator(meshConfig, simpleLayer, simpleMeshLayer)
+	meshIntegrator := NewMeshIntegrator(config, simpleLayer, simpleMeshLayer)
 	meshIntegrator.IntegrateMesh()
 
 	if simpleMeshLayer.getBlockCount() != simpleLayer.getBlockCount() {
@@ -277,7 +273,7 @@ func TestTsdfIntegrators(t *testing.T) {
 
 	// Generate merged layer mesh.
 	mergedMeshLayer := NewMeshLayer(mergedLayer)
-	meshIntegrator = NewMeshIntegrator(meshConfig, mergedLayer, mergedMeshLayer)
+	meshIntegrator = NewMeshIntegrator(config, mergedLayer, mergedMeshLayer)
 	meshIntegrator.IntegrateMesh()
 
 	if mergedMeshLayer.getBlockCount() != mergedLayer.getBlockCount() {
@@ -288,7 +284,7 @@ func TestTsdfIntegrators(t *testing.T) {
 
 	// Generate fast layer mesh.
 	fastMeshLayer := NewMeshLayer(fastLayer)
-	meshIntegrator = NewMeshIntegrator(meshConfig, fastLayer, fastMeshLayer)
+	meshIntegrator = NewMeshIntegrator(config, fastLayer, fastMeshLayer)
 	meshIntegrator.IntegrateMesh()
 
 	if fastMeshLayer.getBlockCount() != fastLayer.getBlockCount() {

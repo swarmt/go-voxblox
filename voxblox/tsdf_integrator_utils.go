@@ -201,7 +201,7 @@ func validateRay(
 // updateTsdfVoxel updates the voxel SDF and weight.
 func updateTsdfVoxel(
 	layer *TsdfLayer,
-	config *TsdfConfig,
+	config *Config,
 	origin Point,
 	pointG Point,
 	globalVoxelIndex IndexType,
