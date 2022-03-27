@@ -2,10 +2,9 @@ package main
 
 import (
 	"fmt"
+	"go-voxblox/voxblox"
 	"os"
 	"os/signal"
-
-	"go-voxblox/voxblox"
 
 	"github.com/aler9/goroslib"
 	"github.com/aler9/goroslib/pkg/msgs/geometry_msgs"
