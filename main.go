@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/aler9/goroslib"
-	"github.com/aler9/goroslib/pkg/msgs/geometry_msgs"
-	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
 	"go-voxblox/voxblox"
 	"os"
 	"os/signal"
+
+	"github.com/aler9/goroslib"
+	"github.com/aler9/goroslib/pkg/msgs/geometry_msgs"
+	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
 )
 
 // onPointCloud2 is called when a PointCloud2 message is received.
