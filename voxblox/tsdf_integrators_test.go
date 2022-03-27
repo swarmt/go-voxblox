@@ -30,7 +30,7 @@ func init() {
 		VoxelsPerSide:               16,
 		MinRange:                    0.1,
 		MaxRange:                    5.0,
-		TruncationDistance:          0.1 * 4.0,
+		truncationDistance:          0.1 * 4.0,
 		AllowClearing:               true,
 		AllowCarving:                true,
 		WeightConstant:              false,

@@ -217,8 +217,8 @@ func updateTsdfVoxel(
 	// Weight drop-off
 	dropOffEpsilon := layer.VoxelSize
 	if config.WeightDropOff && sdf < -dropOffEpsilon {
-		updatedWeight = weight * (config.TruncationDistance + sdf) /
-			(config.TruncationDistance - dropOffEpsilon)
+		updatedWeight = weight * (config.truncationDistance + sdf) /
+			(config.truncationDistance - dropOffEpsilon)
 		updatedWeight = math.Max(updatedWeight, 0.0)
 	}
 
@@ -239,16 +239,16 @@ func updateTsdfVoxel(
 	newSdf := (sdf*updatedWeight + voxel.distance*voxel.weight) / newWeight
 
 	// Blend colors
-	if math.Abs(sdf) < config.TruncationDistance {
+	if math.Abs(sdf) < config.truncationDistance {
 		newColor := blendTwoColors(voxel.color, voxel.weight, color, updatedWeight)
 		voxel.color = newColor
 	}
 
 	var newDistance float64
 	if sdf > 0 {
-		newDistance = math.Min(config.TruncationDistance, newSdf)
+		newDistance = math.Min(config.truncationDistance, newSdf)
 	} else {
-		newDistance = math.Max(-config.TruncationDistance, newSdf)
+		newDistance = math.Max(-config.truncationDistance, newSdf)
 	}
 
 	voxel.weight = newWeight

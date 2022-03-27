@@ -18,7 +18,7 @@ type SimpleTsdfIntegrator struct {
 
 // NewSimpleTsdfIntegrator creates a new SimpleTsdfIntegrator.
 func NewSimpleTsdfIntegrator(config *Config, layer *TsdfLayer) *SimpleTsdfIntegrator {
-	config.TruncationDistance = config.VoxelSize * 4
+	config.truncationDistance = config.VoxelSize * 4
 	return &SimpleTsdfIntegrator{
 		Config: config,
 		Layer:  layer,
@@ -56,7 +56,7 @@ func (i *SimpleTsdfIntegrator) integratePoints(
 			rayCaster := NewRayCaster(
 				&ray,
 				i.Layer.VoxelSizeInv,
-				i.Config.TruncationDistance,
+				i.Config.truncationDistance,
 				i.Config.MaxRange,
 				i.Config.AllowCarving,
 				true,
@@ -92,7 +92,7 @@ type MergedTsdfIntegrator struct {
 
 // NewMergedTsdfIntegrator creates a new MergedTsdfIntegrator.
 func NewMergedTsdfIntegrator(config *Config, layer *TsdfLayer) *MergedTsdfIntegrator {
-	config.TruncationDistance = config.VoxelSize * 4
+	config.truncationDistance = config.VoxelSize * 4
 	return &MergedTsdfIntegrator{
 		Config: config,
 		Layer:  layer,
@@ -160,7 +160,7 @@ func (i *MergedTsdfIntegrator) integratePoints(
 			rayCaster := NewRayCaster(
 				&ray,
 				i.Layer.VoxelSizeInv,
-				i.Config.TruncationDistance,
+				i.Config.truncationDistance,
 				i.Config.MaxRange,
 				i.Config.AllowCarving,
 				true,
@@ -195,7 +195,7 @@ type FastTsdfIntegrator struct {
 }
 
 func NewFastTsdfIntegrator(config *Config, layer *TsdfLayer) *FastTsdfIntegrator {
-	config.TruncationDistance = config.VoxelSize * 4
+	config.truncationDistance = config.VoxelSize * 4
 	return &FastTsdfIntegrator{
 		Config: config,
 		Layer:  layer,
@@ -252,7 +252,7 @@ func (i *FastTsdfIntegrator) integratePoints(
 		rayCaster := NewRayCaster(
 			&ray,
 			i.Layer.VoxelSizeInv,
-			i.Config.TruncationDistance,
+			i.Config.truncationDistance,
 			i.Config.MaxRange,
 			i.Config.AllowCarving,
 			false,
