@@ -84,9 +84,6 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 	// Voxel 0 1 0
 	pointIn000 = Point{0.0, 1.0 * tsdfLayer.VoxelSize, 0.0}
 	assert.NotNil(t, block000.getVoxelPtrByCoordinates(pointIn000))
-
-	// TODO: Ignoring linear indexing for now.
-	// TODO: Don't think it is worth the additional code complexity but I could be wrong.
 	voxelIndex := block000.computeTruncatedVoxelIndexFromCoordinates(pointIn000)
 	assert.Equal(t, IndexType{0, 1, 0}, voxelIndex)
 

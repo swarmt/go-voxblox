@@ -5,30 +5,7 @@ import (
 	"os"
 )
 
-// WriteTsdfLayerToTxtFile writes a tsdf Layer to a text file.
-// TODO: This is a temporary function.
-func WriteTsdfLayerToTxtFile(layer *TsdfLayer, fileName string) {
-	// Create a new file
-	file, _ := os.Create(fileName)
-
-	voxelCenters, voxelColors := layer.getVoxelCenters()
-	for i, voxel := range voxelCenters {
-		// Write the voxel to the file
-		fmt.Fprintf(
-			file,
-			"%f %f %f %d %d %d\n",
-			voxel[0],
-			voxel[1],
-			voxel[2],
-			voxelColors[i][0],
-			voxelColors[i][1],
-			voxelColors[i][2],
-		)
-	}
-}
-
 // WriteMeshLayerToObjFiles writes a Mesh Layer to an obj file.
-// TODO: This is a temporary function.
 func WriteMeshLayerToObjFiles(layer *MeshLayer, folderName string) {
 	// Create folder if it doesn't exist
 	if _, err := os.Stat(folderName); os.IsNotExist(err) {

@@ -1,7 +1,6 @@
 package voxblox
 
 import (
-	"math"
 	"sync"
 )
 
@@ -50,26 +49,6 @@ func (l *TsdfLayer) getUpdatedBlocks() map[IndexType]*TsdfBlock {
 		}
 	}
 	return updatedBlocks
-}
-
-// getVoxelCenters returns all voxel centers (global coordinates) in the Layer close to the surface.
-// Thread-safe.
-func (l *TsdfLayer) getVoxelCenters() ([]Point, []Color) {
-	var voxelCenters []Point
-	var voxelColors []Color
-	l.RLock()
-	defer l.RUnlock()
-	for _, block := range l.getBlocks() {
-		for _, voxel := range block.getVoxels() {
-			if math.Abs(voxel.getDistance()) < block.VoxelSize && voxel.getWeight() > 0 {
-				coordinates := block.computeCoordinatesFromVoxelIndex(voxel.Index)
-				voxelCenters = append(voxelCenters, coordinates)
-				color := voxel.getColor()
-				voxelColors = append(voxelColors, color)
-			}
-		}
-	}
-	return voxelCenters, voxelColors
 }
 
 // getBlockCount returns the number of blocks allocated in the map
