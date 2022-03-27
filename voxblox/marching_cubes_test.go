@@ -1,6 +1,7 @@
 package voxblox
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -9,42 +10,31 @@ func TestCalculateVertexConfiguration(t *testing.T) {
 		0.5, 0.374400645, -0.036557395, 0.188546658,
 		0.490951151, 0.121949553, -0.120452709, 0.0246924404,
 	}
-	result := calculateVertexConfiguration(&vertexSdf)
-	if result != 68 {
-		t.Errorf("Expected 68, got %d", result)
-	}
+	assert.Equal(t, 68, calculateVertexConfiguration(&vertexSdf))
 
 	vertexSdf = [8]float64{
 		-0.939952955, 0.00457197428, 0.111684874, 0.0445192195,
 		-0.0905351862, -0.0991786737, 0.110729337, 0.038955044,
 	}
-	result = calculateVertexConfiguration(&vertexSdf)
-	if result != 49 {
-		t.Errorf("Expected 0, got %d", result)
-	}
+	assert.Equal(t, 49, calculateVertexConfiguration(&vertexSdf))
 
 	vertexSdf = [8]float64{
 		0.5, 0.5, 0.5, 0.5,
 		0.5, 0.5, 0.5, 0.5,
 	}
-	result = calculateVertexConfiguration(&vertexSdf)
-	if result != 0 {
-		t.Errorf("Expected 0, got %d", result)
-	}
+	assert.Equal(t, 0, calculateVertexConfiguration(&vertexSdf))
 }
 
 func TestInterpolateEdge(t *testing.T) {
-	vertex1 := Point{-19.6500015, -3.04999995, 2.44999981}
-	vertex2 := Point{-19.6500015, -2.95000005, 2.44999981}
-	sdf1 := 0.5
-	sdf2 := -0.275501609
-	point := interpolateEdge(vertex1, vertex2, sdf1, sdf2)
-	if !almostEqual(point[0], -19.6500015, kEpsilon) ||
-		!almostEqual(point[1], -2.98552561, kEpsilon) ||
-		!almostEqual(point[2], 2.44999981, kEpsilon) {
-		t.Errorf("Expected (-19.6500015, -2.98552561, 2.44999981), got (%f, %f, %f)",
-			point[0], point[1], point[2])
-	}
+	point := interpolateEdge(
+		Point{-19.6500015, -3.04999995, 2.44999981},
+		Point{-19.6500015, -2.95000005, 2.44999981},
+		0.5,
+		-0.275501609,
+	)
+	assert.InEpsilon(t, -19.6500015, point[0], kEpsilon)
+	assert.InEpsilon(t, -2.98552561, point[1], kEpsilon)
+	assert.InEpsilon(t, 2.44999981, point[2], kEpsilon)
 }
 
 func TestInterpolateEdgeVertices(t *testing.T) {
@@ -70,13 +60,8 @@ func TestInterpolateEdgeVertices(t *testing.T) {
 	}
 	edgeCoords := [12][3]float64{}
 	interpolateEdgeVertices(&vertexCoords, &vertexSdf, &edgeCoords)
-
-	if !almostEqual(edgeCoords[0][0], 0.0, kEpsilon) {
-		t.Errorf("Expected 0.0, got %f", edgeCoords[0][0])
-	}
-	if !almostEqual(edgeCoords[11][2], 1.70743394, kEpsilon) {
-		t.Errorf("Expected 1.70743394, got %f", edgeCoords[11][2])
-	}
+	assert.Equal(t, 0.0, edgeCoords[0][0])
+	assert.InEpsilon(t, 1.70743394, edgeCoords[11][2], kEpsilon)
 }
 
 func TestMeshCube(t *testing.T) {
@@ -106,27 +91,19 @@ func TestMeshCube(t *testing.T) {
 
 	meshCube(&vertexCoords, &vertexSdf, meshBlock)
 
-	if meshBlock.getVertexCount() != 3 {
-		t.Errorf("Expected 3, got %d", meshBlock.getVertexCount())
-	}
+	assert.Equal(t, 3, meshBlock.getVertexCount())
 
-	if !almostEqual(meshBlock.vertices[0][0], -1.85000002, kEpsilon) ||
-		!almostEqual(meshBlock.vertices[0][1], -4.45000029, kEpsilon) ||
-		!almostEqual(meshBlock.vertices[0][2], 1.5111171, kEpsilon) {
-		t.Errorf("Incorrect coordinates")
-	}
+	assert.InEpsilon(t, -1.85000002, meshBlock.vertices[0][0], kEpsilon)
+	assert.InEpsilon(t, -4.45000029, meshBlock.vertices[0][1], kEpsilon)
+	assert.InEpsilon(t, 1.5111171, meshBlock.vertices[0][2], kEpsilon)
 
-	if !almostEqual(meshBlock.vertices[1][0], -1.79591823, kEpsilon) ||
-		!almostEqual(meshBlock.vertices[1][1], -4.45000029, kEpsilon) ||
-		!almostEqual(meshBlock.vertices[1][2], 1.55000007, kEpsilon) {
-		t.Errorf("Incorrect coordinates")
-	}
+	assert.InEpsilon(t, -1.79591823, meshBlock.vertices[1][0], kEpsilon)
+	assert.InEpsilon(t, -4.45000029, meshBlock.vertices[1][1], kEpsilon)
+	assert.InEpsilon(t, 1.55000007, meshBlock.vertices[1][2], kEpsilon)
 
-	if !almostEqual(meshBlock.vertices[2][0], -1.85000002, kEpsilon) ||
-		!almostEqual(meshBlock.vertices[2][1], -4.49987888, kEpsilon) ||
-		!almostEqual(meshBlock.vertices[2][2], 1.55000007, kEpsilon) {
-		t.Errorf("Incorrect coordinates")
-	}
+	assert.InEpsilon(t, -1.85000002, meshBlock.vertices[2][0], kEpsilon)
+	assert.InEpsilon(t, -4.49987888, meshBlock.vertices[2][1], kEpsilon)
+	assert.InEpsilon(t, 1.55000007, meshBlock.vertices[2][2], kEpsilon)
 
 	vertexCoords = [8][3]float64{
 		{-15.5500002, -0.650000036, 1.85000002},
@@ -151,48 +128,26 @@ func TestMeshCube(t *testing.T) {
 
 	meshCube(&vertexCoords, &vertexSdf, meshBlock)
 
-	if meshBlock.getVertexCount() != 6 {
-		t.Errorf("Expected 6, got %d", meshBlock.getVertexCount())
-	}
+	assert.Equal(t, 6, meshBlock.getVertexCount())
 
-	if !almostEqual(meshBlock.vertices[3][0], -15.5500002, kEpsilon) ||
-		!almostEqual(meshBlock.vertices[3][1], -0.550000012, kEpsilon) ||
-		!almostEqual(meshBlock.vertices[3][2], 1.92335689, kEpsilon) {
-		t.Errorf("Incorrect coordinates")
-	}
+	assert.InEpsilon(t, -15.5500002, meshBlock.vertices[3][0], kEpsilon)
+	assert.InEpsilon(t, -0.550000012, meshBlock.vertices[3][1], kEpsilon)
+	assert.InEpsilon(t, 1.92335689, meshBlock.vertices[3][2], kEpsilon)
 
-	if !almostEqual(meshBlock.vertices[4][0], -15.5233574, kEpsilon) ||
-		!almostEqual(meshBlock.vertices[4][1], -0.550000012, kEpsilon) ||
-		!almostEqual(meshBlock.vertices[4][2], 1.95000005, kEpsilon) {
-		t.Errorf("Incorrect coordinates")
-	}
+	assert.InEpsilon(t, -15.5233574, meshBlock.vertices[4][0], kEpsilon)
+	assert.InEpsilon(t, -0.550000012, meshBlock.vertices[4][1], kEpsilon)
+	assert.InEpsilon(t, 1.95000005, meshBlock.vertices[4][2], kEpsilon)
 
-	if !almostEqual(meshBlock.vertices[5][0], -15.5500002, kEpsilon) ||
-		!almostEqual(meshBlock.vertices[5][1], -0.585834801, kEpsilon) ||
-		!almostEqual(meshBlock.vertices[5][2], 1.95000005, kEpsilon) {
-		t.Errorf("Incorrect coordinates")
-	}
+	assert.InEpsilon(t, -15.5500002, meshBlock.vertices[5][0], kEpsilon)
+	assert.InEpsilon(t, -0.585834801, meshBlock.vertices[5][1], kEpsilon)
+	assert.InEpsilon(t, 1.95000005, meshBlock.vertices[5][2], kEpsilon)
 }
 
 func TestVertexIndex(t *testing.T) {
 	meshBlock := new(MeshBlock)
-	i0 := vertexIndex(meshBlock, Point{0, 0, 0})
-	if i0 != 0 {
-		t.Errorf("Incorrect index")
-	}
-	i0 = vertexIndex(meshBlock, Point{0, 0, 0})
-	if i0 != 0 {
-		t.Errorf("Incorrect index")
-	}
-	i1 := vertexIndex(meshBlock, Point{1, 1, 1})
-	if i1 != 1 {
-		t.Errorf("Incorrect index")
-	}
-	i0 = vertexIndex(meshBlock, Point{0, 0, 0})
-	if i0 != 0 {
-		t.Errorf("Incorrect index")
-	}
-	if len(meshBlock.vertices) != 2 {
-		t.Errorf("Incorrect vertex count")
-	}
+	assert.Equal(t, 0, vertexIndex(meshBlock, Point{0, 0, 0}))
+	assert.Equal(t, 0, vertexIndex(meshBlock, Point{0, 0, 0}))
+	assert.Equal(t, 1, vertexIndex(meshBlock, Point{1, 1, 1}))
+	assert.Equal(t, 0, vertexIndex(meshBlock, Point{0, 0, 0}))
+	assert.Len(t, meshBlock.vertices, 2)
 }

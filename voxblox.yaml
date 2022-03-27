@@ -1,11 +1,13 @@
 ---
+
 # ROS
 ros_master: 127.0.0.1:11311
 topic_pointcloud2: /camera/depth_registered/points
 topic_transform: /kinect/vrpn_client/estimated_transform
+
 # Transform from Vicon to Kinect
-translation: [0.00114049, 0.0450936, 0.0430765]
-rotation: [0.0924132, 0.0976455, 0.0702949, 0.9884249]
+translation: [ 0.00114049, 0.0450936, 0.0430765 ]
+rotation: [ 0.0924132, 0.0976455, 0.0702949, 0.9884249 ]
 
 # TSDF
 voxel_size: 0.05
@@ -19,7 +21,7 @@ weight_constant: false
 weight_dropoff: true
 start_voxel_subsampling_factor: 1.0
 max_consecutive_ray_collisions: 2
-integrator_threads: 12
+integrator_threads: -1 # Thread per core
 
 # Mesh
 use_color: true

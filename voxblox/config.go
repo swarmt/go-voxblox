@@ -1,7 +1,9 @@
 package voxblox
 
 import (
+	"fmt"
 	"io/ioutil"
+	"runtime"
 
 	"github.com/ungerik/go3d/float64/quaternion"
 	"gopkg.in/yaml.v3"
@@ -35,19 +37,54 @@ type Config struct {
 	MinWeight float64 `yaml:"min_weight"`
 }
 
+// ReadConfig reads a yaml config file and returns a Config struct.
 func ReadConfig(filename string) (Config, error) {
 	config := new(Config)
 
-	// Read the file
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return *config, err
 	}
 
-	// parse the bytes to yaml
 	err = yaml.Unmarshal(file, config)
 	if err != nil {
 		return *config, err
+	}
+
+	if config.VoxelSize <= 0 {
+		return *config, fmt.Errorf("voxel size must be positive")
+	}
+
+	if config.VoxelsPerSide <= 0 {
+		return *config, fmt.Errorf("voxels per side must be positive")
+	}
+
+	if config.MinRange < 0 {
+		return *config, fmt.Errorf("min range must be positive")
+	}
+
+	if config.MinRange > config.MaxRange {
+		return *config, fmt.Errorf("max range must be greater than min range")
+	}
+
+	if config.MaxWeight <= 0 {
+		return *config, fmt.Errorf("max weight must be positive")
+	}
+
+	if config.StartVoxelSubsamplingFactor < 1.0 {
+		return *config, fmt.Errorf("start voxel subsampling factor must be 1.0 or greater")
+	}
+
+	if config.MaxConsecutiveRayCollisions <= 0 {
+		return *config, fmt.Errorf("max consecutive ray collisions must be positive")
+	}
+
+	if config.MinWeight < 0 {
+		return *config, fmt.Errorf("min weight must be positive")
+	}
+
+	if config.Threads <= 0 {
+		config.Threads = runtime.NumCPU()
 	}
 
 	return *config, nil

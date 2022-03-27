@@ -1,22 +1,23 @@
 package voxblox
 
-import "testing"
+import (
+	"runtime"
+	"testing"
 
-func TestReadConfig(t *testing.T) {
+	"github.com/stretchr/testify/assert"
+)
+
+func TestReadConfigValid(t *testing.T) {
 	config, err := ReadConfig("../voxblox.yaml")
-	if err != nil {
-		t.Errorf("Error reading config: %v", err)
-	}
-	if config.VoxelSize != 0.05 {
-		t.Errorf("Voxel size should be 0.05, but is %f", config.VoxelSize)
-	}
-	if config.VoxelsPerSide != 16 {
-		t.Errorf("Voxels per side should be 16, but is %d", config.VoxelsPerSide)
-	}
-	if config.MinRange != 0.1 {
-		t.Errorf("Min range should be 0.1, but is %f", config.MinRange)
-	}
-	if config.MaxRange != 5.0 {
-		t.Errorf("Max range should be 5.0, but is %f", config.MaxRange)
-	}
+	assert.Nil(t, err, "Error reading config")
+	assert.Equal(t, 0.05, config.VoxelSize, "voxel size should be 0.05")
+	assert.Equal(t, 16, config.VoxelsPerSide, "voxels per side should be 16")
+	assert.Equal(t, 0.1, config.MinRange, "min range should be 0.1")
+	assert.Equal(t, 5.0, config.MaxRange, "max range should be 5.0")
+	assert.Equal(
+		t,
+		runtime.NumCPU(),
+		config.Threads,
+		"num workers should be equal to number of cores",
+	)
 }

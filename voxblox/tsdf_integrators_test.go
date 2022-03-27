@@ -1,6 +1,7 @@
 package voxblox
 
 import (
+	"github.com/stretchr/testify/assert"
 	"math"
 	"runtime"
 	"testing"
@@ -106,63 +107,28 @@ func TestSimpleIntegratorSingleCloud(t *testing.T) {
 	poseInverse := poses[0].inverse()
 	transformedPointCloud := transformPointCloud(poseInverse, pointCloud)
 
-	// Check transformed point cloud.
-	if !almostEqual(pointCloud.Points[0][0], -2.66666627, 0.001) ||
-		!almostEqual(pointCloud.Points[0][1], 5.28546286, 0.001) ||
-		!almostEqual(pointCloud.Points[0][2], 0.0, 0.001) {
-		t.Errorf("Pointcloud is not correct")
-	}
-	if !almostEqual(transformedPointCloud.Points[0][0], 0.714538097, 0.001) ||
-		!almostEqual(transformedPointCloud.Points[0][1], -2.8530097, 0.001) ||
-		!almostEqual(transformedPointCloud.Points[0][2], -1.72378588, 0.001) {
-		t.Errorf("Transformed pointcloud is not correct")
-	}
+	assert.InEpsilon(t, -2.66666627, pointCloud.Points[0][0], 1e-3)
+	assert.InEpsilon(t, 5.28546286, pointCloud.Points[0][1], 1e-3)
+	assert.Equal(t, 0.0, pointCloud.Points[0][2])
 
 	simpleTsdfIntegrator.IntegratePointCloud(poses[0], transformedPointCloud)
-
-	if tsdfLayer.getBlockCount() != 62 {
-		t.Errorf("Number of allocated blocks is not correct")
-	}
+	assert.Equal(t, 62, tsdfLayer.getBlockCount())
 
 	_, voxel := getBlockAndVoxelFromGlobalVoxelIndex(
 		simpleTsdfIntegrator.Layer,
 		IndexType{0, 60, 20},
 	)
-	if !almostEqual(voxel.getDistance(), 0.4, kEpsilon) {
-		t.Errorf("Wrong distance: %v", voxel.getDistance())
-	}
-	if !almostEqual(voxel.getWeight(), 10000.0, kEpsilon) {
-		t.Errorf("Wrong weight: %v", voxel.getWeight())
-	}
+	assert.InEpsilon(t, 0.4, voxel.getDistance(), kEpsilon)
+	assert.InEpsilon(t, 10000.0, voxel.getWeight(), kEpsilon)
 
 	voxel = tsdfLayer.getBlockByIndex(IndexType{-1, 0, 2}).getVoxel(IndexType{4, 15, 0})
-	if !almostEqual(voxel.getDistance(), -0.122520447, 0.001) {
-		t.Errorf("Wrong distance: %v", voxel.getDistance())
-	}
-	if !almostEqual(voxel.getWeight(), 0.531333983, 0.05) {
-		t.Errorf("Wrong weight: %v", voxel.getWeight())
-	}
+	assert.InEpsilon(t, -0.122520447, voxel.getDistance(), 0.001)
+	assert.InEpsilon(t, 0.531333983, voxel.getWeight(), 0.001)
 
-	// Check every voxel has color
-	for _, block := range tsdfLayer.getBlocks() {
-		for _, voxel := range block.getVoxels() {
-			if math.Abs(voxel.getDistance()) < tsdfLayer.VoxelSize {
-				color := voxel.getColor()
-				if color[0] == 0 && color[1] == 0 && color[2] == 0 {
-					t.Errorf("Wrong color: %v %v", block.Index, voxel.Index)
-				}
-			}
-		}
-	}
-
-	// Generate Mesh.
 	meshLayer := NewMeshLayer(tsdfLayer)
 	meshIntegrator := NewMeshIntegrator(config, tsdfLayer, meshLayer)
 	meshIntegrator.IntegrateMesh()
-
-	if meshLayer.getBlockCount() != tsdfLayer.getBlockCount() {
-		t.Errorf("Number of allocated blocks is not correct")
-	}
+	assert.Equal(t, tsdfLayer.getBlockCount(), meshLayer.getBlockCount())
 }
 
 func TestFastIntegratorSingleCloud(t *testing.T) {
@@ -181,31 +147,12 @@ func TestFastIntegratorSingleCloud(t *testing.T) {
 	transformedPointCloud := transformPointCloud(poseInverse, pointCloud)
 
 	fastTsdfIntegrator.IntegratePointCloud(poses[0], transformedPointCloud)
+	assert.Equal(t, 62, tsdfLayer.getBlockCount())
 
-	if tsdfLayer.getBlockCount() != 62 {
-		t.Errorf("Number of allocated blocks is not correct")
-	}
-
-	// Check every voxel has color
-	for _, block := range tsdfLayer.getBlocks() {
-		for _, voxel := range block.getVoxels() {
-			if math.Abs(voxel.getDistance()) < tsdfLayer.VoxelSize {
-				color := voxel.getColor()
-				if color[0] == 0 && color[1] == 0 && color[2] == 0 {
-					t.Errorf("Wrong color: %v %v", block.Index, voxel.Index)
-				}
-			}
-		}
-	}
-
-	// Generate Mesh.
 	meshLayer := NewMeshLayer(tsdfLayer)
 	meshIntegrator := NewMeshIntegrator(config, tsdfLayer, meshLayer)
 	meshIntegrator.IntegrateMesh()
-
-	if meshLayer.getBlockCount() != tsdfLayer.getBlockCount() {
-		t.Errorf("Number of allocated blocks is not correct")
-	}
+	assert.Equal(t, 62, tsdfLayer.getBlockCount())
 }
 
 func TestTsdfIntegrators(t *testing.T) {
@@ -236,60 +183,29 @@ func TestTsdfIntegrators(t *testing.T) {
 		fastTsdfIntegrator.IntegratePointCloud(pose, transformedPointCloud)
 	}
 
-	// Check the number of blocks in the layers
-	if simpleLayer.getBlockCount() == 0 {
-		t.Errorf("No blocks in simple Layer")
-	}
-
 	// Check a block Origin
 	block01Neg1 := simpleLayer.getBlockByIndex(IndexType{0, 1, -1})
 	origin := block01Neg1.Origin
-	if origin[0] != 0.0 || origin[1] != 1.6 || origin[2] != -1.6 {
-		t.Errorf("Wrong block Origin: %v", origin)
-	}
-
-	// Check every voxel has color
-	for _, block := range simpleLayer.getBlocks() {
-		for _, voxel := range block.getVoxels() {
-			if math.Abs(voxel.getDistance()) < simpleLayer.VoxelSize && voxel.getWeight() > 0.0 {
-				color := voxel.getColor()
-				if color[0] == 0 && color[1] == 0 && color[2] == 0 {
-					t.Errorf("Wrong color: %v %v", block.Index, voxel.Index)
-				}
-			}
-		}
-	}
+	assert.Equal(t, Point{0.0, 1.6, -1.6}, origin)
 
 	// Generate simple layer mesh.
 	simpleMeshLayer := NewMeshLayer(simpleLayer)
 	meshIntegrator := NewMeshIntegrator(config, simpleLayer, simpleMeshLayer)
 	meshIntegrator.IntegrateMesh()
-
-	if simpleMeshLayer.getBlockCount() != simpleLayer.getBlockCount() {
-		t.Errorf("Number of allocated blocks is not correct")
-	}
-
+	assert.Equal(t, simpleLayer.getBlockCount(), simpleMeshLayer.getBlockCount())
 	WriteMeshLayerToObjFiles(simpleMeshLayer, "../output/simple_mesh")
 
 	// Generate merged layer mesh.
 	mergedMeshLayer := NewMeshLayer(mergedLayer)
 	meshIntegrator = NewMeshIntegrator(config, mergedLayer, mergedMeshLayer)
 	meshIntegrator.IntegrateMesh()
-
-	if mergedMeshLayer.getBlockCount() != mergedLayer.getBlockCount() {
-		t.Errorf("Number of allocated blocks is not correct")
-	}
-
+	assert.Equal(t, mergedLayer.getBlockCount(), mergedMeshLayer.getBlockCount())
 	WriteMeshLayerToObjFiles(mergedMeshLayer, "../output/merged_mesh")
 
 	// Generate fast layer mesh.
 	fastMeshLayer := NewMeshLayer(fastLayer)
 	meshIntegrator = NewMeshIntegrator(config, fastLayer, fastMeshLayer)
 	meshIntegrator.IntegrateMesh()
-
-	if fastMeshLayer.getBlockCount() != fastLayer.getBlockCount() {
-		t.Errorf("Number of allocated blocks is not correct")
-	}
-
+	assert.Equal(t, fastLayer.getBlockCount(), fastMeshLayer.getBlockCount())
 	WriteMeshLayerToObjFiles(fastMeshLayer, "../output/fast_mesh")
 }

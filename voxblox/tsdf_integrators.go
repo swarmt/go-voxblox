@@ -240,7 +240,10 @@ func (i *FastTsdfIntegrator) integratePoints(
 		// measure if a start location is 'close' to another points by inserting
 		// the point into a set of voxels. This voxel set has a resolution
 		// start_voxel_subsampling_factor times higher than the voxel size.
-		globalVoxelIndex := getGridIndexFromPoint(ray.Point, i.Config.StartVoxelSubsamplingFactor*i.Layer.VoxelSizeInv)
+		globalVoxelIndex := getGridIndexFromPoint(
+			ray.Point,
+			i.Config.StartVoxelSubsamplingFactor*i.Layer.VoxelSizeInv,
+		)
 
 		// Continue if the voxel is already in the startVoxelApproxSet.
 		if _, ok := startVoxelApproxSet[globalVoxelIndex]; ok {

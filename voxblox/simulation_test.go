@@ -1,6 +1,7 @@
 package voxblox
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 
 	"github.com/ungerik/go3d/float64/quaternion"
@@ -15,21 +16,16 @@ func TestGetPointCloudFromTransform(t *testing.T) {
 	plane := Plane{Center: Point{0.0, 0.0, 0.0}, Normal: vec3.T{0.0, 0.0, 1.0}}
 	world.AddObject(&plane)
 	transform := Transformation{
-		Translation: vec3.T{0.0, 6.0, 2.0},
+		Translation: Point{0.0, 6.0, 2.0},
 		Rotation:    quaternion.T{0.0353406072, -0.0353406072, -0.706223071, 0.706223071},
 	}
-	cameraResolution := vec2.T{320, 240}
-	fovHorizontal := 150.0
-	maxDistance := 100.0
 	pointCloud := world.getPointCloudFromTransform(
 		&transform,
-		cameraResolution,
-		fovHorizontal,
-		maxDistance,
+		vec2.T{320, 240},
+		150.0,
+		100.0,
 	)
-	if !almostEqual(pointCloud.Points[0][0], -2.66666627, 0.001) ||
-		!almostEqual(pointCloud.Points[0][1], 5.28546286, 0.001) ||
-		!almostEqual(pointCloud.Points[0][2], 0.0, 0.001) {
-		t.Errorf("Incorrect point in point cloud: %v", pointCloud.Points[0])
-	}
+	assert.InEpsilon(t, -2.66666627, pointCloud.Points[0][0], 0.001)
+	assert.InEpsilon(t, 5.28546286, pointCloud.Points[0][1], 0.001)
+	assert.Equal(t, 0.0, pointCloud.Points[0][2])
 }

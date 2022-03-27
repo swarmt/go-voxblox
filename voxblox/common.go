@@ -164,9 +164,15 @@ func blendTwoColors(
 	firstWeight /= totalWeight
 	secondWeight /= totalWeight
 
-	newR := uint8(math.Round(float64(firstColor[0])*firstWeight + float64(secondColor[0])*secondWeight))
-	newG := uint8(math.Round(float64(firstColor[1])*firstWeight + float64(secondColor[1])*secondWeight))
-	newB := uint8(math.Round(float64(firstColor[2])*firstWeight + float64(secondColor[2])*secondWeight))
+	newR := uint8(
+		math.Round(float64(firstColor[0])*firstWeight + float64(secondColor[0])*secondWeight),
+	)
+	newG := uint8(
+		math.Round(float64(firstColor[1])*firstWeight + float64(secondColor[1])*secondWeight),
+	)
+	newB := uint8(
+		math.Round(float64(firstColor[2])*firstWeight + float64(secondColor[2])*secondWeight),
+	)
 
 	return Color{newR, newG, newB}
 }

@@ -2,10 +2,11 @@ package main
 
 import (
 	"encoding/binary"
-	"go-voxblox/voxblox"
 	"math"
 	"sync"
 	"time"
+
+	"go-voxblox/voxblox"
 
 	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
 	"github.com/ungerik/go3d/float64/quaternion"
@@ -79,7 +80,8 @@ func (t *TransformQueue) interpolateTransform(
 	var i int
 	found := false
 	for i = 1; i < len(t.transforms); i++ {
-		if t.transforms[i-1].Header.Stamp.Before(timeStamp) && t.transforms[i].Header.Stamp.After(timeStamp) {
+		if t.transforms[i-1].Header.Stamp.Before(timeStamp) &&
+			t.transforms[i].Header.Stamp.After(timeStamp) {
 			found = true
 			break
 		}
@@ -156,7 +158,9 @@ func pointCloud2ToPointCloud(msg *sensor_msgs.PointCloud2) voxblox.PointCloud {
 			p.X = math.Float32frombits(binary.LittleEndian.Uint32(msg.Data[offset : offset+4]))
 			p.Y = math.Float32frombits(binary.LittleEndian.Uint32(msg.Data[offset+4 : offset+8]))
 			p.Z = math.Float32frombits(binary.LittleEndian.Uint32(msg.Data[offset+8 : offset+12]))
-			p.RGB = math.Float32frombits(binary.LittleEndian.Uint32(msg.Data[offset+16 : offset+20]))
+			p.RGB = math.Float32frombits(
+				binary.LittleEndian.Uint32(msg.Data[offset+16 : offset+20]),
+			)
 
 			if !math.IsNaN(float64(p.X)) &&
 				!math.IsNaN(float64(p.Y)) &&

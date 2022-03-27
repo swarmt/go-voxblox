@@ -1,66 +1,40 @@
 package voxblox
 
 import (
+	"github.com/stretchr/testify/assert"
 	"testing"
 
 	"github.com/ungerik/go3d/float64/quaternion"
-	"github.com/ungerik/go3d/float64/vec3"
 )
 
 func TestTransformPoint(t *testing.T) {
 	transformation := Transformation{
-		Translation: vec3.T{0, 6, 2},
+		Translation: Point{0, 6, 2},
 		Rotation:    quaternion.T{0.0353406072, -0.0353406072, -0.706223071, 0.706223071},
 	}
 	point := transformation.transformPoint(Point{0.714538097, -2.8530097, -1.72378588})
-	if !almostEqual(point[0], -2.66666508, 0.0) {
-		t.Errorf("Expected %f, got %f", -2.66666508, point[0])
-	}
-	if !almostEqual(point[1], 5.2854619, 0.0) {
-		t.Errorf("Expected %f, got %f", 5.2854619, point[1])
-	}
-	if !almostEqual(point[2], 1.1920929e-07, 0.0) {
-		t.Errorf("Expected %f, got %f", 1.1920929e-07, point[2])
-	}
+	assert.InEpsilon(t, -2.66666508, point[0], kEpsilon)
+	assert.InEpsilon(t, 5.2854619, point[1], kEpsilon)
+	assert.InEpsilon(t, 0.0000002384665951371545, point[2], kEpsilon)
 
 	transformationInversed := transformation.inverse()
 	point = transformationInversed.transformPoint(point)
-	if !almostEqual(point[0], 0.714538097, kEpsilon) {
-		t.Errorf("Expected %f, got %f", 0.714538097, point[0])
-	}
-	if !almostEqual(point[1], -2.8530097, kEpsilon) {
-		t.Errorf("Expected %f, got %f", -2.8530097, point[1])
-	}
-	if !almostEqual(point[2], -1.72378588, kEpsilon) {
-		t.Errorf("Expected %f, got %f", -1.72378588, point[2])
-	}
+	assert.InEpsilon(t, 0.714538097, point[0], kEpsilon)
+	assert.InEpsilon(t, -2.8530097, point[1], kEpsilon)
+	assert.InEpsilon(t, -1.72378588, point[2], kEpsilon)
 }
 
 func TestInverseTransform(t *testing.T) {
 	transformation := Transformation{
-		Translation: vec3.T{0, 6, 2},
+		Translation: Point{0, 6, 2},
 		Rotation:    quaternion.T{0.0353406072, -0.0353406072, -0.706223071, 0.706223071},
 	}
 	inverse := transformation.inverse()
-	if inverse.Rotation[0] != -0.0353406072 {
-		t.Errorf("Expected %f, got %f", -0.0353406072, inverse.Rotation[0])
-	}
-	if inverse.Rotation[1] != 0.0353406072 {
-		t.Errorf("Expected %f, got %f", 0.0353406072, inverse.Rotation[1])
-	}
-	if inverse.Rotation[2] != 0.706223071 {
-		t.Errorf("Expected %f, got %f", 0.706223071, inverse.Rotation[2])
-	}
-	if inverse.Rotation[3] != 0.706223071 {
-		t.Errorf("Expected %f, got %f", -0.706223071, inverse.Rotation[3])
-	}
-	if !almostEqual(inverse.Translation[0], 6.0, 0.001) {
-		t.Errorf("Expected %f, got %f", 6.0, inverse.Translation[0])
-	}
-	if !almostEqual(inverse.Translation[1], -0.2, 0.001) {
-		t.Errorf("Expected %f, got %f", -0.2, inverse.Translation[1])
-	}
-	if !almostEqual(inverse.Translation[2], -2.0, 0.01) {
-		t.Errorf("Expected %f, got %f", -2.0, inverse.Translation[2])
-	}
+	assert.Equal(t, -0.0353406072, inverse.Rotation[0])
+	assert.Equal(t, 0.0353406072, inverse.Rotation[1])
+	assert.Equal(t, 0.706223071, inverse.Rotation[2])
+	assert.Equal(t, 0.706223071, inverse.Rotation[3])
+	assert.InEpsilon(t, 6, inverse.Translation[0], 0.002)
+	assert.InEpsilon(t, -0.2, inverse.Translation[1], 0.002)
+	assert.InEpsilon(t, -2, inverse.Translation[2], 0.005)
 }
