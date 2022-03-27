@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/stretchr/testify/assert"
+	"go-voxblox/voxblox"
 	"os"
 	"testing"
 
-	"go-voxblox/voxblox"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
 	"github.com/aler9/goroslib/pkg/msgs/std_msgs"

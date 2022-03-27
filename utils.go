@@ -2,11 +2,10 @@ package main
 
 import (
 	"encoding/binary"
+	"go-voxblox/voxblox"
 	"math"
 	"sync"
 	"time"
-
-	"go-voxblox/voxblox"
 
 	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
 	"github.com/ungerik/go3d/float64/quaternion"
