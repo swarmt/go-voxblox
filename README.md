@@ -1,5 +1,7 @@
 go-voxblox
 ---
+[![Go](https://github.com/swarmt/go-voxblox/actions/workflows/go.yml/badge.svg)](https://github.com/swarmt/go-voxblox/actions/workflows/go.yml)
+---
 
 A Go implementation of [Voxblox](https://github.com/ethz-asl/voxblox)
 

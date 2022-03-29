@@ -16,7 +16,7 @@ import (
 func onPointCloud2(
 	msg *sensor_msgs.PointCloud2,
 	tsdfIntegrator voxblox.TsdfIntegrator,
-	tf *TransformQueue,
+	tf *TransformListener,
 ) {
 	transform, err := tf.LookupTransform(msg.Header.Stamp)
 	if err != nil {
@@ -44,7 +44,7 @@ func main() {
 	defer n.Close()
 
 	// Transformer
-	tf := NewTransformQueue(voxblox.Transform{
+	tfListener := NewTransformListener(voxblox.Transform{
 		Rotation:    config.Rotation,
 		Translation: config.Translation,
 	})
@@ -60,7 +60,7 @@ func main() {
 		Node:  n,
 		Topic: config.TopicPointCloud2,
 		Callback: func(msg *sensor_msgs.PointCloud2) {
-			onPointCloud2(msg, tsdfIntegrator, tf)
+			onPointCloud2(msg, tsdfIntegrator, tfListener)
 		},
 	})
 	if err != nil {
@@ -73,7 +73,7 @@ func main() {
 		Node:  n,
 		Topic: config.TopicTransform,
 		Callback: func(msg *geometry_msgs.TransformStamped) {
-			tf.addTransform(msg)
+			tfListener.addTransform(msg)
 		},
 	})
 	if err != nil {

@@ -30,36 +30,36 @@ func TransformStampedToTransform(msg *geometry_msgs.TransformStamped) *voxblox.T
 	}
 }
 
-// TransformQueue is a queue of goroslib TransformStamped messages
-type TransformQueue struct {
+// TransformListener is a queue of goroslib TransformStamped messages
+type TransformListener struct {
 	StaticTransform voxblox.Transform
 	sync.Mutex
 	transforms []*geometry_msgs.TransformStamped
 }
 
-// NewTransformQueue returns a new TransformQueue.
-func NewTransformQueue(staticTransform voxblox.Transform) *TransformQueue {
-	return &TransformQueue{
+// NewTransformListener returns a new TransformListener.
+func NewTransformListener(staticTransform voxblox.Transform) *TransformListener {
+	return &TransformListener{
 		StaticTransform: staticTransform,
 	}
 }
 
-// addTransform adds a transform to the TransformQueue.
-func (t *TransformQueue) addTransform(transform *geometry_msgs.TransformStamped) {
+// addTransform adds a transform to the TransformListener.
+func (t *TransformListener) addTransform(transform *geometry_msgs.TransformStamped) {
 	t.Lock()
 	defer t.Unlock()
 	t.transforms = append(t.transforms, transform)
 }
 
 // removePreviousTransforms removes transforms older than the given timestamp.
-func (t *TransformQueue) removePreviousTransforms(timestamp time.Time) {
+func (t *TransformListener) removePreviousTransforms(timestamp time.Time) {
 	for len(t.transforms) > 0 && t.transforms[0].Header.Stamp.Before(timestamp) {
 		t.transforms = t.transforms[1:]
 	}
 }
 
-// LookupTransform interpolates a transform from the TransformQueue given a timestamp.
-func (t *TransformQueue) LookupTransform(
+// LookupTransform interpolates a transform from the TransformListener given a timestamp.
+func (t *TransformListener) LookupTransform(
 	timeStamp time.Time,
 ) (*voxblox.Transform, error) {
 	t.Lock()
@@ -118,7 +118,7 @@ func float32ToRGB(f float32) voxblox.Color {
 	return voxblox.Color{r, g, b}
 }
 
-type XYZRGB struct {
+type xyzrgb struct {
 	X, Y, Z float32
 	_       float32
 	RGB     float32
@@ -136,7 +136,7 @@ func PointCloud2ToPointCloud(msg *sensor_msgs.PointCloud2) voxblox.PointCloud {
 	for v := 0; v < int(msg.Height); v++ {
 		offset := int(msg.RowStep) * v
 		for u := 0; u < int(msg.Width); u++ {
-			var p XYZRGB
+			var p xyzrgb
 			p.X = math.Float32frombits(binary.LittleEndian.Uint32(msg.Data[offset : offset+4]))
 			p.Y = math.Float32frombits(binary.LittleEndian.Uint32(msg.Data[offset+4 : offset+8]))
 			p.Z = math.Float32frombits(binary.LittleEndian.Uint32(msg.Data[offset+8 : offset+12]))

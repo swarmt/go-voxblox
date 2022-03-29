@@ -17,13 +17,11 @@ func WriteMeshLayerToObjFiles(layer *MeshLayer, folderName string) {
 			continue
 		}
 
-		// Create a new file with the block index as the name
 		fileName := fmt.Sprintf("%s/%s.obj", folderName, block)
 		file, _ := os.Create(fileName)
 
 		block.RLock()
 		for i, vertex := range block.vertices {
-			// Write the voxel to the file
 			fmt.Fprintf(
 				file,
 				"v %f %f %f %d %d %d\n",
@@ -36,7 +34,6 @@ func WriteMeshLayerToObjFiles(layer *MeshLayer, folderName string) {
 			)
 		}
 		for _, triangle := range block.triangles {
-			// Write the voxel to the file
 			fmt.Fprintf(
 				file,
 				"f %d %d %d\n",
