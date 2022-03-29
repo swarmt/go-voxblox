@@ -7,7 +7,7 @@ import (
 
 // TsdfIntegrator is an interface for the TSDF integrator types.
 type TsdfIntegrator interface {
-	IntegratePointCloud(pose Transformation, cloud PointCloud)
+	IntegratePointCloud(pose Transform, cloud PointCloud)
 }
 
 // SimpleTsdfIntegrator is a slow but accurate TSDF integrator.
@@ -27,7 +27,7 @@ func NewSimpleTsdfIntegrator(config *Config, layer *TsdfLayer) *SimpleTsdfIntegr
 
 // IntegratePointCloud integrates a point cloud into the TSDF Layer.
 func (i *SimpleTsdfIntegrator) IntegratePointCloud(
-	pose Transformation,
+	pose Transform,
 	pointCloud PointCloud,
 ) {
 	defer TimeTrack(time.Now(), "Integrate Simple")
@@ -41,7 +41,7 @@ func (i *SimpleTsdfIntegrator) IntegratePointCloud(
 }
 
 func (i *SimpleTsdfIntegrator) integratePoints(
-	pose Transformation,
+	pose Transform,
 	pointCloud PointCloud,
 	wg *sync.WaitGroup,
 ) {
@@ -111,7 +111,7 @@ func bundleRays(voxelSizeInv float64, pointCloud PointCloud) map[IndexType]int {
 
 // IntegratePointCloud integrates a point cloud into the TSDF Layer.
 func (i *MergedTsdfIntegrator) IntegratePointCloud(
-	pose Transformation,
+	pose Transform,
 	pointCloud PointCloud,
 ) {
 	defer TimeTrack(time.Now(), "Integrate Merged")
@@ -143,7 +143,7 @@ func (i *MergedTsdfIntegrator) IntegratePointCloud(
 }
 
 func (i *MergedTsdfIntegrator) integratePoints(
-	pose Transformation,
+	pose Transform,
 	pointCloud PointCloud,
 	wg *sync.WaitGroup,
 ) {
@@ -204,7 +204,7 @@ func NewFastTsdfIntegrator(config *Config, layer *TsdfLayer) *FastTsdfIntegrator
 
 // IntegratePointCloud integrates a point cloud into the TSDF Layer.
 func (i *FastTsdfIntegrator) IntegratePointCloud(
-	pose Transformation,
+	pose Transform,
 	pointCloud PointCloud,
 ) {
 	defer TimeTrack(time.Now(), "Integrate Fast")
@@ -218,7 +218,7 @@ func (i *FastTsdfIntegrator) IntegratePointCloud(
 }
 
 func (i *FastTsdfIntegrator) integratePoints(
-	pose Transformation,
+	pose Transform,
 	pointCloud PointCloud,
 	wg *sync.WaitGroup,
 ) {

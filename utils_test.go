@@ -72,7 +72,7 @@ func TestPointCloud2ToPointCloud(t *testing.T) {
 	assert.Len(t, data, int(pointCloud2.RowStep*pointCloud2.Height))
 
 	pointCloud2.Data = data
-	pointCloud := pointCloud2ToPointCloud(&pointCloud2)
+	pointCloud := PointCloud2ToPointCloud(&pointCloud2)
 	assert.Len(t, pointCloud.Points, 148284)
 	assert.Equal(t, voxblox.Point{-0.843722939491272, -0.6124486327171326, 1.499000072479248}, pointCloud.Points[0])
 	assert.Equal(t, voxblox.Color{65, 69, 69}, pointCloud.Colors[0])

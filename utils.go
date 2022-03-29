@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/binary"
+	"fmt"
 	"go-voxblox/voxblox"
 	"math"
 	"sync"
@@ -13,39 +14,31 @@ import (
 	"github.com/aler9/goroslib/pkg/msgs/geometry_msgs"
 )
 
-// transformToQuaternion converts a goroslib TransformStamped to a voxblox Quaternion
-func transformToQuaternion(msg *geometry_msgs.TransformStamped) quaternion.T {
-	return quaternion.T{
-		msg.Transform.Rotation.X,
-		msg.Transform.Rotation.Y,
-		msg.Transform.Rotation.Z,
-		msg.Transform.Rotation.W,
-	}
-}
-
-// vector3ToPoint converts a goroslib Vector3 to a voxblox Point
-func vector3ToPoint(msg *geometry_msgs.Vector3) voxblox.Point {
-	return voxblox.Point{msg.X, msg.Y, msg.Z}
-}
-
-// interpolatePoints interpolates between two Points
-func interpolatePoints(p1, p2 voxblox.Point, f float64) voxblox.Point {
-	return voxblox.Point{
-		p1[0] + (p2[0]-p1[0])*f,
-		p1[1] + (p2[1]-p1[1])*f,
-		p1[2] + (p2[2]-p1[2])*f,
+func TransformStampedToTransform(msg *geometry_msgs.TransformStamped) *voxblox.Transform {
+	return &voxblox.Transform{
+		Translation: voxblox.Point{
+			msg.Transform.Translation.X,
+			msg.Transform.Translation.Y,
+			msg.Transform.Translation.Z,
+		},
+		Rotation: quaternion.T{
+			msg.Transform.Rotation.X,
+			msg.Transform.Rotation.Y,
+			msg.Transform.Rotation.Z,
+			msg.Transform.Rotation.W,
+		},
 	}
 }
 
 // TransformQueue is a queue of goroslib TransformStamped messages
 type TransformQueue struct {
-	StaticTransform voxblox.Transformation
+	StaticTransform voxblox.Transform
 	sync.Mutex
 	transforms []*geometry_msgs.TransformStamped
 }
 
 // NewTransformQueue returns a new TransformQueue.
-func NewTransformQueue(staticTransform voxblox.Transformation) *TransformQueue {
+func NewTransformQueue(staticTransform voxblox.Transform) *TransformQueue {
 	return &TransformQueue{
 		StaticTransform: staticTransform,
 	}
@@ -58,21 +51,23 @@ func (t *TransformQueue) addTransform(transform *geometry_msgs.TransformStamped)
 	t.transforms = append(t.transforms, transform)
 }
 
-// interpolateTransform interpolates a transform from the TransformQueue given a timestamp.
-func (t *TransformQueue) interpolateTransform(
+// removePreviousTransforms removes transforms older than the given timestamp.
+func (t *TransformQueue) removePreviousTransforms(timestamp time.Time) {
+	for len(t.transforms) > 0 && t.transforms[0].Header.Stamp.Before(timestamp) {
+		t.transforms = t.transforms[1:]
+	}
+}
+
+// LookupTransform interpolates a transform from the TransformQueue given a timestamp.
+func (t *TransformQueue) LookupTransform(
 	timeStamp time.Time,
-) *voxblox.Transformation {
+) (*voxblox.Transform, error) {
 	t.Lock()
 	defer t.Unlock()
 
 	// If there are no transforms, return nil.
 	if len(t.transforms) == 0 {
-		return nil
-	}
-
-	// If the timeStamp is before the first t0, return false.
-	if timeStamp.Before(t.transforms[0].Header.Stamp) {
-		return nil
+		return nil, fmt.Errorf("no transforms in queue")
 	}
 
 	// Get the t0 before and after the timeStamp.
@@ -87,41 +82,30 @@ func (t *TransformQueue) interpolateTransform(
 	}
 
 	if !found {
-		return nil
+		return nil, fmt.Errorf("no transform before and after timestamp")
 	}
 
 	// Check that the timestamp is not more than 100ms from either the previous or next t0
 	if t.transforms[i-1].Header.Stamp.Add(100*time.Millisecond).Before(timeStamp) ||
 		t.transforms[i].Header.Stamp.Add(-100*time.Millisecond).After(timeStamp) {
-		return nil
+		return nil, fmt.Errorf("timestamp too far from t0 and t1")
 	}
 
-	ts0 := t.transforms[i-1].Header.Stamp
-	q0 := transformToQuaternion(t.transforms[i-1])
-	p0 := vector3ToPoint(&t.transforms[i-1].Transform.Translation)
-	ts1 := t.transforms[i].Header.Stamp
-	q1 := transformToQuaternion(t.transforms[i])
-	p1 := vector3ToPoint(&t.transforms[i].Transform.Translation)
-	tsd := ts1.Sub(ts0)
+	// Calculate the interpolation factor.
+	tsLower := t.transforms[i-1].Header.Stamp
+	tsUpper := t.transforms[i].Header.Stamp
+	tsDelta := tsUpper.Sub(tsLower)
+	f := float64(timeStamp.Sub(tsLower)) / float64(tsDelta)
 
-	// Get the interpolation factor.
-	f := float64(timeStamp.Sub(ts0)) / float64(tsd)
+	t0 := voxblox.InterpolateTransform(
+		*TransformStampedToTransform(t.transforms[i-1]),
+		*TransformStampedToTransform(t.transforms[i]),
+		f,
+	)
+	t1 := voxblox.ApplyTransform(&t0, &t.StaticTransform)
+	t.removePreviousTransforms(timeStamp)
 
-	t0 := voxblox.Transformation{}
-
-	// Interpolate the transformation.
-	t0.Rotation = quaternion.Slerp(&q0, &q1, f)
-	t0.Translation = interpolatePoints(p0, p1, f)
-
-	// Apply the static transformation.
-	t1 := voxblox.CombineTransformations(&t0, &t.StaticTransform)
-
-	// Remove all the transforms that are older than the timeStamp.
-	for len(t.transforms) > 0 && t.transforms[0].Header.Stamp.Before(timeStamp) {
-		t.transforms = t.transforms[1:]
-	}
-
-	return &t1
+	return &t1, nil
 }
 
 // float32ToRGB converts a PCL float32 color to uint8 RGB
@@ -140,16 +124,15 @@ type XYZRGB struct {
 	RGB     float32
 }
 
-// pointCloud2ToPointCloud converts a goroslib PointCloud2 to a voxblox PointCloud without reflection
-func pointCloud2ToPointCloud(msg *sensor_msgs.PointCloud2) voxblox.PointCloud {
+// PointCloud2ToPointCloud converts a goroslib PointCloud2 to a voxblox PointCloud
+// TODO: Make this dynamic based on the message fields.
+func PointCloud2ToPointCloud(msg *sensor_msgs.PointCloud2) voxblox.PointCloud {
 	defer voxblox.TimeTrack(time.Now(), "Convert PointCloud2")
 
-	// Unpacks a PointCloud2 message into a voxblox PointCloud.
 	pointCloud := voxblox.PointCloud{}
 	pointCloud.Points = make([]voxblox.Point, 0, int(msg.Width)*int(msg.Height))
 	pointCloud.Colors = make([]voxblox.Color, 0, int(msg.Width)*int(msg.Height))
 
-	// TODO: Make this dynamic based on the message fields.
 	for v := 0; v < int(msg.Height); v++ {
 		offset := int(msg.RowStep) * v
 		for u := 0; u < int(msg.Width); u++ {

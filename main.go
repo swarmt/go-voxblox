@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"go-voxblox/voxblox"
+	"log"
 	"os"
 	"os/signal"
 
@@ -12,21 +12,18 @@ import (
 )
 
 // onPointCloud2 is called when a PointCloud2 message is received.
+// Converts the message to a Voxblox PointCloud and integrates it.
 func onPointCloud2(
 	msg *sensor_msgs.PointCloud2,
 	tsdfIntegrator voxblox.TsdfIntegrator,
 	tf *TransformQueue,
 ) {
-	transform := tf.interpolateTransform(msg.Header.Stamp)
-	if transform == nil {
-		fmt.Println("No transform")
+	transform, err := tf.LookupTransform(msg.Header.Stamp)
+	if err != nil {
+		log.Println(err)
 		return
 	}
-
-	// Convert goroslib point cloud to voxblox point cloud
-	voxbloxPointCloud := pointCloud2ToPointCloud(msg)
-
-	// Integrate
+	voxbloxPointCloud := PointCloud2ToPointCloud(msg)
 	tsdfIntegrator.IntegratePointCloud(*transform, voxbloxPointCloud)
 }
 
@@ -46,21 +43,19 @@ func main() {
 	}
 	defer n.Close()
 
-	// Transformer.
-	staticTransform := voxblox.Transformation{
+	// Transformer
+	tf := NewTransformQueue(voxblox.Transform{
 		Rotation:    config.Rotation,
 		Translation: config.Translation,
-	}
-	tf := NewTransformQueue(staticTransform)
+	})
 
-	// Create integrators
+	// Integrators
 	tsdfLayer := voxblox.NewTsdfLayer(config.VoxelSize, config.VoxelsPerSide)
 	tsdfIntegrator := voxblox.NewFastTsdfIntegrator(&config, tsdfLayer)
-
 	meshLayer := voxblox.NewMeshLayer(tsdfLayer)
 	meshIntegrator := voxblox.NewMeshIntegrator(config, tsdfLayer, meshLayer)
 
-	// Create a PointCloud2 subscriber
+	// PointCloud2 subscriber
 	sub, err := goroslib.NewSubscriber(goroslib.SubscriberConf{
 		Node:  n,
 		Topic: config.TopicPointCloud2,
@@ -73,7 +68,7 @@ func main() {
 	}
 	defer sub.Close()
 
-	// Create a Transform subscriber
+	// Transform subscriber
 	sub, err = goroslib.NewSubscriber(goroslib.SubscriberConf{
 		Node:  n,
 		Topic: config.TopicTransform,
@@ -91,7 +86,7 @@ func main() {
 	signal.Notify(c, os.Interrupt)
 	<-c
 
-	// TODO: This is temporary. Should be a service.
-	meshIntegrator.IntegrateMesh()
+	// TODO: This is temporary.
+	meshIntegrator.Integrate()
 	voxblox.WriteMeshLayerToObjFiles(meshLayer, "output/cow_lady")
 }

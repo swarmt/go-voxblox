@@ -244,7 +244,7 @@ func (i *MeshIntegrator) updateMeshColorForBlock(tsdfBlock *TsdfBlock) {
 	}
 }
 
-func (i *MeshIntegrator) IntegrateMesh() {
+func (i *MeshIntegrator) Integrate() {
 	defer TimeTrack(time.Now(), "Integrate Mesh")
 
 	wg := sync.WaitGroup{}

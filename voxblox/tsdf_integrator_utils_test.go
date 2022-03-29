@@ -39,7 +39,7 @@ func TestRayCaster(t *testing.T) {
 	point := Point{0.714538097, -2.8530097, -1.72378588}
 	var ray Ray
 	validateRay(&ray, point, 0.1, 5, true)
-	pose := Transformation{
+	pose := Transform{
 		Translation: Point{0, 6, 2},
 		Rotation:    quaternion.T{0.0353406072, -0.0353406072, -0.706223071, 0.706223071},
 	}

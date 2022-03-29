@@ -81,7 +81,7 @@ func (w *SimulationWorld) getPointCloudFromViewpoint(
 }
 
 func (w *SimulationWorld) getPointCloudFromTransform(
-	pose *Transformation,
+	pose *Transform,
 	cameraRes vec2.T,
 	fovH float64,
 	maxDistance float64,

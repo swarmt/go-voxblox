@@ -9,7 +9,7 @@ import (
 )
 
 func TestTransformPoint(t *testing.T) {
-	transformation := Transformation{
+	transformation := Transform{
 		Translation: Point{0, 6, 2},
 		Rotation:    quaternion.T{0.0353406072, -0.0353406072, -0.706223071, 0.706223071},
 	}
@@ -26,7 +26,7 @@ func TestTransformPoint(t *testing.T) {
 }
 
 func TestInverseTransform(t *testing.T) {
-	transformation := Transformation{
+	transformation := Transform{
 		Translation: Point{0, 6, 2},
 		Rotation:    quaternion.T{0.0353406072, -0.0353406072, -0.706223071, 0.706223071},
 	}

@@ -14,7 +14,7 @@ import (
 
 var (
 	world            *SimulationWorld
-	poses            []Transformation
+	poses            []Transform
 	cameraResolution vec2.T
 	fovHorizontal    float64
 	maxDistance      float64
@@ -70,7 +70,7 @@ func init() {
 	numPoses := 50
 	maxAngle := 2.0 * math.Pi
 	angleIncrement := maxAngle / float64(numPoses)
-	poses = []Transformation{}
+	poses = []Transform{}
 	for angle := 0.0; angle < maxAngle; angle += angleIncrement {
 		position := Point{
 			radius * math.Sin(angle),
@@ -85,7 +85,7 @@ func init() {
 		qY := quaternion.FromYAxisAngle(-0.1)
 		qZ := quaternion.FromZAxisAngle(desiredYaw)
 		q := quaternion.Mul(&qY, &qZ)
-		transform := Transformation{
+		transform := Transform{
 			Translation: position,
 			Rotation:    q,
 		}
@@ -128,7 +128,7 @@ func TestSimpleIntegratorSingleCloud(t *testing.T) {
 
 	meshLayer := NewMeshLayer(tsdfLayer)
 	meshIntegrator := NewMeshIntegrator(config, tsdfLayer, meshLayer)
-	meshIntegrator.IntegrateMesh()
+	meshIntegrator.Integrate()
 	assert.Equal(t, tsdfLayer.getBlockCount(), meshLayer.getBlockCount())
 }
 
@@ -152,7 +152,7 @@ func TestFastIntegratorSingleCloud(t *testing.T) {
 
 	meshLayer := NewMeshLayer(tsdfLayer)
 	meshIntegrator := NewMeshIntegrator(config, tsdfLayer, meshLayer)
-	meshIntegrator.IntegrateMesh()
+	meshIntegrator.Integrate()
 	assert.Equal(t, 62, tsdfLayer.getBlockCount())
 }
 
@@ -192,21 +192,21 @@ func TestTsdfIntegrators(t *testing.T) {
 	// Generate simple layer mesh.
 	simpleMeshLayer := NewMeshLayer(simpleLayer)
 	meshIntegrator := NewMeshIntegrator(config, simpleLayer, simpleMeshLayer)
-	meshIntegrator.IntegrateMesh()
+	meshIntegrator.Integrate()
 	assert.Equal(t, simpleLayer.getBlockCount(), simpleMeshLayer.getBlockCount())
 	WriteMeshLayerToObjFiles(simpleMeshLayer, "../output/simple_mesh")
 
 	// Generate merged layer mesh.
 	mergedMeshLayer := NewMeshLayer(mergedLayer)
 	meshIntegrator = NewMeshIntegrator(config, mergedLayer, mergedMeshLayer)
-	meshIntegrator.IntegrateMesh()
+	meshIntegrator.Integrate()
 	assert.Equal(t, mergedLayer.getBlockCount(), mergedMeshLayer.getBlockCount())
 	WriteMeshLayerToObjFiles(mergedMeshLayer, "../output/merged_mesh")
 
 	// Generate fast layer mesh.
 	fastMeshLayer := NewMeshLayer(fastLayer)
 	meshIntegrator = NewMeshIntegrator(config, fastLayer, fastMeshLayer)
-	meshIntegrator.IntegrateMesh()
+	meshIntegrator.Integrate()
 	assert.Equal(t, fastLayer.getBlockCount(), fastMeshLayer.getBlockCount())
 	WriteMeshLayerToObjFiles(fastMeshLayer, "../output/fast_mesh")
 }
