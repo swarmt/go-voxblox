@@ -3,9 +3,10 @@ package voxblox
 import (
 	"bytes"
 	"fmt"
+	"sync"
+
 	"github.com/qmuntal/gltf"
 	"github.com/qmuntal/gltf/modeler"
-	"sync"
 )
 
 type MeshBlock struct {
