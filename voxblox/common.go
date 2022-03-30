@@ -1,7 +1,6 @@
 package voxblox
 
 import (
-	"fmt"
 	"log"
 	"math"
 	"time"
@@ -13,10 +12,6 @@ import (
 const kEpsilon = 1e-6 // Used for coordinates
 
 type IndexType = [3]int
-
-func indexToString(index IndexType) string {
-	return fmt.Sprintf("[%d, %d, %d]", index[0], index[1], index[2])
-}
 
 // Color RGBA
 type Color = [3]uint8

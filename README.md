@@ -34,6 +34,13 @@ Note: This needs to be decompressed to run real time with ```rosbag decompress``
 
 ![Cow and Lady Dataset](.readme/cow-and-lady.png)
 
+## Generate protobuf and gRPC files
+```bash
+protoc --go_out=. --go_opt=paths=source_relative \
+--go-grpc_out=. --go-grpc_opt=paths=source_relative \
+proto/mesh_service.proto 
+```
+
 ## TODO
 
 * Merged integrator weights and speed

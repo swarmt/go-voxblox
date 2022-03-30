@@ -51,9 +51,9 @@ func (l *TsdfLayer) getUpdatedBlocks() map[IndexType]*TsdfBlock {
 	return updatedBlocks
 }
 
-// getBlockCount returns the number of blocks allocated in the map
+// GetBlockCount returns the number of blocks allocated in the map
 // Thread-safe.
-func (l *TsdfLayer) getBlockCount() int {
+func (l *TsdfLayer) GetBlockCount() int {
 	l.RLock()
 	defer l.RUnlock()
 	return len(l.blocks)

@@ -67,13 +67,17 @@ func TestPointCloud2ToPointCloud(t *testing.T) {
 	}
 
 	// Read the PointCloud2 data from the test file
-	data, err := os.ReadFile("test_data/PointCloud2.bin")
+	data, err := os.ReadFile("testdata/PointCloud2.bin")
 	assert.NoError(t, err)
 	assert.Len(t, data, int(pointCloud2.RowStep*pointCloud2.Height))
 
 	pointCloud2.Data = data
 	pointCloud := PointCloud2ToPointCloud(&pointCloud2)
 	assert.Len(t, pointCloud.Points, 148284)
-	assert.Equal(t, voxblox.Point{-0.843722939491272, -0.6124486327171326, 1.499000072479248}, pointCloud.Points[0])
+	assert.Equal(
+		t,
+		voxblox.Point{-0.843722939491272, -0.6124486327171326, 1.499000072479248},
+		pointCloud.Points[0],
+	)
 	assert.Equal(t, voxblox.Color{65, 69, 69}, pointCloud.Colors[0])
 }

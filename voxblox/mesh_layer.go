@@ -33,16 +33,15 @@ func (l *MeshLayer) getBlockCount() int {
 	return len(l.blocks)
 }
 
-// getBlocks returns a copy of the map of blocks
+// GetBlocks returns the blocks in the map
 // Thread-safe.
-func (l *MeshLayer) getBlocks() map[IndexType]*MeshBlock {
+func (l *MeshLayer) GetBlocks() map[IndexType]*MeshBlock {
 	l.RLock()
 	defer l.RUnlock()
 	return l.blocks
 }
 
 // getBlockByIndex allocates a new block in the map or returns an existing one
-// TODO: Would this be better as an interface shared by TsdfLayer?
 func (l *MeshLayer) getBlockByIndex(blockIndex IndexType) *MeshBlock {
 	// Test if block already exists
 	l.RLock()

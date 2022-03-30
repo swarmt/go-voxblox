@@ -12,7 +12,7 @@ func WriteMeshLayerToObjFiles(layer *MeshLayer, folderName string) {
 		os.Mkdir(folderName, 0o755)
 	}
 
-	for _, block := range layer.getBlocks() {
+	for _, block := range layer.GetBlocks() {
 		if block.getVertexCount() == 0 {
 			continue
 		}

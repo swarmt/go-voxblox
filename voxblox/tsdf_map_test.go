@@ -8,16 +8,16 @@ import (
 
 func TestTsdfMapBlockAllocation(t *testing.T) {
 	tsdfLayer := NewTsdfLayer(0.1, 8)
-	assert.Equal(t, 0, tsdfLayer.getBlockCount())
+	assert.Equal(t, 0, tsdfLayer.GetBlockCount())
 
 	tsdfLayer.getBlockByCoordinates(Point{0, 0.15, 0})
-	assert.Equal(t, 1, tsdfLayer.getBlockCount())
+	assert.Equal(t, 1, tsdfLayer.GetBlockCount())
 
 	tsdfLayer.getBlockByCoordinates(Point{0, 0.13, 0})
-	assert.Equal(t, 1, tsdfLayer.getBlockCount())
+	assert.Equal(t, 1, tsdfLayer.GetBlockCount())
 
 	tsdfLayer.getBlockByCoordinates(Point{-10.0, 13.5, 20.0})
-	assert.Equal(t, 2, tsdfLayer.getBlockCount())
+	assert.Equal(t, 2, tsdfLayer.GetBlockCount())
 }
 
 func TestTsdfMapIndexLookups(t *testing.T) {
@@ -66,7 +66,11 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 	blockNeg111 := tsdfLayer.getBlockByCoordinates(pointInNeg111)
 	assert.NotNil(t, blockNeg111)
 	indexNeg111 := IndexType{-1, -1, -1}
-	assert.Equal(t, indexNeg111, getBlockIndexFromCoordinates(pointInNeg111, tsdfLayer.BlockSizeInv))
+	assert.Equal(
+		t,
+		indexNeg111,
+		getBlockIndexFromCoordinates(pointInNeg111, tsdfLayer.BlockSizeInv),
+	)
 	assert.Equal(t, Point{-blockSize, -blockSize, -blockSize}, blockNeg111.Origin)
 	assert.Equal(t, blockSize, blockNeg111.BlockSize)
 
@@ -74,7 +78,11 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 	pointInNeg111v2 := Point{-blockSize, -blockSize + tsdfLayer.VoxelSize, -blockSize}
 	blockNeg111v2 := tsdfLayer.getBlockByCoordinates(pointInNeg111v2)
 	assert.NotNil(t, blockNeg111v2)
-	assert.Equal(t, indexNeg111, getBlockIndexFromCoordinates(pointInNeg111v2, tsdfLayer.BlockSizeInv))
+	assert.Equal(
+		t,
+		indexNeg111,
+		getBlockIndexFromCoordinates(pointInNeg111v2, tsdfLayer.BlockSizeInv),
+	)
 	assert.Equal(t, blockNeg111, blockNeg111v2)
 	assert.Equal(t, Point{-blockSize, -blockSize, -blockSize}, blockNeg111v2.Origin)
 	assert.Equal(t, blockSize, blockNeg111v2.BlockSize)
@@ -152,7 +160,11 @@ func TestTsdfMapIndexLookups(t *testing.T) {
 	}
 	blockNeg1Neg1Pos0 := tsdfLayer.getBlockByCoordinates(pointInNeg110)
 	assert.NotNil(t, blockNeg1Neg1Pos0)
-	assert.Equal(t, IndexType{-1, -1, 0}, getBlockIndexFromCoordinates(pointInNeg110, tsdfLayer.BlockSizeInv))
+	assert.Equal(
+		t,
+		IndexType{-1, -1, 0},
+		getBlockIndexFromCoordinates(pointInNeg110, tsdfLayer.BlockSizeInv),
+	)
 	assert.NotNil(t, blockNeg1Neg1Pos0.getVoxelPtrByCoordinates(pointInNeg110))
 	voxelIndex = blockNeg1Neg1Pos0.computeTruncatedVoxelIndexFromCoordinates(pointInNeg110)
 	assert.Equal(t, IndexType{3, 6, 5}, voxelIndex)

@@ -1,0 +1,13 @@
+syntax = "proto3";
+option go_package = "/proto";
+
+message GetMeshRequest {}
+
+message GetMeshResult {
+  string index = 1;
+  bytes bytes = 2;
+}
+
+service MeshService {
+  rpc GetMeshBlocks (GetMeshRequest) returns (stream GetMeshResult);
+}

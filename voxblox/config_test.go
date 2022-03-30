@@ -8,7 +8,7 @@ import (
 )
 
 func TestReadConfigValid(t *testing.T) {
-	config, err := ReadConfig("../voxblox.yaml")
+	config, err := ReadConfig("../testdata/test.yaml")
 	assert.Nil(t, err, "Error reading config")
 	assert.Equal(t, 0.05, config.VoxelSize, "voxel size should be 0.05")
 	assert.Equal(t, 16, config.VoxelsPerSide, "voxels per side should be 16")
