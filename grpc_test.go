@@ -2,19 +2,21 @@ package main
 
 import (
 	"context"
-	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
-	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
-	"github.com/stretchr/testify/assert"
-	"github.com/ungerik/go3d/float64/quaternion"
 	"go-voxblox/proto"
 	"go-voxblox/voxblox"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/grpc/test/bufconn"
 	"log"
 	"net"
 	"os"
 	"testing"
+
+	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
+	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
+	"github.com/stretchr/testify/assert"
+	"github.com/ungerik/go3d/float64/quaternion"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/test/bufconn"
 )
 
 const bufSize = 1024 * 1024

@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"go-voxblox/proto"
 	"go-voxblox/voxblox"
-	"google.golang.org/grpc"
 	"log"
 	"net"
 	"os"
 	"os/signal"
+
+	"google.golang.org/grpc"
 
 	"github.com/aler9/goroslib"
 	"github.com/aler9/goroslib/pkg/msgs/geometry_msgs"
