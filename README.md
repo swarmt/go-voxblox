@@ -17,9 +17,9 @@ graph LR
   Sensor -- Pointcloud2 --> tsdfIntegrator
   poseEstimate -- 6DOF Pose --> tsdfIntegrator
   tsdfIntegrator --> tsdfMap --> tsdfIntegrator
-  tsdfMap --> meshIntegrator
-  meshIntegrator --> meshLayer --> meshIntegrator
-  meshLayer --> gRPC 
+  tsdfMap -- Get Updated Blocks gRPC --> meshIntegrator
+  meshLayer -- Set !Updated --> tsdfMap
+  meshIntegrator --> meshLayer -. gRPC .-> glTF(glTF Mesh Blocks)
 ```
 
 ## Performance
