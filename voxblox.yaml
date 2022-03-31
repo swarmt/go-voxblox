@@ -21,7 +21,7 @@ weight_constant: false
 weight_dropoff: true
 start_voxel_subsampling_factor: 1.0
 max_consecutive_ray_collisions: 2
-integrator_threads: -1 # Thread per core
+integrator_threads: -1  # Threads (-1 = 1 per core)
 
 # Mesh
 use_color: true
