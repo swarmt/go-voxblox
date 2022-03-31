@@ -25,4 +25,4 @@ integrator_threads: -1 # Thread per core
 
 # Mesh
 use_color: true
-min_weight: 0.2
+min_weight: 0.1

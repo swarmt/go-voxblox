@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/aler9/goroslib/pkg/msgs/sensor_msgs"
 	"github.com/aler9/goroslib/pkg/msgs/std_msgs"
@@ -94,6 +95,8 @@ func TestGetMeshBlocks(t *testing.T) {
 		},
 		pointCloud,
 	)
+
+	time.Sleep(100 * time.Millisecond)
 
 	resp, err = client.GetMeshBlocks(ctx, &proto.GetMeshRequest{})
 	assert.NoError(t, err)

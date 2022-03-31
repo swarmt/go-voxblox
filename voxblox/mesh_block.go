@@ -116,9 +116,9 @@ func (b *MeshBlock) colorsAsUint8() [][3]uint8 {
 	return colors
 }
 
-// GetGLTF returns the vertices and triangles in the block as glTF bytes.
+// Gltf returns the vertices and triangles in the block as glTF bytes.
 // Thread-safe.
-func (b *MeshBlock) GetGLTF() (bytes.Buffer, error) {
+func (b *MeshBlock) Gltf() (bytes.Buffer, error) {
 	b.RLock()
 	defer b.RUnlock()
 
@@ -127,7 +127,6 @@ func (b *MeshBlock) GetGLTF() (bytes.Buffer, error) {
 	indicesAccessor := modeler.WriteIndices(doc, b.indicesAsUint16())
 	colorIndices := modeler.WriteColor(doc, b.colorsAsUint8())
 	doc.Meshes = []*gltf.Mesh{{
-		Name: fmt.Sprintf(b.String()),
 		Primitives: []*gltf.Primitive{
 			{
 				Indices: gltf.Index(indicesAccessor),
@@ -139,7 +138,7 @@ func (b *MeshBlock) GetGLTF() (bytes.Buffer, error) {
 			},
 		},
 	}}
-	doc.Nodes = []*gltf.Node{{Name: "Root", Mesh: gltf.Index(0)}}
+	doc.Nodes = []*gltf.Node{{Name: fmt.Sprintf(b.String()), Mesh: gltf.Index(0)}}
 	doc.Scenes[0].Nodes = append(doc.Scenes[0].Nodes, 0)
 
 	var buf bytes.Buffer

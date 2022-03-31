@@ -29,7 +29,7 @@ func (s MeshServer) GetMeshBlocks(
 		if !meshBlock.HasData() {
 			continue
 		}
-		buf, err := meshBlock.GetGLTF()
+		buf, err := meshBlock.Gltf()
 		if err != nil {
 			log.Print(err)
 			continue
