@@ -1,9 +1,10 @@
 package voxblox
 
 import (
+	"time"
+
 	"github.com/ungerik/go3d/float64/vec3"
 	"gonum.org/v1/gonum/mat"
-	"time"
 )
 
 func stepICP(src, tgt []Point, initial *[6]float64) error {

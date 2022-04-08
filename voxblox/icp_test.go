@@ -2,12 +2,13 @@ package voxblox
 
 import (
 	"encoding/csv"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"log"
 	"os"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // readPointsFromCSV reads XYZ points from a CSV file.
@@ -54,7 +55,6 @@ func TestStepICP(t *testing.T) {
 }
 
 func TestGetGradient(t *testing.T) {
-
 }
 
 func TestAddNormalizedPointInfo(t *testing.T) {
