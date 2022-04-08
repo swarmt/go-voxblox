@@ -5,7 +5,7 @@ go-voxblox
 
 A Go implementation of [Voxblox](https://github.com/ethz-asl/voxblox)
 
-go-voxblox system diagram
+## System Diagram
 
 ```mermaid
 graph LR
@@ -22,7 +22,7 @@ graph LR
   meshIntegrator --> meshLayer -. gRPC .-> glTF(glTF Mesh Blocks)
 ```
 
-## Performance
+## Run it
 
 [Cow and Lady Dataset](https://projects.asl.ethz.ch/datasets/doku.php?id=iros2017/)
 
@@ -42,13 +42,10 @@ proto/mesh_service.proto
 * Merged integrator weights and speed
 * Better / more unit tests
 * Cache distant blocks with protobuf
-* ROS integration
-* gRPC mesh server
 * Logging
 * System tests
 * Stress test / map size
 * ICP?
-* Linear indexing on voxels?
 * CUDA?
 
 ## References

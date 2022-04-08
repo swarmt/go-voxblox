@@ -181,6 +181,8 @@ func TestTsdfIntegrators(t *testing.T) {
 		transformedPointCloud := transformPointCloud(poseInverse, pointCloud)
 		simpleTsdfIntegrator.IntegratePointCloud(pose, transformedPointCloud)
 		mergedTsdfIntegrator.IntegratePointCloud(pose, transformedPointCloud)
+		icpPose := GetIcpTransform(fastLayer, pose, pointCloud)
+		_ = icpPose
 		fastTsdfIntegrator.IntegratePointCloud(pose, transformedPointCloud)
 	}
 

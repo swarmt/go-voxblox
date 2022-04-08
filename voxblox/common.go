@@ -56,10 +56,6 @@ func minInt(x, y int) int {
 	return x
 }
 
-func almostEqual(a, b, e float64) bool {
-	return math.Abs(a-b) <= e+kEpsilon
-}
-
 func sgn(a float64) int {
 	switch {
 	case a < 0:
@@ -170,4 +166,21 @@ func blendTwoColors(
 	)
 
 	return Color{newR, newG, newB}
+}
+
+// splitPointCloud splits a PointCloud in to a slice of smaller PointClouds
+// divided by the chunk number.
+func splitPointCloud(
+	pointCloud *PointCloud,
+	chunkCount int,
+) []PointCloud {
+	chunkSize := len(pointCloud.Points) / chunkCount
+	chunks := make([]PointCloud, chunkCount)
+	for i := 0; i < chunkCount; i++ {
+		chunks[i] = PointCloud{
+			Points: pointCloud.Points[i*chunkSize : (i+1)*chunkSize],
+			Colors: pointCloud.Colors[i*chunkSize : (i+1)*chunkSize],
+		}
+	}
+	return chunks
 }

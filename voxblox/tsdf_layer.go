@@ -108,3 +108,19 @@ func getBlockAndVoxelFromGlobalVoxelIndex(
 	voxel := block.getVoxel(voxelIndex)
 	return block, voxel
 }
+
+// getBlockAndVoxelFromGlobalVoxelIndexIfExists returns a pointer to the block and voxel if they exist
+// Thread-safe.
+func getBlockAndVoxelFromGlobalVoxelIndexIfExists(
+	layer *TsdfLayer,
+	globalVoxelIndex IndexType,
+) (*TsdfBlock, *TsdfVoxel) {
+	blockIndex := getBlockIndexFromGlobalVoxelIndex(globalVoxelIndex, layer.VoxelsPerSideInv)
+	block := layer.getBlockIfExists(blockIndex)
+	if block == nil {
+		return nil, nil
+	}
+	voxelIndex := getLocalFromGlobalVoxelIndex(globalVoxelIndex, blockIndex, layer.VoxelsPerSide)
+	voxel := block.getVoxelIfExists(voxelIndex)
+	return block, voxel
+}
