@@ -51,10 +51,20 @@ func TestStepICP(t *testing.T) {
 	assert.InDelta(t, 0.00047, transform[3], 0.0001)
 	assert.InDelta(t, 0.00052, transform[4], 0.0001)
 	assert.InDelta(t, 0.00050, transform[5], 0.0001)
+
+	err = stepICP(sourcePoints, targetPoints, &transform)
+	assert.NoError(t, err)
+	assert.InDelta(t, -0.03887, transform[0], 0.0001)
+	assert.InDelta(t, -0.07911, transform[1], 0.0001)
+	assert.InDelta(t, 0.00565, transform[2], 0.0001)
+	assert.InDelta(t, 0.00021, transform[3], 0.0001)
+	assert.InDelta(t, 0.00028, transform[4], 0.0001)
+	assert.InDelta(t, 0.00025, transform[5], 0.0001)
 }
 
 func TestGetGradient(t *testing.T) {
-
+	tsdfLayer := NewTsdfLayer(0.05, 16)
+	_ = tsdfLayer
 }
 
 func TestAddNormalizedPointInfo(t *testing.T) {

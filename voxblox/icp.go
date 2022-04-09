@@ -1,46 +1,53 @@
 package voxblox
 
 import (
+	"fmt"
 	"github.com/ungerik/go3d/float64/vec3"
 	"gonum.org/v1/gonum/mat"
+	"math/rand"
 	"time"
 )
 
+func jacobianGaussNewton(src, tgt Point, initial *[6]float64) ([]float64, float64) {
+	dx := tgt[0]
+	dy := tgt[1]
+	dz := tgt[2]
+
+	sx := src[0]
+	sy := src[1]
+	sz := src[2]
+
+	alpha := initial[0]
+	beta := initial[1]
+	gamma := initial[2]
+	tx := initial[3]
+	ty := initial[4]
+	tz := initial[5]
+
+	a1 := (-2 * beta * sx * sy) - (2 * gamma * sx * sz) + (2 * alpha * ((sy * sy) + (sz * sz))) + (2 * ((sz * dy) - (sy * dz))) + 2*((sy*tz)-(sz*ty))
+	a2 := (-2 * alpha * sx * sy) - (2 * gamma * sy * sz) + (2 * beta * ((sx * sx) + (sz * sz))) + (2 * ((sx * dz) - (sz * dx))) + 2*((sz*tx)-(sx*tz))
+	a3 := (-2 * alpha * sx * sz) - (2 * beta * sy * sz) + (2 * gamma * ((sx * sx) + (sy * sy))) + (2 * ((sy * dx) - (sx * dy))) + 2*((sx*ty)-(sy*tx))
+	a4 := 2 * (sx - (gamma * sy) + (beta * sz) + tx - dx)
+	a5 := 2 * (sy - (alpha * sz) + (gamma * sx) + ty - dy)
+	a6 := 2 * (sz - (beta * sx) + (alpha * sy) + tz - dz)
+
+	r := (a4 * a4 / 4) + (a5 * a5 / 4) + (a6 * a6 / 4)
+
+	return []float64{a1, a2, a3, a4, a5, a6}, r
+}
+
 func stepICP(src, tgt []Point, initial *[6]float64) error {
-	var jacobian []float64
-	var residual []float64
+	var jacobians []float64
+	var residuals []float64
 
 	for i := 0; i < len(src); i++ {
-		dx := tgt[i][0]
-		dy := tgt[i][1]
-		dz := tgt[i][2]
-
-		sx := src[i][0]
-		sy := src[i][1]
-		sz := src[i][2]
-
-		alpha := initial[0]
-		beta := initial[1]
-		gamma := initial[2]
-		tx := initial[3]
-		ty := initial[4]
-		tz := initial[5]
-
-		a1 := (-2 * beta * sx * sy) - (2 * gamma * sx * sz) + (2 * alpha * ((sy * sy) + (sz * sz))) + (2 * ((sz * dy) - (sy * dz))) + 2*((sy*tz)-(sz*ty))
-		a2 := (-2 * alpha * sx * sy) - (2 * gamma * sy * sz) + (2 * beta * ((sx * sx) + (sz * sz))) + (2 * ((sx * dz) - (sz * dx))) + 2*((sz*tx)-(sx*tz))
-		a3 := (-2 * alpha * sx * sz) - (2 * beta * sy * sz) + (2 * gamma * ((sx * sx) + (sy * sy))) + (2 * ((sy * dx) - (sx * dy))) + 2*((sx*ty)-(sy*tx))
-		a4 := 2 * (sx - (gamma * sy) + (beta * sz) + tx - dx)
-		a5 := 2 * (sy - (alpha * sz) + (gamma * sx) + ty - dy)
-		a6 := 2 * (sz - (beta * sx) + (alpha * sy) + tz - dz)
-
-		r := (a4 * a4 / 4) + (a5 * a5 / 4) + (a6 * a6 / 4)
-
-		jacobian = append(jacobian, a1, a2, a3, a4, a5, a6)
-		residual = append(residual, r)
+		j, r := jacobianGaussNewton(src[i], tgt[i], initial)
+		jacobians = append(jacobians, j...)
+		residuals = append(residuals, r)
 	}
 
-	jacobianMatrix := mat.NewDense(len(src), 6, jacobian)
-	residualVector := mat.NewVecDense(len(src), residual)
+	jacobianMatrix := mat.NewDense(len(src), 6, jacobians)
+	residualVector := mat.NewVecDense(len(src), residuals)
 
 	var update mat.VecDense
 	err := update.SolveVec(jacobianMatrix, residualVector)
@@ -132,14 +139,26 @@ func matchPoints(tsdfLayer *TsdfLayer, pointCloud *PointCloud, pose *Transform) 
 func GetIcpTransform(tsdfLayer *TsdfLayer, pose Transform, pointCloud PointCloud) Transform {
 	defer TimeTrack(time.Now(), "ICP")
 
-	src, tgt := matchPoints(tsdfLayer, &pointCloud, &pose)
-	// Check match percentage
-	if len(src) < 1000 {
-		return pose
-	}
+	// Shuffle the point cloud.
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(pointCloud.Points), func(i, j int) {
+		pointCloud.Points[i], pointCloud.Points[j] = pointCloud.Points[j], pointCloud.Points[i]
+		pointCloud.Colors[i], pointCloud.Colors[j] = pointCloud.Colors[j], pointCloud.Colors[i]
+	})
 
 	transform := [6]float64{kEpsilon, kEpsilon, kEpsilon, kEpsilon, kEpsilon, kEpsilon}
-	_ = stepICP(src, tgt, &transform)
+
+	for _, pC := range splitPointCloud(&pointCloud, 1) {
+		src, tgt := matchPoints(tsdfLayer, &pC, &pose)
+		matchPercentage := float64(len(src)) / float64(len(pC.Points))
+		fmt.Println("Match percentage:", matchPercentage)
+		if matchPercentage < 0.8 {
+			return pose
+		}
+
+		_ = stepICP(src, tgt, &transform)
+		fmt.Println("Transform:", transform)
+	}
 
 	return Transform{}
 }
