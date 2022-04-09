@@ -2,12 +2,13 @@ package voxblox
 
 import (
 	"encoding/csv"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"log"
 	"os"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // readPointsFromCSV reads XYZ points from a CSV file.
