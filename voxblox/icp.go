@@ -2,10 +2,11 @@ package voxblox
 
 import (
 	"fmt"
-	"github.com/ungerik/go3d/float64/vec3"
-	"gonum.org/v1/gonum/mat"
 	"math/rand"
 	"time"
+
+	"github.com/ungerik/go3d/float64/vec3"
+	"gonum.org/v1/gonum/mat"
 )
 
 func jacobianGaussNewton(src, tgt Point, initial *[6]float64) ([]float64, float64) {
