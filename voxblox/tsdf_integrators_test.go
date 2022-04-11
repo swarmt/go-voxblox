@@ -179,10 +179,15 @@ func TestTsdfIntegrators(t *testing.T) {
 		)
 		poseInverse := pose.inverse()
 		transformedPointCloud := transformPointCloud(poseInverse, pointCloud)
+		deltaTransform := GetIcpTransform(simpleLayer, pose, transformedPointCloud)
+		// Apply the delta transform to the pose
+		pose = Transform{
+			Translation: vec3.Add(&pose.Translation, &deltaTransform.Translation),
+			Rotation:    quaternion.Mul(&pose.Rotation, &deltaTransform.Rotation),
+		}
+
 		simpleTsdfIntegrator.IntegratePointCloud(pose, transformedPointCloud)
 		mergedTsdfIntegrator.IntegratePointCloud(pose, transformedPointCloud)
-		icpPose := GetIcpTransform(fastLayer, pose, pointCloud)
-		_ = icpPose
 		fastTsdfIntegrator.IntegratePointCloud(pose, transformedPointCloud)
 	}
 

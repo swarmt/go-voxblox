@@ -17,6 +17,11 @@ func TestGetGridIndexFromPoint(t *testing.T) {
 		IndexType{-1, 105, 0},
 		getGridIndexFromPoint(Point{-0.0166654587, 5.2854619, 1.1920929e-07}, 2.0*10.0),
 	)
+	assert.Equal(
+		t,
+		IndexType{-21, 43, 0},
+		getGridIndexFromPoint(Point{-2.05839586, 4.35501623, 1.1920929e-07}, 10.0),
+	)
 }
 
 func TestGetCenterPointFromGridIndex(t *testing.T) {

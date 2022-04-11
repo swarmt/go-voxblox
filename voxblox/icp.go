@@ -2,6 +2,7 @@ package voxblox
 
 import (
 	"fmt"
+	"github.com/ungerik/go3d/float64/quaternion"
 	"math/rand"
 	"time"
 
@@ -37,12 +38,12 @@ func jacobianGaussNewton(src, tgt Point, initial *[6]float64) ([]float64, float6
 	return []float64{a1, a2, a3, a4, a5, a6}, r
 }
 
-func stepICP(src, tgt []Point, initial *[6]float64) error {
+func stepICP(src, tgt []Point, transform *[6]float64) error {
 	var jacobians []float64
 	var residuals []float64
 
 	for i := 0; i < len(src); i++ {
-		j, r := jacobianGaussNewton(src[i], tgt[i], initial)
+		j, r := jacobianGaussNewton(src[i], tgt[i], transform)
 		jacobians = append(jacobians, j...)
 		residuals = append(residuals, r)
 	}
@@ -57,7 +58,7 @@ func stepICP(src, tgt []Point, initial *[6]float64) error {
 	}
 
 	for i := 0; i < update.Len(); i++ {
-		initial[i] -= update.At(i, 0)
+		transform[i] -= update.At(i, 0)
 	}
 
 	return nil
@@ -97,22 +98,29 @@ func addNormalizedPointInfo(point, normalizedPointNormal Point, infoVector *[6]f
 		point[1]*point[1]*normalizedPointNormal[0]*normalizedPointNormal[0])
 }
 
-func matchPoints(tsdfLayer *TsdfLayer, pointCloud *PointCloud, pose *Transform) ([]Point, []Point) {
+func computeTargetPoint(pointG, voxelCenter, gradient Point, distance float64) Point {
+	delta := vec3.Sub(&pointG, &voxelCenter)
+	distance += vec3.Dot(&gradient, &delta)
+	return vec3.Sub(&pointG, gradient.Scale(distance))
+}
+
+func matchPoints(tsdfLayer *TsdfLayer, pose Transform, pointCloud *PointCloud) ([]Point, []Point) {
 	kMinGradMagnitude := 0.1
-	infoVector := [6]float64{kEpsilon, kEpsilon, kEpsilon, kEpsilon, kEpsilon, kEpsilon}
+	infoVector := [6]float64{}
 
 	var srcPoints []Point
 	var tgtPoints []Point
 
 	for _, point := range pointCloud.Points {
 		pointG := pose.transformPoint(point)
+
 		globalVoxelIndex := getGridIndexFromPoint(pointG, tsdfLayer.VoxelSizeInv)
 		block, voxel := getBlockAndVoxelFromGlobalVoxelIndexIfExists(tsdfLayer, globalVoxelIndex)
 		if block == nil || voxel == nil {
 			continue
 		}
 		distance := voxel.getDistance()
-		if distance <= 0 {
+		if distance >= tsdfLayer.VoxelSize*4 {
 			continue
 		}
 		gradient, ok := getGradient(tsdfLayer, globalVoxelIndex)
@@ -122,19 +130,23 @@ func matchPoints(tsdfLayer *TsdfLayer, pointCloud *PointCloud, pose *Transform) 
 		if gradient.LengthSqr() < kMinGradMagnitude {
 			continue
 		}
-		gradient.Normalize()
+		gradient = gradient.Normalized()
 
 		addNormalizedPointInfo(vec3.Sub(&pointG, &pose.Translation), gradient, &infoVector)
 
 		voxelCenter := getCenterPointFromGridIndex(globalVoxelIndex, tsdfLayer.VoxelSize)
-
-		delta := vec3.Sub(&pointG, &voxelCenter)
-		distance += vec3.Dot(&delta, &gradient)
+		tgtPoint := computeTargetPoint(pointG, voxelCenter, gradient, distance)
 
 		srcPoints = append(srcPoints, pointG)
-		tgtPoints = append(tgtPoints, vec3.Sub(&pointG, gradient.Scale(distance)))
+		tgtPoints = append(tgtPoints, tgtPoint)
 	}
 	return srcPoints, tgtPoints
+}
+
+func vectorToTransform(vector [6]float64) Transform {
+	translation := Point{vector[0], vector[1], vector[2]}
+	rotation := quaternion.FromEulerAngles(vector[3], vector[4], vector[5])
+	return Transform{Rotation: rotation, Translation: translation}
 }
 
 func GetIcpTransform(tsdfLayer *TsdfLayer, pose Transform, pointCloud PointCloud) Transform {
@@ -149,17 +161,22 @@ func GetIcpTransform(tsdfLayer *TsdfLayer, pose Transform, pointCloud PointCloud
 
 	transform := [6]float64{kEpsilon, kEpsilon, kEpsilon, kEpsilon, kEpsilon, kEpsilon}
 
-	for _, pC := range splitPointCloud(&pointCloud, 1) {
-		src, tgt := matchPoints(tsdfLayer, &pC, &pose)
+	// TODO: Mini-batch size from config.
+	// TODO: Cache gradients for voxels.
+	miniBatchSize := 100
+	chunks := splitPointCloud(&pointCloud, len(pointCloud.Points)/miniBatchSize)
+	for _, pC := range chunks {
+		src, tgt := matchPoints(tsdfLayer, pose, &pC)
 		matchPercentage := float64(len(src)) / float64(len(pC.Points))
-		fmt.Println("Match percentage:", matchPercentage)
 		if matchPercentage < 0.8 {
-			return pose
+			continue
 		}
-
-		_ = stepICP(src, tgt, &transform)
-		fmt.Println("Transform:", transform)
+		err := stepICP(src, tgt, &transform)
+		if err != nil {
+			continue
+		}
 	}
-
-	return Transform{}
+	temp := vectorToTransform(transform)
+	fmt.Println("ICP transform:", temp)
+	return temp
 }
