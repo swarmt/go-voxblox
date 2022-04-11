@@ -2,12 +2,13 @@ package voxblox
 
 import (
 	"encoding/csv"
-	"github.com/ungerik/go3d/float64/vec3"
 	"io"
 	"log"
 	"os"
 	"strconv"
 	"testing"
+
+	"github.com/ungerik/go3d/float64/vec3"
 
 	"github.com/stretchr/testify/assert"
 )
