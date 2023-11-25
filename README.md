@@ -3,7 +3,7 @@ go-voxblox
 [![Go](https://github.com/swarmt/go-voxblox/actions/workflows/go.yml/badge.svg)](https://github.com/swarmt/go-voxblox/actions/workflows/go.yml)
 ---
 
-A Go implementation of [Voxblox](https://github.com/ethz-asl/voxblox)
+A Go port(ish) of [Voxblox](https://github.com/ethz-asl/voxblox)
 
 ## System Diagram
 
@@ -22,7 +22,7 @@ graph LR
   meshIntegrator --> meshLayer -. gRPC .-> glTF(glTF Mesh Blocks)
 ```
 
-## Run it
+## Run
 
 [Cow and Lady Dataset](https://projects.asl.ethz.ch/datasets/doku.php?id=iros2017/)
 
@@ -45,8 +45,7 @@ proto/mesh_service.proto
 * Logging
 * System tests
 * Stress test / map size
-* ICP?
-* CUDA?
+* ICP
 
 ## References
 
