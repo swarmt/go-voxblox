@@ -4,6 +4,7 @@ package proto
 
 import (
 	context "context"
+
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -70,8 +71,7 @@ type MeshServiceServer interface {
 }
 
 // UnimplementedMeshServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedMeshServiceServer struct {
-}
+type UnimplementedMeshServiceServer struct{}
 
 func (UnimplementedMeshServiceServer) GetMeshBlocks(*GetMeshRequest, MeshService_GetMeshBlocksServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetMeshBlocks not implemented")
