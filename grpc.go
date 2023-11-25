@@ -23,7 +23,8 @@ func NewMeshServer(meshIntegrator *voxblox.MeshIntegrator) *MeshServer {
 // GetMeshBlocks streams the glTF binary data over gRPC
 func (s MeshServer) GetMeshBlocks(
 	in *proto.GetMeshRequest,
-	srv proto.MeshService_GetMeshBlocksServer) error {
+	srv proto.MeshService_GetMeshBlocksServer,
+) error {
 	s.meshIntegrator.Integrate()
 	for _, meshBlock := range s.meshIntegrator.MeshLayer.GetBlocks() {
 		if !meshBlock.HasData() {

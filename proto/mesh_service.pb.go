@@ -7,10 +7,11 @@
 package proto
 
 import (
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
+
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 )
 
 const (
@@ -142,11 +143,14 @@ func file_proto_mesh_service_proto_rawDescGZIP() []byte {
 	return file_proto_mesh_service_proto_rawDescData
 }
 
-var file_proto_mesh_service_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
-var file_proto_mesh_service_proto_goTypes = []interface{}{
-	(*GetMeshRequest)(nil), // 0: GetMeshRequest
-	(*GetMeshResult)(nil),  // 1: GetMeshResult
-}
+var (
+	file_proto_mesh_service_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+	file_proto_mesh_service_proto_goTypes  = []interface{}{
+		(*GetMeshRequest)(nil), // 0: GetMeshRequest
+		(*GetMeshResult)(nil),  // 1: GetMeshResult
+	}
+)
+
 var file_proto_mesh_service_proto_depIdxs = []int32{
 	0, // 0: MeshService.GetMeshBlocks:input_type -> GetMeshRequest
 	1, // 1: MeshService.GetMeshBlocks:output_type -> GetMeshResult
