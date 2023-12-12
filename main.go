@@ -107,5 +107,5 @@ func main() {
 
 	// TODO: This is temporary.
 	meshIntegrator.Integrate()
-	voxblox.WriteMeshLayerToObjFiles(meshLayer, "output/cow_lady")
+	voxblox.WriteMeshLayerToObjFiles(meshLayer, "output")
 }

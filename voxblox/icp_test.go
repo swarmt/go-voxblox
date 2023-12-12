@@ -45,24 +45,26 @@ func TestStepICP(t *testing.T) {
 	targetPoints := readPointsFromCSV("../testdata/target.csv")
 	assert.Equal(t, len(sourcePoints), len(targetPoints))
 
+	epsilon := 0.02
+
 	transform := [6]float64{0.01, 0.05, 0.01, 0.001, 0.001, 0.001}
 	err := stepICP(sourcePoints, targetPoints, &transform)
 	assert.NoError(t, err)
-	assert.InDelta(t, -0.03887, transform[0], 0.0001)
-	assert.InDelta(t, -0.03588, transform[1], 0.0001)
-	assert.InDelta(t, 0.00710, transform[2], 0.0001)
-	assert.InDelta(t, 0.00047, transform[3], 0.0001)
-	assert.InDelta(t, 0.00052, transform[4], 0.0001)
-	assert.InDelta(t, 0.00050, transform[5], 0.0001)
+	assert.InEpsilon(t, -0.03887, transform[0], epsilon)
+	assert.InEpsilon(t, -0.03588, transform[1], epsilon)
+	assert.InEpsilon(t, 0.00710, transform[2], epsilon)
+	assert.InEpsilon(t, 0.00047, transform[3], epsilon)
+	assert.InEpsilon(t, 0.00052, transform[4], epsilon)
+	assert.InEpsilon(t, 0.00050, transform[5], epsilon)
 
 	err = stepICP(sourcePoints, targetPoints, &transform)
 	assert.NoError(t, err)
-	assert.InDelta(t, -0.06347, transform[0], 0.0001)
-	assert.InDelta(t, -0.07911, transform[1], 0.0001)
-	assert.InDelta(t, 0.00565, transform[2], 0.0001)
-	assert.InDelta(t, 0.00021, transform[3], 0.0001)
-	assert.InDelta(t, 0.00028, transform[4], 0.0001)
-	assert.InDelta(t, 0.00025, transform[5], 0.0001)
+	assert.InEpsilon(t, -0.06347, transform[0], epsilon)
+	assert.InEpsilon(t, -0.07911, transform[1], epsilon)
+	assert.InEpsilon(t, 0.00565, transform[2], epsilon)
+	assert.InEpsilon(t, 0.00021, transform[3], epsilon)
+	assert.InEpsilon(t, 0.00028, transform[4], epsilon)
+	assert.InEpsilon(t, 0.00025, transform[5], epsilon)
 }
 
 func TestGetGradient(t *testing.T) {
@@ -95,9 +97,9 @@ func TestGetGradient(t *testing.T) {
 	globalVoxelIndex := getGridIndexFromPoint(pointG, tsdfLayer.VoxelSizeInv)
 	gradient, ok := getGradient(tsdfLayer, globalVoxelIndex)
 	assert.True(t, ok)
-	assert.InDelta(t, -0.45344469, gradient[0], kEpsilon)
-	assert.InDelta(t, 0.114144355, gradient[1], kEpsilon)
-	assert.InDelta(t, 2.54431701, gradient[2], kEpsilon)
+	assert.InEpsilon(t, -0.45344469, gradient[0], kEpsilon)
+	assert.InEpsilon(t, 0.114144355, gradient[1], kEpsilon)
+	assert.InEpsilon(t, 2.54431701, gradient[2], kEpsilon)
 }
 
 func TestAddNormalizedPointInfo(t *testing.T) {

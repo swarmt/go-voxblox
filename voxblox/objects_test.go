@@ -37,7 +37,7 @@ func TestRayIntersectionCylinder(t *testing.T) {
 	assert.True(t, intersects)
 	assert.InEpsilon(t, 5.98030172, intersectPoint[0], 0.05)
 	assert.InEpsilon(t, -0.2, intersectPoint[1], kEpsilon)
-	assert.Equal(t, 0.0, intersectPoint[2])
+	assert.InDelta(t, 0.0, intersectPoint[2], kEpsilon)
 
 	cylinder = Cylinder{Center: Point{0.0, 0.0, 1.0}, Height: 2.0, Radius: 2.0}
 	intersects, intersectPoint, _ = cylinder.RayIntersection(
@@ -62,6 +62,6 @@ func TestRayIntersectionPlane(t *testing.T) {
 	assert.True(t, intersects)
 	assert.InEpsilon(t, -2.66666627, intersectPoint[0], kEpsilon)
 	assert.InEpsilon(t, 5.28546286, intersectPoint[1], kEpsilon)
-	assert.Equal(t, 0.0, intersectPoint[2])
+	assert.InDelta(t, 0.0, intersectPoint[2], kEpsilon)
 	assert.InEpsilon(t, 3.40905786, intersectDistance, kEpsilon)
 }

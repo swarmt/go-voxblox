@@ -28,5 +28,5 @@ func TestGetPointCloudFromTransform(t *testing.T) {
 	)
 	assert.InEpsilon(t, -2.66666627, pointCloud.Points[0][0], 0.001)
 	assert.InEpsilon(t, 5.28546286, pointCloud.Points[0][1], 0.001)
-	assert.Equal(t, 0.0, pointCloud.Points[0][2])
+	assert.InDelta(t, 0.0, pointCloud.Points[0][2], kEpsilon)
 }

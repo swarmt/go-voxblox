@@ -10,7 +10,7 @@ translation: [ 0.00114049, 0.0450936, 0.0430765 ]
 rotation: [ 0.0924132, 0.0976455, 0.0702949, 0.9884249 ]
 
 # TSDF
-voxel_size: 0.05
+voxel_size: 0.04
 voxels_per_side: 16
 min_range: 0.1
 max_range: 5.0
