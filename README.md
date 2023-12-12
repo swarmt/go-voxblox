@@ -41,15 +41,27 @@ Settings are configured in ```voxblox.yaml```.
 
 The `simple`, `merged` and `fast` integrators are available however the code runs the `fast` integrator by default.
 
-Start the bag playback with:
-
+Start a roscore with:
 ```bash
-rosbag play --clock data.bag
+roscore
 ```
 
 Start the node with:
 ```bash
 go build go-voxblox
+```
+
+Start the bag playback with:
+```bash
+rosbag play --clock data.bag
+```
+
+You should logs similar to the following:
+```
+2023/12/12 20:58:34 Convert PointCloud2: 2.312166ms
+2023/12/12 20:58:34 Integrate Fast: 6.760125ms
+2023/12/12 20:58:34 Convert PointCloud2: 3.882959ms
+2023/12/12 20:58:34 Integrate Fast: 13.282292ms
 ```
 
 ![](.readme/cow-and-lady.png)
