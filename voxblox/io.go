@@ -22,15 +22,19 @@ func WriteMeshLayerToObjFiles(layer *MeshLayer, folderName string) {
 
 		block.RLock()
 		for i, vertex := range block.vertices {
+			r := float64(block.colors[i][0]) / 255.0
+			g := float64(block.colors[i][1]) / 255.0
+			b := float64(block.colors[i][2]) / 255.0
+
 			fmt.Fprintf(
 				file,
-				"v %f %f %f %d %d %d\n",
+				"v %f %f %f %f %f %f\n",
 				vertex[0],
 				vertex[1],
 				vertex[2],
-				block.colors[i][0],
-				block.colors[i][1],
-				block.colors[i][2],
+				r,
+				g,
+				b,
 			)
 		}
 		for _, triangle := range block.triangles {

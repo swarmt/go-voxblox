@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"go-voxblox/proto"
 	"go-voxblox/voxblox"
+	"google.golang.org/grpc"
 	"log"
 	"net"
 	"os"
 	"os/signal"
-
-	"google.golang.org/grpc"
 
 	"github.com/aler9/goroslib"
 	"github.com/aler9/goroslib/pkg/msgs/geometry_msgs"
@@ -94,10 +93,11 @@ func main() {
 	}
 	grpcServer := grpc.NewServer()
 	proto.RegisterMeshServiceServer(grpcServer, meshServer)
-	err = grpcServer.Serve(lis)
-	if err != nil {
-		panic(err)
-	}
+	go func() {
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Fatalf("Failed to serve gRPC server: %v", err)
+		}
+	}()
 	defer grpcServer.Stop()
 
 	// Wait for CTRL-C
