@@ -52,6 +52,8 @@ Start the node with:
 go build go-voxblox
 ```
 
+![](.readme/cow-and-lady.png)
+
 ## Generate gRPC files
 
 If you need to regenerate the protobuf and gRPC files you can do so with the following command:
