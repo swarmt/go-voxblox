@@ -6,7 +6,7 @@ over gRPC as glTF (glb).
 
 I wrote this to learn golang so some or all of it might make your eyes bleed.
 
-![](https://drive.google.com/file/d/1TFYmDF4mIPqRnc7QrJi-amJiaH8UNvDC/view?usp=sharing)
+![](.readme/go-voxblox-rerun.gif)
 
 ## System Diagram
 
