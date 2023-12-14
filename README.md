@@ -39,7 +39,7 @@ rosbag decompress data.bag
 
 Settings are configured in ```voxblox.yaml```. 
 
-The `simple`, `merged` and `fast` integrators are available however the code runs the `fast` integrator by default.
+The `simple` and `fast` integrators are available however the code runs the `fast` integrator by default.
 
 Start a roscore with:
 ```bash
@@ -56,7 +56,7 @@ Start the bag playback with:
 rosbag play --clock data.bag
 ```
 
-You should logs similar to the following:
+You should see logs similar to the following:
 ```
 2023/12/12 20:58:34 Convert PointCloud2: 2.312166ms
 2023/12/12 20:58:34 Integrate Fast: 6.760125ms
