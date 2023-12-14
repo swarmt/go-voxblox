@@ -6,6 +6,8 @@ over gRPC as glTF (glb).
 
 I wrote this to learn golang so some or all of it might make your eyes bleed.
 
+![](https://drive.google.com/file/d/1TFYmDF4mIPqRnc7QrJi-amJiaH8UNvDC/view?usp=sharing)
+
 ## System Diagram
 
 ```mermaid
@@ -31,8 +33,7 @@ go test go-voxblox
 
 ## Run
 
-Download the [Cow and Lady Dataset](https://projects.asl.ethz.ch/datasets/doku.php?id=iros2017/) and decompress 
-(required for real time playback) with: 
+Download the [Cow and Lady Dataset](https://projects.asl.ethz.ch/datasets/doku.php?id=iros2017/) and decompress (required for real time playback) with: 
 ```bash
 rosbag decompress data.bag
 ```
@@ -51,6 +52,12 @@ Start the node with:
 go build go-voxblox
 ```
 
+Optionally start the [rerun](https://www.rerun.io/) viewer with:
+```bash
+cd viewer
+python3 main.py
+```
+
 Start the bag playback with:
 ```bash
 rosbag play --clock data.bag
@@ -62,9 +69,8 @@ You should see logs similar to the following:
 2023/12/12 20:58:34 Integrate Fast: 6.760125ms
 2023/12/12 20:58:34 Convert PointCloud2: 3.882959ms
 2023/12/12 20:58:34 Integrate Fast: 13.282292ms
+2023/12/12 20:58:34 Integrate Mesh: 2.588875ms
 ```
-
-![](.readme/cow-and-lady.png)
 
 ## Generate gRPC files
 
